@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ?? "https://curro-kappa.vercel.app",
   ),
-  title: "Curro — La recepcionista con IA para reformas",
+  title: "Curro — Tu recepcionista con IA para reformas",
   description:
     "Curro coge el teléfono cuando tú no puedes. Recepcionista con inteligencia artificial para empresas de reformas y multiservicios del hogar: atiende cada llamada, cualifica al cliente y te pasa el presupuesto por WhatsApp. 24/7 y en español.",
 };

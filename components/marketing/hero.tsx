@@ -40,7 +40,7 @@ export function Hero() {
             </span>
           </h1>
           <p className="mt-6 max-w-xl text-lg text-cream/70">
-            La recepcionista con inteligencia artificial para empresas de
+            Tu recepcionista con inteligencia artificial para empresas de
             reformas y multiservicios del hogar. Atiende cada llamada, cualifica
             al cliente y te pasa el presupuesto por WhatsApp. Aunque estés subido
             a un andamio.
@@ -63,7 +63,7 @@ export function Hero() {
         <div className="relative flex justify-center lg:justify-end">
           <div className="pointer-events-none absolute bottom-0 h-2/3 w-full max-w-md rounded-full bg-casco/15 blur-2xl" />
           <Image
-            src="/currito/hero.png"
+            src="/currito/hero.webp"
             alt="Currito, la mascota de Curro, con casco de obra atiende una llamada con el móvil"
             width={890}
             height={1300}
