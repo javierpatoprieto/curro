@@ -423,13 +423,19 @@ export default function Home() {
               · Recepcionista con IA para reformas
             </span>
           </div>
-          <div className="flex items-center gap-6 text-sm text-ink/60">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-ink/60">
             <a href="#precios" className="hover:text-ink">
               Precios
             </a>
             <a href="#faq" className="hover:text-ink">
               Preguntas
             </a>
+            <Link href="/privacidad" className="hover:text-ink">
+              Privacidad
+            </Link>
+            <Link href="/aviso-legal" className="hover:text-ink">
+              Aviso legal
+            </Link>
             <Link href="/login" className="hover:text-ink">
               Acceder
             </Link>

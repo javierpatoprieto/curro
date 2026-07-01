@@ -4,6 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { parseEndOfCallReport, type ParsedVapiCall } from "@/lib/vapi/parser";
 import { verifyVapiSecret } from "@/lib/vapi/verify";
 import { notificarNuevoLead } from "@/lib/messaging/notify";
+import { contarLlamadasMes, limiteDe } from "@/lib/usage";
+import type { Plan } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -115,8 +117,13 @@ async function persistir(payload: unknown, parsed: ParsedVapiCall) {
   // Notificar: WhatsApp al cliente + aviso al dueño (WhatsApp + email).
   // Solo si el negocio está activo. Los fallos de envío no tumban el webhook:
   // el lead ya está guardado y cada envío queda registrado en `messages`.
+  // Control de límite de llamadas por plan: si se supera, guardamos el lead
+  // igualmente (no perdemos datos) pero no gastamos en notificaciones.
+  const usadas = await contarLlamadasMes(admin, business.id);
+  const dentroLimite = usadas <= limiteDe(business.plan as Plan);
+
   let notificados = 0;
-  if (business.activo !== false) {
+  if (business.activo !== false && dentroLimite) {
     const { data: owners } = await admin
       .from("owners")
       .select("nombre, email, whatsapp")
@@ -139,7 +146,12 @@ async function persistir(payload: unknown, parsed: ParsedVapiCall) {
     }
   }
 
-  return ok({ leadId: lead.id, businessId: business.id, notificados });
+  return ok({
+    leadId: lead.id,
+    businessId: business.id,
+    notificados,
+    limiteSuperado: !dentroLimite,
+  });
 }
 
 type Admin = ReturnType<typeof createAdminClient>;
@@ -148,7 +160,7 @@ async function findBusiness(admin: Admin, parsed: ParsedVapiCall) {
   if (parsed.assistantId) {
     const { data } = await admin
       .from("businesses")
-      .select("id, activo, nombre, cal_link")
+      .select("id, activo, nombre, cal_link, plan")
       .eq("vapi_assistant_id", parsed.assistantId)
       .maybeSingle();
     if (data) return data;
@@ -156,7 +168,7 @@ async function findBusiness(admin: Admin, parsed: ParsedVapiCall) {
   if (parsed.calledNumber) {
     const { data } = await admin
       .from("businesses")
-      .select("id, activo, nombre, cal_link")
+      .select("id, activo, nombre, cal_link, plan")
       .eq("telefono_entrante", parsed.calledNumber)
       .maybeSingle();
     if (data) return data;

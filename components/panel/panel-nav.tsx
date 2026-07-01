@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Inbox, Settings } from "lucide-react";
+import { LayoutDashboard, Inbox, BarChart3, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ENLACES = [
   { href: "/panel", label: "Resumen", icon: LayoutDashboard, exact: true },
   { href: "/panel/leads", label: "Leads", icon: Inbox, exact: false },
+  { href: "/panel/uso", label: "Uso", icon: BarChart3, exact: false },
   { href: "/panel/ajustes", label: "Ajustes", icon: Settings, exact: false },
 ];
 
