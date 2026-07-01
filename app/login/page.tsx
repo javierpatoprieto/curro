@@ -58,7 +58,7 @@ export default function LoginPage() {
           <div className="flex size-11 items-center justify-center rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)]">
             <PhoneCall className="size-5" />
           </div>
-          <h1 className="text-2xl font-bold">AtiendeReformas</h1>
+          <h1 className="text-2xl font-bold">Curro</h1>
           <p className="text-sm text-[var(--muted-foreground)]">
             Accede a tu panel de leads
           </p>

@@ -22,7 +22,7 @@ export default async function PanelLayout({
           <div className="flex size-8 items-center justify-center rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)]">
             <PhoneCall className="size-4" />
           </div>
-          <span className="font-semibold">AtiendeReformas</span>
+          <span className="font-semibold">Curro</span>
         </div>
 
         <PanelNav />
