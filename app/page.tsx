@@ -188,7 +188,8 @@ export default function Home() {
 
       {/* ---------- Hero ---------- */}
       <section className="blueprint relative overflow-hidden">
-        <div className="pointer-events-none absolute -right-40 -top-40 size-[36rem] rounded-full bg-brand/10 blur-3xl" />
+        <div className="pointer-events-none absolute -right-40 -top-40 size-[36rem] rounded-full bg-fresh/15 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-40 -left-40 size-[28rem] rounded-full bg-brand/10 blur-3xl" />
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-20 lg:grid-cols-[1.1fr_0.9fr] lg:py-28">
           <div>
             <span
@@ -299,7 +300,7 @@ export default function Home() {
       {/* ---------- Cómo funciona ---------- */}
       <section id="como-funciona" className="mx-auto max-w-6xl px-6 py-24">
         <div className="max-w-2xl">
-          <p className="text-sm font-semibold uppercase tracking-wide text-brand">
+          <p className="text-sm font-semibold uppercase tracking-wide text-fresh-strong">
             Cómo funciona
           </p>
           <h2 className="mt-2 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
@@ -309,7 +310,7 @@ export default function Home() {
         <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {pasos.map(({ n, icon: Icon, titulo, texto }) => (
             <div key={n} className="group relative">
-              <span className="font-display text-5xl font-extrabold text-ink/10 transition-colors group-hover:text-brand/30">
+              <span className="font-display text-5xl font-extrabold text-ink/10 transition-colors group-hover:text-fresh/40">
                 {n}
               </span>
               <div className="mt-2 flex size-11 items-center justify-center rounded-xl bg-ink text-cream">
@@ -326,7 +327,7 @@ export default function Home() {
       <section className="border-t border-ink/10 bg-ink text-cream">
         <div className="mx-auto max-w-6xl px-6 py-24">
           <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-wide text-brand">
+            <p className="text-sm font-semibold uppercase tracking-wide text-fresh">
               Todo lo que hace por ti
             </p>
             <h2 className="mt-2 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
@@ -336,7 +337,7 @@ export default function Home() {
           <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-cream/10 bg-cream/10 sm:grid-cols-2 lg:grid-cols-3">
             {features.map(({ icon: Icon, titulo, texto }) => (
               <div key={titulo} className="bg-ink p-8">
-                <Icon className="size-6 text-brand" />
+                <Icon className="size-6 text-fresh" />
                 <h3 className="mt-4 font-display text-lg font-bold">{titulo}</h3>
                 <p className="mt-2 text-sm text-cream/60">{texto}</p>
               </div>
@@ -348,7 +349,7 @@ export default function Home() {
       {/* ---------- Precios ---------- */}
       <section id="precios" className="mx-auto max-w-6xl px-6 py-24">
         <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-brand">
+          <p className="text-sm font-semibold uppercase tracking-wide text-fresh-strong">
             Precios
           </p>
           <h2 className="mt-2 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
@@ -393,7 +394,7 @@ export default function Home() {
               <ul className="mt-8 space-y-3 text-sm">
                 {plan.incluye.map((item) => (
                   <li key={item} className="flex items-start gap-3">
-                    <Check className="mt-0.5 size-4 shrink-0 text-brand" />
+                    <Check className="mt-0.5 size-4 shrink-0 text-fresh-strong" />
                     <span className="text-ink/80">{item}</span>
                   </li>
                 ))}

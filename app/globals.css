@@ -76,12 +76,14 @@
   --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-brico), var(--font-instrument), sans-serif;
 
-  /* Paleta de marca Curro — industrial cálido */
-  --color-cream: #fbf6ec;
-  --color-ink: #1a1613;
-  --color-brand: #ea5a1a;
-  --color-brand-strong: #c2410c;
-  --color-kraft: #f1e6d2;
+  /* Paleta de marca Curro — fresca: base aqua + acento coral que incita */
+  --color-cream: #f3fbfb; /* base blanco-aqua (nombre heredado) */
+  --color-ink: #06232b; /* teal muy oscuro (texto y secciones) */
+  --color-brand: #ff6b4a; /* coral: acción / CTAs / resaltador */
+  --color-brand-strong: #e8482a; /* coral hover */
+  --color-fresh: #14b8a6; /* teal fresco: acentos e iconos */
+  --color-fresh-strong: #0c7f74; /* teal legible sobre fondo claro */
+  --color-kraft: #e2f3f0; /* menta suave para secciones alternas */
 }
 
 @layer base {
