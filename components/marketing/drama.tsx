@@ -25,7 +25,7 @@ export function Drama() {
           className="mx-auto w-40 shrink-0 sm:w-52 lg:w-60"
         >
           <Image
-            src="/currito/preocupado.png"
+            src="/currito/preocupado.webp"
             alt="Currito con gesto de preocupación"
             width={520}
             height={520}

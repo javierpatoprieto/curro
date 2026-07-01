@@ -28,7 +28,7 @@ export function CtaFinal() {
           </p>
         </div>
         <Image
-          src="/currito/pulgar.png"
+          src="/currito/pulgar.webp"
           alt="Currito celebrando con el pulgar hacia arriba"
           width={890}
           height={1300}

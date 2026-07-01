@@ -23,7 +23,7 @@ export function Logo({
     >
       {!soloTexto && (
         <Image
-          src="/currito/cabeza.png"
+          src="/currito/cabeza.webp"
           alt="Currito, la mascota de Curro"
           width={40}
           height={40}

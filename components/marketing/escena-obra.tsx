@@ -5,7 +5,7 @@ export function EscenaObra() {
   return (
     <section className="relative isolate overflow-hidden">
       <Image
-        src="/currito/obra.jpg"
+        src="/currito/obra.webp"
         alt="Currito atiende una llamada en la obra mientras el dueño sigue trabajando"
         width={2000}
         height={1144}

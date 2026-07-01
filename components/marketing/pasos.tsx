@@ -46,7 +46,7 @@ export function Pasos() {
           </h2>
         </div>
         <Image
-          src="/currito/senala.png"
+          src="/currito/senala.webp"
           alt="Currito señalando los pasos"
           width={480}
           height={480}
