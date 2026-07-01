@@ -11,6 +11,16 @@ export const LEAD_ESTADOS = [
 
 export type LeadEstado = (typeof LEAD_ESTADOS)[number];
 
+/** Etiquetas en español de los estados (módulo puro, apto para cliente). */
+export const ESTADO_LABEL: Record<LeadEstado, string> = {
+  nuevo: "Nuevo",
+  contactado: "Contactado",
+  visita_agendada: "Visita agendada",
+  presupuestado: "Presupuestado",
+  ganado: "Ganado",
+  perdido: "Perdido",
+};
+
 export const PLANES = ["trial", "starter", "pro", "cancelado"] as const;
 export type Plan = (typeof PLANES)[number];
 

@@ -1,6 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { ESTADO_LABEL } from "@/lib/leads";
-import type { LeadEstado } from "@/lib/types";
+import { ESTADO_LABEL, type LeadEstado } from "@/lib/types";
 
 const VARIANTE: Record<
   LeadEstado,
