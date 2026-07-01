@@ -88,6 +88,50 @@ function duracion(message: Dict): number | null {
   return null;
 }
 
+const CAMPOS_LEAD = [
+  "cliente_nombre",
+  "cliente_telefono",
+  "tipo_trabajo",
+  "zona",
+  "urgencia",
+  "nombre",
+  "telefono",
+  "trabajo",
+  "ubicacion",
+];
+
+const tieneCamposLead = (o: Dict) => CAMPOS_LEAD.some((k) => k in o);
+
+/**
+ * Localiza el objeto con los datos del lead. Vapi lo deja en distintos sitios:
+ * - `analysis.structuredData` (structuredDataPlan clásico), o
+ * - `artifact/analysis/message.structuredOutputs` (Structured Outputs nuevos,
+ *   un objeto indexado por el id del output; el valor puede ser el objeto
+ *   directamente o venir envuelto en result/value/output/data).
+ */
+function extraerDatos(message: Dict): Dict {
+  const analysis = asDict(message.analysis);
+  const plano = asDict(analysis.structuredData);
+  if (tieneCamposLead(plano)) return plano;
+
+  const contenedores = [
+    asDict(message.artifact).structuredOutputs,
+    analysis.structuredOutputs,
+    message.structuredOutputs,
+  ];
+  for (const contenedor of contenedores) {
+    for (const valor of Object.values(asDict(contenedor))) {
+      const obj = asDict(valor);
+      if (tieneCamposLead(obj)) return obj;
+      for (const clave of ["result", "value", "output", "data"]) {
+        const anidado = asDict(obj[clave]);
+        if (tieneCamposLead(anidado)) return anidado;
+      }
+    }
+  }
+  return plano;
+}
+
 /**
  * Parsea el payload del webhook de Vapi. Devuelve null si no es un
  * "end-of-call-report" (ignoramos el resto de tipos de mensaje).
@@ -102,7 +146,7 @@ export function parseEndOfCallReport(raw: unknown): ParsedVapiCall | null {
   const customer = asDict(call.customer);
   const artifact = asDict(message.artifact);
   const analysis = asDict(message.analysis);
-  const datos = asDict(analysis.structuredData);
+  const datos = extraerDatos(message);
   const assistant = asDict(message.assistant);
   const phoneNumber = asDict(call.phoneNumber ?? message.phoneNumber);
 

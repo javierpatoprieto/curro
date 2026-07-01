@@ -90,6 +90,51 @@ describe("parseEndOfCallReport", () => {
     expect(r.vapiCallId).toBe("call_x");
   });
 
+  it("lee Structured Outputs nuevos (artifact.structuredOutputs indexado por id)", () => {
+    const r = parseEndOfCallReport({
+      message: {
+        type: "end-of-call-report",
+        call: { id: "c_so", customer: { number: "+34600123456" } },
+        artifact: {
+          transcript: "…",
+          structuredOutputs: {
+            "40992d8a-a64e-4d0f-9abc-000000000000": {
+              cliente_nombre: "Ana Torres",
+              cliente_telefono: "600123456",
+              tipo_trabajo: "Cambio de ventanas",
+              zona: "Chamberí",
+              urgencia: true,
+            },
+          },
+        },
+      },
+    })!;
+    expect(r.lead).toEqual({
+      cliente_nombre: "Ana Torres",
+      cliente_telefono: "600123456",
+      tipo_trabajo: "Cambio de ventanas",
+      zona: "Chamberí",
+      urgencia: true,
+    });
+  });
+
+  it("lee Structured Outputs envueltos en result", () => {
+    const r = parseEndOfCallReport({
+      message: {
+        type: "end-of-call-report",
+        call: { id: "c_so2", customer: { number: "+34611000000" } },
+        artifact: {
+          structuredOutputs: {
+            out1: { result: { tipo_trabajo: "Reforma de cocina", urgencia: false } },
+          },
+        },
+      },
+    })!;
+    expect(r.lead.tipo_trabajo).toBe("Reforma de cocina");
+    expect(r.lead.urgencia).toBe(false);
+    expect(r.lead.cliente_telefono).toBe("+34611000000");
+  });
+
   it("acepta nombres de campo alternativos (nombre, trabajo, ubicacion)", () => {
     const r = parseEndOfCallReport({
       message: {
