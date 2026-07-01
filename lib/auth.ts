@@ -7,7 +7,11 @@ const supabaseConfigurado = () =>
 
 /** Usuario autenticado (o null). Verifica contra el servidor de Supabase. */
 export async function getSessionUser() {
-  if (!supabaseConfigurado()) return null;
+  if (!supabaseConfigurado()) {
+    // Sin Supabase entramos en modo demo (import diferido para evitar ciclos).
+    const { isDemoMode, DEMO_CONTEXT } = await import("@/lib/demo");
+    return isDemoMode() ? DEMO_CONTEXT.user : null;
+  }
   const supabase = await createClient();
   const {
     data: { user },
@@ -27,7 +31,10 @@ export interface CurrentContext {
  * (ver supabase/README.md → "Enlazar un usuario a un owner").
  */
 export async function getCurrentContext(): Promise<CurrentContext | null> {
-  if (!supabaseConfigurado()) return null;
+  if (!supabaseConfigurado()) {
+    const { isDemoMode, DEMO_CONTEXT } = await import("@/lib/demo");
+    return isDemoMode() ? DEMO_CONTEXT : null;
+  }
   const supabase = await createClient();
   const {
     data: { user },

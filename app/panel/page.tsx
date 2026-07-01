@@ -1,5 +1,7 @@
-import { Inbox, Clock, CheckCircle2 } from "lucide-react";
+import { Inbox, Clock, CalendarCheck } from "lucide-react";
 import { getCurrentContext } from "@/lib/auth";
+import { getLeads, computeStats } from "@/lib/leads";
+import { EstadoBadge } from "@/components/panel/estado-badge";
 import {
   Card,
   CardContent,
@@ -8,14 +10,15 @@ import {
 } from "@/components/ui/card";
 
 export default async function PanelHome() {
-  const context = await getCurrentContext();
+  const [context, leads] = await Promise.all([getCurrentContext(), getLeads()]);
   const nombre = context?.owner.nombre?.split(" ")[0];
+  const stats = computeStats(leads);
+  const recientes = leads.slice(0, 4);
 
-  // Los contadores reales llegan en la Fase 4 (panel de leads funcional).
-  const stats = [
-    { label: "Leads este mes", valor: "—", icon: Inbox },
-    { label: "Pendientes de contactar", valor: "—", icon: Clock },
-    { label: "Visitas agendadas", valor: "—", icon: CheckCircle2 },
+  const tarjetas = [
+    { label: "Leads en total", valor: stats.total, icon: Inbox },
+    { label: "Pendientes de contactar", valor: stats.pendientes, icon: Clock },
+    { label: "Visitas agendadas", valor: stats.visitas, icon: CalendarCheck },
   ];
 
   return (
@@ -31,7 +34,7 @@ export default async function PanelHome() {
       </header>
 
       <section className="grid gap-4 sm:grid-cols-3">
-        {stats.map(({ label, valor, icon: Icon }) => (
+        {tarjetas.map(({ label, valor, icon: Icon }) => (
           <Card key={label}>
             <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-[var(--muted-foreground)]">
@@ -47,9 +50,32 @@ export default async function PanelHome() {
       </section>
 
       <Card>
-        <CardContent className="py-6 text-sm text-[var(--muted-foreground)]">
-          Aún no hay datos reales. Cuando conectemos el webhook de Vapi (Fase 2),
-          cada llamada aparecerá aquí automáticamente como un lead.
+        <CardHeader>
+          <CardTitle>Últimos leads</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-1">
+          {recientes.length === 0 ? (
+            <p className="py-4 text-sm text-[var(--muted-foreground)]">
+              Aún no hay leads. Cuando entre la primera llamada aparecerá aquí.
+            </p>
+          ) : (
+            recientes.map((lead) => (
+              <div
+                key={lead.id}
+                className="flex items-center justify-between gap-4 border-b border-[var(--border)] py-3 last:border-0"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-medium">
+                    {lead.cliente_nombre ?? "Sin nombre"}
+                  </p>
+                  <p className="truncate text-sm text-[var(--muted-foreground)]">
+                    {lead.tipo_trabajo ?? "—"} · {lead.zona ?? "—"}
+                  </p>
+                </div>
+                <EstadoBadge estado={lead.estado} />
+              </div>
+            ))
+          )}
         </CardContent>
       </Card>
     </div>

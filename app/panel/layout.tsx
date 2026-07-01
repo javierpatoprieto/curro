@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { PhoneCall, LogOut } from "lucide-react";
 import { getSessionUser, getCurrentContext } from "@/lib/auth";
+import { isDemoMode } from "@/lib/demo";
 import { PanelNav } from "@/components/panel/panel-nav";
 import { Button } from "@/components/ui/button";
 
@@ -48,6 +49,12 @@ export default async function PanelLayout({
       </aside>
 
       <div className="flex flex-1 flex-col">
+        {isDemoMode() && (
+          <div className="border-b border-amber-500/30 bg-amber-500/10 px-6 py-2 text-center text-sm font-medium text-amber-700 dark:text-amber-400">
+            ⚠️ MODO DEMO — datos de ejemplo. Conecta Supabase para ver tus datos
+            reales.
+          </div>
+        )}
         {!context && (
           <div className="border-b border-[var(--border)] bg-[var(--secondary)] px-6 py-3 text-sm text-[var(--secondary-foreground)]">
             Tu usuario aún no está enlazado a ningún negocio. Enlázalo por email
