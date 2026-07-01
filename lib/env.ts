@@ -32,6 +32,10 @@ const schema = z.object({
   // --- Pagos (Stripe) ---
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  // IDs de precio (Price) de cada plan en Stripe.
+  STRIPE_PRICE_STARTER: z.string().optional(),
+  STRIPE_PRICE_PRO: z.string().optional(),
+  STRIPE_PRICE_PREMIUM: z.string().optional(),
 
   // --- App ---
   APP_URL: z.string().url().optional(),

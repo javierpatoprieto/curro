@@ -21,7 +21,13 @@ export const ESTADO_LABEL: Record<LeadEstado, string> = {
   perdido: "Perdido",
 };
 
-export const PLANES = ["trial", "starter", "pro", "cancelado"] as const;
+export const PLANES = [
+  "trial",
+  "starter",
+  "pro",
+  "premium",
+  "cancelado",
+] as const;
 export type Plan = (typeof PLANES)[number];
 
 export type CanalMensaje = "whatsapp" | "email";

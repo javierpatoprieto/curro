@@ -57,8 +57,11 @@ export default async function PanelLayout({
         )}
         {!context && (
           <div className="border-b border-[var(--border)] bg-[var(--secondary)] px-6 py-3 text-sm text-[var(--secondary-foreground)]">
-            Tu usuario aún no está enlazado a ningún negocio. Enlázalo por email
-            (ver <code>supabase/README.md</code>) o completa el alta en la Fase 5.
+            Aún no tienes un negocio configurado.{" "}
+            <a href="/onboarding" className="font-semibold underline">
+              Da de alta tu negocio
+            </a>{" "}
+            para empezar.
           </div>
         )}
         <main className="flex-1 p-6 sm:p-8">{children}</main>

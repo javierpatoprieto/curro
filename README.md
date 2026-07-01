@@ -81,7 +81,7 @@ Construcción por fases:
 - [x] **Fase 2** — Webhook de Vapi (parser + tests). Ver [docs/vapi.md](./docs/vapi.md).
 - [x] **Fase 3** — WhatsApp + email al crear lead (adaptadores + mocks, reintentos, `messages`).
 - [x] **Fase 4** — Panel de leads: lista con filtros, detalle con transcripción, cambio de estado, contador.
-- [ ] Fase 5 — Onboarding + Stripe.
+- [x] **Fase 5** — Onboarding (alta + assistant Vapi) y Stripe (Checkout + webhook activa/desactiva).
 - [ ] Fase 6 — Cumplimiento y pulido.
 
 ## Despliegue
