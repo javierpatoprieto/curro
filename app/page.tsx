@@ -40,7 +40,7 @@ export default function Home() {
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-16 px-6 py-20">
       <section className="flex flex-col items-center gap-6 text-center">
-        <Badge variant="secondary">Fase 0 · Scaffold listo ✅</Badge>
+        <Badge variant="secondary">Fase 1 · Auth y panel base ✅</Badge>
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
           AtiendeReformas
         </h1>
@@ -49,14 +49,14 @@ export default function Home() {
           hogar. Deja de perder presupuestos por no coger el teléfono.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
-          <a className={buttonVariants({ size: "lg" })} href="#como-funciona">
-            Cómo funciona
+          <a className={buttonVariants({ size: "lg" })} href="/login">
+            Acceder al panel
           </a>
           <a
             className={buttonVariants({ variant: "outline", size: "lg" })}
-            href="https://github.com"
+            href="#como-funciona"
           >
-            Panel (próximamente)
+            Cómo funciona
           </a>
         </div>
       </section>
