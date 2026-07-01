@@ -136,6 +136,45 @@
   -webkit-box-decoration-break: clone;
 }
 
+/* Ondas de voz (Curro hablando) */
+@keyframes curro-wave {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.wave-bar {
+  animation: curro-wave 0.9s ease-in-out infinite;
+  transform-origin: bottom;
+}
+
+/* Entrada de cada fase de la demo del hero */
+@keyframes curro-phase-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.phase-in {
+  animation: curro-phase-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phase-in,
+  .wave-bar {
+    animation: none;
+  }
+}
+
 /* Retícula tipo plano de obra */
 .blueprint {
   background-image:

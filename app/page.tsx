@@ -12,8 +12,8 @@ import {
   ShieldCheck,
   Check,
   ArrowRight,
-  Flame,
 } from "lucide-react";
+import { HeroDemo } from "@/components/marketing/hero-demo";
 
 const pasos = [
   {
@@ -235,50 +235,12 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Maqueta: llamada + aviso de WhatsApp */}
+          {/* Demo animada: recorre el flujo real de Curro */}
           <div
-            className="animate-rise relative mx-auto w-full max-w-sm"
+            className="animate-rise relative"
             style={{ animationDelay: "400ms" }}
           >
-            <div className="rotate-2 rounded-[2rem] border border-ink/10 bg-ink p-3 shadow-2xl">
-              <div className="rounded-[1.6rem] bg-cream p-5">
-                {/* Llamada entrante */}
-                <div className="flex items-center justify-between text-xs text-ink/50">
-                  <span>9:41</span>
-                  <span className="inline-flex items-center gap-1">
-                    <span className="size-2 animate-pulse rounded-full bg-emerald-500" />
-                    En directo
-                  </span>
-                </div>
-                <div className="mt-6 text-center">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-ink/40">
-                    Llamada entrante
-                  </p>
-                  <p className="mt-1 font-display text-2xl font-bold">
-                    +34 6·· ··· ···
-                  </p>
-                  <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-medium text-cream">
-                    <PhoneCall className="size-4 text-brand" />
-                    Curro está atendiendo…
-                  </div>
-                </div>
-
-                {/* Aviso de WhatsApp al dueño */}
-                <div className="mt-6 rounded-2xl border border-emerald-600/20 bg-emerald-50 p-4">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700">
-                    <MessageCircle className="size-4" />
-                    WhatsApp · nuevo lead
-                  </div>
-                  <p className="mt-2 text-sm font-semibold">María López</p>
-                  <p className="text-sm text-ink/70">
-                    Reforma de baño completo · Chamberí
-                  </p>
-                  <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-brand/10 px-2 py-0.5 text-xs font-semibold text-brand-strong">
-                    <Flame className="size-3" /> Urgente
-                  </span>
-                </div>
-              </div>
-            </div>
+            <HeroDemo />
           </div>
         </div>
       </section>
