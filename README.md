@@ -1,4 +1,4 @@
-# AtiendeReformas
+# Curro
 
 Recepcionista con **IA** para pequeñas empresas de reformas y multiservicios del
 hogar en España. Cuando el dueño está en obra y no coge el teléfono, un agente de

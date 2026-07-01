@@ -4,7 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { parseEndOfCallReport, type ParsedVapiCall } from "@/lib/vapi/parser";
 import { verifyVapiSecret } from "@/lib/vapi/verify";
 import { notificarNuevoLead } from "@/lib/messaging/notify";
-import { contarLlamadasMes, limiteDe } from "@/lib/usage";
+import { contarLlamadasMes, dentroDelLimite } from "@/lib/usage";
+import { rateLimit } from "@/lib/ratelimit";
 import type { Plan } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -20,6 +21,9 @@ const supabaseListo = () =>
  * Respondemos siempre 200 a eventos válidos para que Vapi no reintente en bucle.
  */
 export async function POST(request: NextRequest) {
+  const bloqueo = rateLimit(request, "vapi");
+  if (bloqueo) return bloqueo;
+
   const rawBody = await request.text();
 
   // 1) Verificar el secreto compartido.
@@ -87,6 +91,13 @@ async function persistir(payload: unknown, parsed: ParsedVapiCall) {
     if (existente) return ok({ duplicate: true, leadId: existente.lead_id });
   }
 
+  // Límite del plan: contamos ANTES de insertar el call_event de esta llamada,
+  // así `usadas` son las llamadas previas del mes y `dentroDelLimite` (estricto)
+  // deja pasar exactamente `limite` notificaciones. Guardamos el lead igualmente
+  // (no perdemos datos); solo pausamos las notificaciones al superar el límite.
+  const usadas = await contarLlamadasMes(admin, business.id);
+  const dentroLimite = dentroDelLimite(usadas, business.plan as Plan);
+
   const { data: lead, error: leadError } = await admin
     .from("leads")
     .insert({
@@ -115,13 +126,9 @@ async function persistir(payload: unknown, parsed: ParsedVapiCall) {
   if (eventError) throw eventError;
 
   // Notificar: WhatsApp al cliente + aviso al dueño (WhatsApp + email).
-  // Solo si el negocio está activo. Los fallos de envío no tumban el webhook:
-  // el lead ya está guardado y cada envío queda registrado en `messages`.
-  // Control de límite de llamadas por plan: si se supera, guardamos el lead
-  // igualmente (no perdemos datos) pero no gastamos en notificaciones.
-  const usadas = await contarLlamadasMes(admin, business.id);
-  const dentroLimite = usadas <= limiteDe(business.plan as Plan);
-
+  // Solo si el negocio está activo y dentro del límite del plan. Los fallos de
+  // envío no tumban el webhook: el lead ya está guardado y cada envío queda
+  // registrado en `messages`.
   let notificados = 0;
   if (business.activo !== false && dentroLimite) {
     const { data: owners } = await admin

@@ -3,14 +3,21 @@ import type Stripe from "stripe";
 import { env } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe, stripeConfigurado } from "@/lib/stripe/client";
-import { mapaPreciosAPlan } from "@/lib/stripe/plans";
+import { mapaPreciosAPlan, type PlanPago } from "@/lib/stripe/plans";
 import { resolverCuenta, planDesdePrice } from "@/lib/stripe/activation";
+import { crearAssistant } from "@/lib/vapi/assistant";
+import { rateLimit } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 
 type Admin = ReturnType<typeof createAdminClient>;
 
+const PLANES_PAGO_VALIDOS = new Set<PlanPago>(["starter", "pro", "premium"]);
+
 export async function POST(request: NextRequest) {
+  const bloqueo = rateLimit(request, "stripe");
+  if (bloqueo) return bloqueo;
+
   if (!stripeConfigurado()) {
     // Sin Stripe configurado no hay nada que procesar (dev/demo).
     if (env.isProd) {
@@ -77,12 +84,47 @@ async function onCheckoutCompleted(
   const businessId = session.metadata?.business_id;
   if (!businessId) return;
 
-  const plan = session.metadata?.plan ?? "pro";
+  // El plan lo fija nuestro propio checkout en la metadata; validamos por si
+  // acaso y, si no es uno conocido, no tocamos el plan (dejamos el actual).
+  const metaPlan = session.metadata?.plan;
+  const plan =
+    metaPlan && PLANES_PAGO_VALIDOS.has(metaPlan as PlanPago)
+      ? (metaPlan as PlanPago)
+      : undefined;
+
+  // Traemos el negocio para (a) crear su assistant de Vapi si aún no existe y
+  // (b) alimentar el guion con su personalización. Solo llegamos aquí tras un
+  // pago confirmado, así que es el momento correcto de provisionar el assistant.
+  const { data: biz } = await admin
+    .from("businesses")
+    .select(
+      "vapi_assistant_id, nombre, ciudad, servicios, zonas, horario, tono, preguntas_clave, conocimiento, max_duracion_seg",
+    )
+    .eq("id", businessId)
+    .maybeSingle();
+  if (!biz) return;
+
+  let assistantId = biz.vapi_assistant_id;
+  if (!assistantId) {
+    assistantId = await crearAssistant({
+      negocio: biz.nombre,
+      ciudad: biz.ciudad,
+      servicios: biz.servicios,
+      zonas: biz.zonas,
+      horario: biz.horario,
+      tono: biz.tono,
+      preguntas_clave: biz.preguntas_clave,
+      conocimiento: biz.conocimiento,
+      maxDuracionSeg: biz.max_duracion_seg,
+    });
+  }
+
   await admin
     .from("businesses")
     .update({
-      plan,
+      ...(plan ? { plan } : {}),
       activo: true,
+      vapi_assistant_id: assistantId,
       stripe_customer_id:
         typeof session.customer === "string" ? session.customer : null,
       stripe_subscription_id:
