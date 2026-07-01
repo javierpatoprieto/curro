@@ -80,6 +80,71 @@ export default async function OnboardingPage({
           </div>
         </div>
 
+        <details className="rounded-xl border border-[var(--border)] p-4">
+          <summary className="cursor-pointer font-medium">
+            Personaliza a Curro para tu negocio (opcional)
+          </summary>
+          <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+            Cuanto más le cuentes, mejor atenderá tus llamadas. Puedes cambiarlo
+            luego en Ajustes.
+          </p>
+          <div className="mt-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="servicios">Servicios que ofreces</Label>
+              <textarea
+                id="servicios"
+                name="servicios"
+                rows={2}
+                className="w-full rounded-md border border-[var(--input)] bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                placeholder="Reformas integrales, baños, cocinas, pintura, fontanería… (y lo que NO haces)"
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="zonas">Zonas que cubres</Label>
+                <Input id="zonas" name="zonas" placeholder="Madrid capital y alrededores" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="horario">Horario de atención</Label>
+                <Input id="horario" name="horario" placeholder="L-V 9:00-18:00" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tono">Tono de Curro</Label>
+              <select
+                id="tono"
+                name="tono"
+                defaultValue="cercano"
+                className="h-9 w-full rounded-md border border-[var(--input)] bg-transparent px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+              >
+                <option value="cercano">Cercano</option>
+                <option value="profesional">Profesional</option>
+                <option value="comercial">Comercial</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="preguntas_clave">Preguntas que debe hacer siempre</Label>
+              <textarea
+                id="preguntas_clave"
+                name="preguntas_clave"
+                rows={2}
+                className="w-full rounded-md border border-[var(--input)] bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                placeholder="¿Es vivienda o local? ¿Metros aproximados? ¿Para cuándo lo necesita?"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="conocimiento">Base de conocimiento / FAQ</Label>
+              <textarea
+                id="conocimiento"
+                name="conocimiento"
+                rows={3}
+                className="w-full rounded-md border border-[var(--input)] bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                placeholder="Información que Curro puede usar para responder dudas (garantías, financiación, tiempos, etc.)"
+              />
+            </div>
+          </div>
+        </details>
+
         <fieldset className="space-y-3">
           <legend className="mb-1 text-sm font-medium">Elige tu plan</legend>
           <div className="grid gap-3 sm:grid-cols-3">

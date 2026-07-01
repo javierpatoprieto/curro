@@ -22,6 +22,16 @@ export const DEMO_BUSINESS: Business = {
   activo: true,
   stripe_customer_id: null,
   stripe_subscription_id: null,
+  servicios:
+    "Reformas integrales, baños, cocinas, pintura y fontanería. No hacemos tejados ni piscinas.",
+  zonas: "Madrid capital y municipios del sur.",
+  horario: "Lunes a viernes de 9:00 a 18:00.",
+  tono: "cercano",
+  preguntas_clave:
+    "¿Es vivienda o local? ¿Metros aproximados? ¿Para cuándo lo necesita?",
+  conocimiento:
+    "Ofrecemos 2 años de garantía en todas las obras y presupuesto sin compromiso tras la visita.",
+  max_duracion_seg: 300,
   created_at: "2026-01-15T09:00:00.000Z",
   updated_at: "2026-06-20T12:00:00.000Z",
 };

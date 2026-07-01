@@ -1,35 +1,96 @@
 import { env } from "@/lib/env";
 
-export interface CrearAssistantParams {
+/** Configuración personalizable por empresa que alimenta el guion del assistant. */
+export interface AssistantConfig {
   negocio: string;
-  ciudad: string | null;
+  ciudad?: string | null;
+  servicios?: string | null;
+  zonas?: string | null;
+  horario?: string | null;
+  tono?: string | null;
+  preguntas_clave?: string | null;
+  conocimiento?: string | null;
+  maxDuracionSeg?: number | null;
 }
 
-/** Guion (system prompt) en español, parametrizado por negocio. Ver docs/vapi.md. */
-export function guion(negocio: string, ciudad: string | null): string {
+const TONOS: Record<string, string> = {
+  cercano: "cercano y de confianza, como un vecino que sabe del oficio",
+  profesional: "profesional, claro y correcto",
+  comercial: "amable y comercial, orientado a cerrar la visita",
+};
+
+const clean = (v?: string | null) => (v && v.trim() ? v.trim() : null);
+
+/** Guion (system prompt) en español, personalizado por empresa. Ver docs/vapi.md. */
+export function guion(config: AssistantConfig): string {
+  const { negocio } = config;
+  const ciudad = clean(config.ciudad);
   const donde = ciudad ? ` en ${ciudad}` : "";
-  return [
-    `Eres «Curro», la recepcionista virtual de ${negocio}, una empresa de reformas y multiservicios del hogar${donde}. Hablas español de España, con tono cercano, claro y profesional. Frases cortas.`,
+  const tono = TONOS[clean(config.tono) ?? ""] ?? "cercano, claro y profesional";
+
+  const lineas: string[] = [
+    `Eres «Curro», la recepcionista virtual de ${negocio}, una empresa de reformas y multiservicios del hogar${donde}. Hablas español de España, con tono ${tono}. Frases cortas.`,
     "",
     "Objetivo: atender la llamada cuando el dueño no puede, cualificar al cliente y tomar sus datos para devolverle la llamada y agendar una visita.",
     "",
     "Reglas:",
     "- Preséntate SIEMPRE al inicio como asistente virtual e informa de que la llamada se graba (aviso legal obligatorio).",
     "- Averigua y confirma: nombre del cliente, tipo de trabajo, zona o dirección aproximada, y si es urgente.",
+    "- Si el cliente te da su teléfono, tómalo; si no, no insistas.",
     "- No des precios ni presupuestos: explica que un técnico le llamará para valorarlo.",
-    "- Sé breve. En cuanto tengas los datos, despídete y confirma que le contactarán.",
-  ].join("\n");
+    "- Sé breve. En cuanto tengas los datos, despídete y confirma que le contactarán en breve.",
+  ];
+
+  const servicios = clean(config.servicios);
+  if (servicios) {
+    lineas.push(
+      "",
+      `Servicios que ofrece ${negocio} (si piden algo fuera de esto, dilo con tacto y ofrece tomar los datos igualmente):`,
+      servicios,
+    );
+  }
+
+  const zonas = clean(config.zonas);
+  if (zonas) lineas.push("", `Zonas que cubre: ${zonas}.`);
+
+  const horario = clean(config.horario);
+  if (horario) lineas.push("", `Horario de atención: ${horario}.`);
+
+  const preguntas = clean(config.preguntas_clave);
+  if (preguntas) {
+    lineas.push("", "Pregunta siempre, además, lo siguiente:", preguntas);
+  }
+
+  const conocimiento = clean(config.conocimiento);
+  if (conocimiento) {
+    lineas.push(
+      "",
+      "Base de conocimiento del negocio (úsala para responder dudas del cliente; si algo no está aquí, di que un técnico lo confirmará):",
+      conocimiento,
+    );
+  }
+
+  return lineas.join("\n");
 }
 
-export function buildAssistantConfig(negocio: string, ciudad: string | null) {
+const DURACION_POR_DEFECTO = 300; // 5 minutos de tope por llamada
+
+const appUrl = () =>
+  env.APP_URL || env.NEXT_PUBLIC_APP_URL || "https://curro-kappa.vercel.app";
+
+export function buildAssistantConfig(config: AssistantConfig) {
+  const { negocio } = config;
   return {
     name: `Curro · ${negocio}`,
     firstMessage: `${negocio}, le atiende Curro, su asistente virtual. Le aviso de que esta llamada queda grabada. ¿En qué puedo ayudarle?`,
+    // Control de coste: cortamos la llamada si se alarga demasiado.
+    maxDurationSeconds: config.maxDuracionSeg ?? DURACION_POR_DEFECTO,
     model: {
       provider: "openai",
       model: "gpt-4o",
-      messages: [{ role: "system", content: guion(negocio, ciudad) }],
+      messages: [{ role: "system", content: guion(config) }],
     },
+    voice: { provider: "11labs", voiceId: "sarah", model: "eleven_turbo_v2_5" },
     transcriber: { provider: "deepgram", model: "nova-2", language: "es" },
     analysisPlan: {
       summaryPlan: { enabled: true },
@@ -48,31 +109,56 @@ export function buildAssistantConfig(negocio: string, ciudad: string | null) {
         },
       },
     },
+    // Cablea el webhook para que el lead entre solo al colgar.
+    server: env.VAPI_WEBHOOK_SECRET
+      ? {
+          url: `${appUrl()}/api/webhooks/vapi`,
+          headers: { "x-vapi-secret": env.VAPI_WEBHOOK_SECRET },
+        }
+      : { url: `${appUrl()}/api/webhooks/vapi` },
   };
 }
+
+const vapiActivo = () => !env.mockProviders && Boolean(env.VAPI_API_KEY);
 
 /**
  * Crea el assistant de Vapi para un negocio y devuelve su id.
  * En modo mock (o sin API key) devuelve un id simulado.
  */
-export async function crearAssistant({
-  negocio,
-  ciudad,
-}: CrearAssistantParams): Promise<string> {
-  if (!env.mockProviders && env.VAPI_API_KEY) {
-    const res = await fetch("https://api.vapi.ai/assistant", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${env.VAPI_API_KEY}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(buildAssistantConfig(negocio, ciudad)),
-    });
-    if (!res.ok) {
-      throw new Error(`Vapi ${res.status}: ${await res.text()}`);
-    }
-    const json = (await res.json()) as { id: string };
-    return json.id;
+export async function crearAssistant(config: AssistantConfig): Promise<string> {
+  if (!vapiActivo()) return `asst_mock_${Date.now()}`;
+
+  const res = await fetch("https://api.vapi.ai/assistant", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.VAPI_API_KEY}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(buildAssistantConfig(config)),
+  });
+  if (!res.ok) throw new Error(`Vapi ${res.status}: ${await res.text()}`);
+  const json = (await res.json()) as { id: string };
+  return json.id;
+}
+
+/**
+ * Re-sincroniza un assistant existente con la config actual del negocio
+ * (cuando el dueño edita sus ajustes). No-op en modo mock.
+ */
+export async function actualizarAssistant(
+  assistantId: string,
+  config: AssistantConfig,
+): Promise<void> {
+  if (!vapiActivo() || !assistantId || assistantId.startsWith("asst_mock_")) {
+    return;
   }
-  return `asst_mock_${Date.now()}`;
+  const res = await fetch(`https://api.vapi.ai/assistant/${assistantId}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${env.VAPI_API_KEY}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(buildAssistantConfig(config)),
+  });
+  if (!res.ok) throw new Error(`Vapi ${res.status}: ${await res.text()}`);
 }

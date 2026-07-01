@@ -45,6 +45,14 @@ export interface Business {
   activo: boolean;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
+  // Personalización por empresa (se inyecta en el guion del assistant).
+  servicios: string | null;
+  zonas: string | null;
+  horario: string | null;
+  tono: string | null;
+  preguntas_clave: string | null;
+  conocimiento: string | null;
+  max_duracion_seg: number | null;
   created_at: string;
   updated_at: string;
 }
