@@ -3,6 +3,7 @@ import { env } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { parseEndOfCallReport, type ParsedVapiCall } from "@/lib/vapi/parser";
 import { verifyVapiSecret } from "@/lib/vapi/verify";
+import { notificarNuevoLead } from "@/lib/messaging/notify";
 
 export const runtime = "nodejs";
 
@@ -111,9 +112,34 @@ async function persistir(payload: unknown, parsed: ParsedVapiCall) {
   });
   if (eventError) throw eventError;
 
-  // TODO (Fase 3): disparar WhatsApp al cliente + aviso al dueño.
+  // Notificar: WhatsApp al cliente + aviso al dueño (WhatsApp + email).
+  // Solo si el negocio está activo. Los fallos de envío no tumban el webhook:
+  // el lead ya está guardado y cada envío queda registrado en `messages`.
+  let notificados = 0;
+  if (business.activo !== false) {
+    const { data: owners } = await admin
+      .from("owners")
+      .select("nombre, email, whatsapp")
+      .eq("business_id", business.id);
 
-  return ok({ leadId: lead.id, businessId: business.id });
+    try {
+      const res = await notificarNuevoLead({
+        admin,
+        business: {
+          id: business.id,
+          nombre: business.nombre,
+          cal_link: business.cal_link,
+        },
+        lead: { id: lead.id, ...parsed.lead },
+        owners: owners ?? [],
+      });
+      notificados = res.enviados;
+    } catch (e) {
+      console.error("[vapi] error notificando el lead:", e);
+    }
+  }
+
+  return ok({ leadId: lead.id, businessId: business.id, notificados });
 }
 
 type Admin = ReturnType<typeof createAdminClient>;
@@ -122,7 +148,7 @@ async function findBusiness(admin: Admin, parsed: ParsedVapiCall) {
   if (parsed.assistantId) {
     const { data } = await admin
       .from("businesses")
-      .select("id, activo")
+      .select("id, activo, nombre, cal_link")
       .eq("vapi_assistant_id", parsed.assistantId)
       .maybeSingle();
     if (data) return data;
@@ -130,7 +156,7 @@ async function findBusiness(admin: Admin, parsed: ParsedVapiCall) {
   if (parsed.calledNumber) {
     const { data } = await admin
       .from("businesses")
-      .select("id, activo")
+      .select("id, activo, nombre, cal_link")
       .eq("telefono_entrante", parsed.calledNumber)
       .maybeSingle();
     if (data) return data;

@@ -26,6 +26,8 @@ const schema = z.object({
 
   // --- Email (Resend) ---
   RESEND_API_KEY: z.string().optional(),
+  // Remitente de los emails (debe ser un dominio verificado en Resend).
+  EMAIL_FROM: z.string().optional(),
 
   // --- Pagos (Stripe) ---
   STRIPE_SECRET_KEY: z.string().optional(),
