@@ -84,6 +84,9 @@
   --color-fresh: #14b8a6; /* teal fresco: acentos e iconos */
   --color-fresh-strong: #0c7f74; /* teal legible sobre fondo claro */
   --color-kraft: #e2f3f0; /* menta suave para secciones alternas */
+  --color-casco: #ffc53d; /* amarillo casco: energía, badges, subrayados */
+  --color-casco-strong: #d99a00; /* amarillo legible sobre fondo claro */
+  --color-mono: #2f6bff; /* azul mono: acento profundo puntual */
 }
 
 @layer base {
@@ -189,4 +192,58 @@
       transparent 1px
     );
   background-size: 30px 30px;
+}
+
+/* Retícula tipo plano de obra en claro (sobre secciones oscuras) */
+.blueprint-dark {
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in oklab, var(--color-cream) 6%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--color-cream) 6%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 30px 30px;
+}
+
+/* Sección oscura "escenario de obra" */
+.section-dark {
+  background-color: var(--color-ink);
+  color: var(--color-cream);
+}
+
+/* Titular display pesado y compacto */
+.headline {
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+/* Scroll-reveal: estado inicial + revelado al entrar en viewport.
+   Se activa añadiendo la clase `.is-visible` (IntersectionObserver). */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
