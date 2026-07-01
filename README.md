@@ -77,8 +77,8 @@ Detalles en [`supabase/README.md`](./supabase/README.md).
 Construcción por fases:
 
 - [x] **Fase 0** — Scaffold: proyecto, Supabase + RLS, seed, tests, este README.
-- [ ] Fase 1 — Auth (magic link) y panel base.
-- [ ] Fase 2 — Webhook de Vapi (parser + tests).
+- [x] **Fase 1** — Auth (magic link) y panel base.
+- [x] **Fase 2** — Webhook de Vapi (parser + tests). Ver [docs/vapi.md](./docs/vapi.md).
 - [ ] Fase 3 — WhatsApp + email al crear lead.
 - [ ] Fase 4 — Panel de leads funcional.
 - [ ] Fase 5 — Onboarding + Stripe.
