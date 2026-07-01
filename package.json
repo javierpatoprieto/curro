@@ -1,8 +1,8 @@
 {
-  "name": "atiendereformas",
+  "name": "curro",
   "version": "0.1.0",
   "private": true,
-  "description": "Recepcionista con IA para empresas de reformas y multiservicios del hogar (SaaS multi-tenant).",
+  "description": "Curro — recepcionista con IA para empresas de reformas y multiservicios del hogar (SaaS multi-tenant).",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

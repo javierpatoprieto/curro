@@ -1,5 +1,5 @@
 -- =============================================================================
--- AtiendeReformas — Esquema multi-tenant con Row Level Security (RLS)
+-- Curro — Esquema multi-tenant con Row Level Security (RLS)
 -- =============================================================================
 -- Aislamiento: TODO se filtra por business_id. Un negocio nunca ve datos de otro.
 -- El acceso de usuario pasa por RLS (anon key). Los webhooks usan service_role

@@ -48,12 +48,28 @@ Resumen de las medidas de seguridad del MVP y qué revisar antes de producción.
 - Páginas de **privacidad** y **aviso legal** (plantillas a revisar por un
   abogado).
 - **Límite de llamadas por plan** (`lib/usage.ts`): al superarlo, se guarda el
-  lead pero se pausan las notificaciones (control de coste).
+  lead pero se pausan las notificaciones (control de coste). El webhook cuenta
+  las llamadas del mes y aplica `dentroDelLimite` (una única fuente de verdad).
+
+## Provisión de recursos tras el pago
+
+- El onboarding crea el negocio **inactivo** (`activo: false`) y **sin assistant
+  de Vapi**. El assistant se crea y la cuenta se activa en el webhook de Stripe
+  (`checkout.session.completed`), solo cuando el pago se confirma. Así un
+  onboarding abandonado no deja assistants huérfanos (coste) ni cuentas activas
+  gratis. El onboarding también evita negocios duplicados por usuario.
+
+## Configuración obligatoria en producción
+
+- `lib/env.ts` **rompe al arrancar** en producción si faltan las variables
+  imprescindibles de Supabase (URL, anon key, service_role), en vez de fallar
+  tarde con un 500 en mitad de un webhook.
 
 ## Pendiente antes de producción
 
 - [ ] Revisar las políticas RLS con dos tenants reales (test de fuga).
 - [ ] Rotar y guardar secretos en el gestor de Vercel/Supabase.
-- [ ] Rate limiting en los webhooks públicos.
+- [x] Rate limiting en los webhooks públicos (`lib/ratelimit.ts`, best-effort en
+      memoria por instancia; para una cuota global exacta, mover a Upstash/Redis).
 - [ ] Verificación de firma del webhook de WhatsApp cuando se implemente.
 - [ ] Revisión legal de privacidad y aviso legal.

@@ -69,6 +69,25 @@ export const env = {
   mockProviders: raw.MOCK_PROVIDERS !== "false",
 };
 
+// --- Fail-fast en producción -----------------------------------------------
+// La app no funciona sin Supabase, así que en prod exigimos lo imprescindible.
+// Si falta algo, rompemos al arrancar (mejor que devolver 500 en un webhook a
+// mitad de una llamada). En el build de Vercel estas variables ya están.
+if (env.isProd) {
+  const imprescindibles = [
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+  ] as const;
+  const faltan = imprescindibles.filter((k) => !raw[k]);
+  if (faltan.length > 0) {
+    throw new Error(
+      `[env] Faltan variables imprescindibles en producción: ${faltan.join(", ")}. ` +
+        "Configúralas en el proyecto de Vercel antes de desplegar.",
+    );
+  }
+}
+
 /** Lee una variable obligatoria en el punto de uso, con error claro en español. */
 export function requireEnv(key: keyof typeof raw): string {
   const value = raw[key];
