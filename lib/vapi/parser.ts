@@ -123,8 +123,9 @@ function extraerDatos(message: Dict): Dict {
     for (const valor of Object.values(asDict(contenedor))) {
       const obj = asDict(valor);
       if (tieneCamposLead(obj)) return obj;
-      for (const clave of ["result", "value", "output", "data"]) {
-        const anidado = asDict(obj[clave]);
+      // El objeto puede venir envuelto bajo cualquier clave; escaneamos un nivel.
+      for (const anidadoRaw of Object.values(obj)) {
+        const anidado = asDict(anidadoRaw);
         if (tieneCamposLead(anidado)) return anidado;
       }
     }
