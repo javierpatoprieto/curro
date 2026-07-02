@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
-import { Loader2, MailCheck } from "lucide-react";
+import { Loader2, MailCheck, Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { GoogleButton } from "@/components/auth/google-button";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ const supabaseListo = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
 function RegistroForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [password2, setPassword2] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
   const [enviado, setEnviado] = useState(false);
@@ -32,10 +32,6 @@ function RegistroForm() {
 
     if (password.length < 8) {
       setError("La contraseña debe tener al menos 8 caracteres.");
-      return;
-    }
-    if (password !== password2) {
-      setError("Las contraseñas no coinciden.");
       return;
     }
     if (!supabaseListo) {
@@ -120,27 +116,33 @@ function RegistroForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                autoComplete="new-password"
-                placeholder="Mínimo 8 caracteres"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password2">Repite la contraseña</Label>
-              <Input
-                id="password2"
-                type="password"
-                required
-                autoComplete="new-password"
-                placeholder="Otra vez"
-                value={password2}
-                onChange={(e) => setPassword2(e.target.value)}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPw ? "text" : "password"}
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                  placeholder="Mínimo 8 caracteres"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw((v) => !v)}
+                  aria-label={
+                    showPw ? "Ocultar contraseña" : "Mostrar contraseña"
+                  }
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                >
+                  {showPw ? (
+                    <EyeOff className="size-4" />
+                  ) : (
+                    <Eye className="size-4" />
+                  )}
+                </button>
+              </div>
             </div>
             {error && (
               <p className="text-sm text-[var(--destructive)]">{error}</p>
