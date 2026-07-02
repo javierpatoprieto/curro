@@ -44,68 +44,69 @@ const planes = [
 
 export function Precios() {
   return (
-    <section id="precios" className="mx-auto max-w-6xl px-6 py-24">
-      <div className="mx-auto max-w-2xl text-center">
-        <p className="text-sm font-semibold uppercase tracking-wide text-fresh-strong">
-          Precios
-        </p>
-        <h2 className="mt-2 headline text-4xl sm:text-5xl">
-          Un presupuesto captado ya lo paga.
-        </h2>
-        <p className="mt-4 text-lg text-ink/60">
-          7 días de prueba gratis. Sin permanencia. Precios sin IVA.
-        </p>
-      </div>
+    <section id="precios" className="bg-hueso">
+      <div className="mx-auto max-w-6xl px-5 py-20 lg:py-24">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="mono inline-block border-[3px] border-black bg-casco px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-black">
+            ◍ Precios
+          </span>
+          <h2 className="headline mt-5 text-4xl text-black sm:text-5xl lg:text-6xl">
+            Un presupuesto captado ya lo paga.
+          </h2>
+          <p className="mt-5 text-lg font-medium text-black/70">
+            7 días de prueba gratis. Sin permanencia. Precios sin IVA.
+          </p>
+        </div>
 
-      <div className="mx-auto mt-16 grid max-w-5xl items-center gap-6 lg:grid-cols-3">
-        {planes.map((plan) => (
-          <div
-            key={plan.nombre}
-            className={
-              plan.destacado
-                ? "relative rounded-3xl bg-ink p-8 text-cream shadow-2xl ring-1 ring-brand lg:scale-[1.04]"
-                : "relative rounded-3xl border border-ink/10 bg-white p-8"
-            }
-          >
-            {plan.destacado && (
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand px-3 py-1 text-xs font-bold uppercase tracking-wide text-white shadow-sm">
-                El más elegido
-              </span>
-            )}
-            <h3 className="font-display text-xl font-extrabold">{plan.nombre}</h3>
-            <p
-              className={`mt-1 text-sm ${plan.destacado ? "text-cream/60" : "text-ink/60"}`}
+        <div className="mx-auto mt-16 grid max-w-5xl items-start gap-6 lg:grid-cols-3">
+          {planes.map((plan) => (
+            <div
+              key={plan.nombre}
+              className={`nb-card rounded-none p-8 ${
+                plan.destacado ? "lg:-mt-4" : ""
+              }`}
+              style={
+                plan.destacado
+                  ? { boxShadow: "8px 8px 0 var(--color-coral)" }
+                  : undefined
+              }
             >
-              {plan.gancho}
-            </p>
-            <p className="mt-6 flex items-baseline gap-1">
-              <span className="font-display text-5xl font-extrabold">
-                {plan.precio}€
-              </span>
-              <span className={plan.destacado ? "text-cream/50" : "text-ink/50"}>
-                /mes
-              </span>
-            </p>
-            <Link
-              href="/registro"
-              className={`mt-6 w-full ${plan.destacado ? btnPrimary : btnGhost}`}
-            >
-              Probar gratis
-            </Link>
-            <ul className="mt-8 space-y-3 text-sm">
-              {plan.incluye.map((item) => (
-                <li key={item} className="flex items-start gap-3">
-                  <Check
-                    className={`mt-0.5 size-4 shrink-0 ${plan.destacado ? "text-fresh" : "text-fresh-strong"}`}
-                  />
-                  <span className={plan.destacado ? "text-cream/80" : "text-ink/80"}>
-                    {item}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+              {plan.destacado && (
+                <span className="mono mb-5 inline-block border-[3px] border-black bg-coral px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-black">
+                  El más elegido
+                </span>
+              )}
+              <h3 className="headline text-2xl text-black">{plan.nombre}</h3>
+              <p className="mt-2 text-sm font-medium text-black/70">
+                {plan.gancho}
+              </p>
+              <p className="mt-6 flex items-baseline gap-1">
+                <span className="headline text-5xl text-black sm:text-6xl">
+                  {plan.precio}€
+                </span>
+                <span className="mono text-sm font-bold text-black/60">
+                  /mes
+                </span>
+              </p>
+              <Link
+                href="/registro"
+                className={`mt-6 w-full ${plan.destacado ? btnPrimary : btnGhost}`}
+              >
+                Probar gratis
+              </Link>
+              <ul className="mt-8 space-y-3 text-sm">
+                {plan.incluye.map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center border-2 border-black bg-casco">
+                      <Check className="size-3.5 text-black" strokeWidth={3} />
+                    </span>
+                    <span className="font-medium text-black/80">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

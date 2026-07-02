@@ -1,40 +1,47 @@
 import Link from "next/link";
 import { Logo } from "./logo";
 
+const enlaces = [
+  { label: "Precios", href: "#precios" },
+  { label: "Preguntas", href: "#faq" },
+  { label: "Privacidad", href: "/privacidad" },
+  { label: "Aviso legal", href: "/aviso-legal" },
+  { label: "Condiciones", href: "/condiciones" },
+  { label: "Cookies", href: "/cookies" },
+  { label: "Acceder", href: "/login" },
+];
+
 export function Footer() {
   return (
-    <footer className="border-t border-ink/10 bg-cream">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 px-6 py-12 sm:flex-row">
-        <div className="flex flex-col items-center gap-1 sm:items-start">
-          <Logo />
-          <span className="text-sm text-ink/45">
-            Recepcionista con IA para reformas
-          </span>
-        </div>
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-ink/60">
-          <a href="#precios" className="transition-colors hover:text-ink">
-            Precios
-          </a>
-          <a href="#faq" className="transition-colors hover:text-ink">
-            Preguntas
-          </a>
-          <Link href="/privacidad" className="transition-colors hover:text-ink">
-            Privacidad
-          </Link>
-          <Link href="/aviso-legal" className="transition-colors hover:text-ink">
-            Aviso legal
-          </Link>
-          <Link href="/condiciones" className="transition-colors hover:text-ink">
-            Condiciones
-          </Link>
-          <Link href="/cookies" className="transition-colors hover:text-ink">
-            Cookies
-          </Link>
-          <Link href="/login" className="transition-colors hover:text-ink">
-            Acceder
-          </Link>
-        </div>
-        <p className="text-sm text-ink/40">© 2026 Curro</p>
+    <footer className="border-t-[3px] border-black bg-black text-white">
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-8 px-5 py-10 sm:flex-row">
+        <Logo dark />
+
+        <nav className="mono flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[13px] font-bold uppercase tracking-wide">
+          {enlaces.map(({ label, href }) =>
+            href.startsWith("#") ? (
+              <a
+                key={label}
+                href={href}
+                className="text-white/80 transition-colors hover:text-casco"
+              >
+                {label}
+              </a>
+            ) : (
+              <Link
+                key={label}
+                href={href}
+                className="text-white/80 transition-colors hover:text-casco"
+              >
+                {label}
+              </Link>
+            ),
+          )}
+        </nav>
+
+        <p className="mono text-[12px] font-bold uppercase tracking-wide text-white/60">
+          © 2026 Curro
+        </p>
       </div>
     </footer>
   );

@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Reveal } from "./reveal";
 
 export const faqs = [
   {
@@ -25,30 +25,32 @@ export const faqs = [
 
 export function Faq() {
   return (
-    <section id="faq" className="border-t border-ink/10 bg-kraft">
-      <div className="mx-auto max-w-3xl px-6 py-24">
-        <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-fresh-strong">
-            Dudas
-          </p>
-          <h2 className="mt-2 headline text-4xl sm:text-5xl">
-            Preguntas frecuentes
+    <section id="faq" className="border-t-[3px] border-black bg-casco">
+      <div className="mx-auto max-w-3xl px-5 py-20 lg:py-24">
+        <Reveal className="text-center">
+          <span className="mono inline-block border-[3px] border-black bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide nb-shadow-sm">
+            ◍ Dudas
+          </span>
+          <h2 className="headline mt-5 text-4xl text-black sm:text-5xl lg:text-6xl">
+            Preguntas <span className="hl-azul">frecuentes</span>
           </h2>
-        </div>
-        <div className="mt-12 space-y-3">
-          {faqs.map(({ q, a }) => (
-            <details
-              key={q}
-              className="group rounded-2xl border border-ink/10 bg-white/70 px-5 py-4 transition-colors open:bg-white"
-            >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-display text-lg font-bold [&::-webkit-details-marker]:hidden">
-                {q}
-                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand-strong transition-transform group-open:rotate-45">
-                  <Plus className="size-4" />
-                </span>
-              </summary>
-              <p className="mt-3 leading-relaxed text-ink/70">{a}</p>
-            </details>
+        </Reveal>
+
+        <div className="mt-12 space-y-4">
+          {faqs.map(({ q, a }, i) => (
+            <Reveal key={q} delay={i * 60}>
+              <details className="group border-[3px] border-black bg-white nb-shadow open:nb-shadow">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-lg font-bold text-black [&::-webkit-details-marker]:hidden">
+                  {q}
+                  <span className="mono flex size-8 shrink-0 items-center justify-center border-[3px] border-black bg-casco text-2xl font-bold leading-none text-black transition-transform duration-150 group-open:rotate-45">
+                    +
+                  </span>
+                </summary>
+                <p className="border-t-[3px] border-black px-5 py-4 font-medium leading-relaxed text-black/80">
+                  {a}
+                </p>
+              </details>
+            </Reveal>
           ))}
         </div>
       </div>

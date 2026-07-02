@@ -72,21 +72,29 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* Tipografías de marca (inyectadas por next/font en el layout) */
-  --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-brico), var(--font-instrument), sans-serif;
+  /* Tipografías de marca — dirección "Cartel" (neo-brutal) */
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-archivo-black), var(--font-archivo), sans-serif;
+  --font-mono: var(--font-space-mono), ui-monospace, monospace;
 
-  /* Paleta de marca Curro — fresca: base aqua + acento coral que incita */
-  --color-cream: #f3fbfb; /* base blanco-aqua (nombre heredado) */
-  --color-ink: #06232b; /* teal muy oscuro (texto y secciones) */
-  --color-brand: #ff6b4a; /* coral: acción / CTAs / resaltador */
-  --color-brand-strong: #e8482a; /* coral hover */
-  --color-fresh: #14b8a6; /* teal fresco: acentos e iconos */
-  --color-fresh-strong: #0c7f74; /* teal legible sobre fondo claro */
-  --color-kraft: #e2f3f0; /* menta suave para secciones alternas */
-  --color-casco: #ffc53d; /* amarillo casco: energía, badges, subrayados */
-  --color-casco-strong: #d99a00; /* amarillo legible sobre fondo claro */
-  --color-mono: #2f6bff; /* azul mono: acento profundo puntual */
+  /* Paleta "Cartel": hueso + azul eléctrico + negro + coral + amarillo casco.
+     Negro y blanco puros se usan con las utilidades nativas de Tailwind. */
+  --color-hueso: #fbf7f0; /* fondo base (papel) */
+  --color-azul: #1e4ee8; /* primario eléctrico */
+  --color-azul-dark: #1740c4; /* hover del primario */
+  --color-coral: #ff5a3c; /* acción / CTA / pop */
+  --color-coral-dark: #e8482a; /* hover del coral */
+  --color-casco: #ffcb05; /* amarillo casco: acentos, checks (liga con Currito) */
+
+  /* Alias heredados para no romper páginas fuera de la landing (panel/legales). */
+  --color-cream: #fbf7f0;
+  --color-ink: #000000;
+  --color-brand: #ff5a3c;
+  --color-brand-strong: #e8482a;
+  --color-fresh: #1e4ee8;
+  --color-fresh-strong: #1740c4;
+  --color-kraft: #f0ebdf;
+  --color-mono: #1e4ee8;
 }
 
 @layer base {
@@ -216,13 +224,84 @@
   color: var(--color-cream);
 }
 
-/* Titular display pesado y compacto */
+/* Titular "cartel": bestia, en mayúsculas, compacto. */
 .headline {
   font-family: var(--font-display);
-  font-weight: 800;
-  line-height: 0.95;
+  font-weight: 400; /* Archivo Black ya es peso 900 de fábrica */
+  line-height: 0.9;
   letter-spacing: -0.02em;
+  text-transform: uppercase;
   text-wrap: balance;
+}
+
+/* Etiquetas / datos técnicos */
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* ---- Lenguaje neo-brutal: bordes negros + sombras duras ---- */
+.nb-shadow {
+  box-shadow: 6px 6px 0 #000;
+}
+.nb-shadow-sm {
+  box-shadow: 4px 4px 0 #000;
+}
+.nb-card {
+  background: #fff;
+  border: 3px solid #000;
+  box-shadow: 6px 6px 0 #000;
+}
+
+/* Botón sticker: al pasar/pulsar se "hunde" (la sombra se encoge). */
+.btn-nb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 3px solid #000;
+  box-shadow: 5px 5px 0 #000;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease;
+}
+.btn-nb:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 3px 3px 0 #000;
+}
+.btn-nb:active {
+  transform: translate(5px, 5px);
+  box-shadow: 0 0 0 #000;
+}
+.btn-nb:focus-visible {
+  outline: 3px solid var(--color-azul);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-nb,
+  .btn-nb:hover,
+  .btn-nb:active {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Resaltado de palabra en bloque. */
+.hl-azul {
+  background: var(--color-azul);
+  color: #fff;
+  padding: 0 0.15em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.hl-coral {
+  background: var(--color-coral);
+  color: #000;
+  padding: 0 0.15em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 /* Scroll-reveal: estado inicial + revelado al entrar en viewport.
