@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   ShieldCheck,
 } from "lucide-react";
+import { Reveal } from "./reveal";
 
 const features = [
   {
@@ -21,7 +22,7 @@ const features = [
   {
     icon: MessageCircle,
     titulo: "Aviso por WhatsApp y email",
-    texto: "El lead te llega donde ya miras cada día. Al momento.",
+    texto: "El cliente te llega donde ya miras cada día. Al momento.",
   },
   {
     icon: FileText,
@@ -30,7 +31,7 @@ const features = [
   },
   {
     icon: LayoutDashboard,
-    titulo: "Panel de leads",
+    titulo: "Panel de clientes",
     texto: "Gestiona el estado de cada presupuesto desde un solo sitio.",
   },
   {
@@ -42,36 +43,41 @@ const features = [
 
 export function PorQue() {
   return (
-    <section className="border-y-[3px] border-black bg-black text-white">
-      <div className="mx-auto max-w-6xl px-5 py-20 lg:py-24">
-        <div className="max-w-2xl">
-          <span className="mono inline-block border-[3px] border-black bg-casco px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-black">
-            ◍ Todo lo que hace por ti
-          </span>
-          <h2 className="headline mt-5 text-4xl text-white sm:text-5xl lg:text-6xl">
-            Tu mejor recepcionista, sin nómina ni bajas.
-          </h2>
-          <p className="mt-6 max-w-lg text-lg font-medium leading-relaxed text-white/70">
-            Mientras tú picas pared, Curro atiende, cualifica y te manda el lead.
-            Ninguna llamada se queda sin coger.
-          </p>
-        </div>
+    <section className="section-dark relative overflow-hidden">
+      <div className="pointer-events-none absolute -left-24 top-0 size-[32rem] rounded-full bg-verde/10 blur-3xl" />
+      <div className="pointer-events-none absolute -right-32 bottom-0 size-[28rem] rounded-full bg-violeta/10 blur-3xl" />
 
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map(({ icon: Icon, titulo, texto }) => (
-            <div
+      <div className="relative mx-auto max-w-6xl px-5 py-20 lg:py-28">
+        <Reveal className="max-w-2xl">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/80">
+            <span className="live-dot" />
+            Todo lo que hace por ti
+          </span>
+          <h2 className="headline mt-6 text-4xl text-white sm:text-5xl lg:text-6xl">
+            Tu mejor recepcionista, <span className="grad">sin nómina</span> ni
+            bajas.
+          </h2>
+          <p className="mt-6 max-w-lg text-lg leading-relaxed text-white/70">
+            Mientras tú estás a lo tuyo, Curro atiende, cualifica y te manda al
+            cliente. Ninguna llamada se queda sin coger.
+          </p>
+        </Reveal>
+
+        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {features.map(({ icon: Icon, titulo, texto }, i) => (
+            <Reveal
               key={titulo}
-              className="border-[3px] border-black bg-white p-6 text-black"
-              style={{ boxShadow: "6px 6px 0 var(--color-casco)" }}
+              delay={i * 70}
+              className="group rounded-2xl border border-white/10 bg-white/5 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-verde/30 hover:bg-white/[0.07]"
             >
-              <span className="flex size-11 items-center justify-center border-[3px] border-black bg-casco">
-                <Icon className="size-5 text-black" strokeWidth={2.5} />
+              <span className="flex size-11 items-center justify-center rounded-xl bg-verde/12 text-verde transition-colors group-hover:bg-verde/20">
+                <Icon className="size-5" strokeWidth={2} />
               </span>
-              <h3 className="headline mt-5 text-lg text-black">{titulo}</h3>
-              <p className="mt-2 text-sm font-medium leading-relaxed text-black/70">
+              <h3 className="headline mt-5 text-lg text-white">{titulo}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-white/70">
                 {texto}
               </p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </div>

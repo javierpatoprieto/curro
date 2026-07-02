@@ -1,49 +1,44 @@
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, PhoneCall } from "lucide-react";
 import { btnPrimaryLg } from "./ui";
 import { Reveal } from "./reveal";
 
 export function CtaFinal() {
   return (
-    <section className="border-t-[3px] border-black bg-azul">
-      <div className="mx-auto grid max-w-5xl items-center gap-10 px-5 py-20 sm:grid-cols-[1fr_auto] lg:py-24">
+    <section className="section-dark relative overflow-hidden bg-ink">
+      <div className="pointer-events-none absolute -left-24 -top-24 size-[32rem] rounded-full bg-verde/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -right-16 size-[30rem] rounded-full bg-violeta/25 blur-3xl" />
+
+      <div className="relative mx-auto max-w-3xl px-5 py-24 text-center lg:py-32">
         <Reveal>
-          <span className="mono inline-block border-[3px] border-black bg-casco px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-black nb-shadow-sm">
-            ◍ Empieza hoy
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur">
+            <span className="live-dot" />
+            Empieza hoy
           </span>
-          <h2 className="headline mt-5 text-4xl text-white sm:text-5xl lg:text-6xl">
-            Pon a Curro a coger{" "}
-            <span className="hl-coral">el teléfono.</span>
+
+          <h2 className="headline mx-auto mt-6 max-w-2xl text-4xl text-white sm:text-5xl lg:text-6xl">
+            Pon a Curro a coger <span className="grad">el teléfono</span>.
           </h2>
-          <p className="mt-6 max-w-xl text-lg font-medium leading-relaxed text-white/85">
-            En 10 minutos lo tienes atendiendo llamadas por ti. Que no se te
-            escape ni un presupuesto más.
+
+          <p className="mx-auto mt-6 max-w-lg text-lg leading-relaxed text-white/75">
+            En 10 minutos lo tienes contestando por ti. Que no se te escape ni
+            una llamada más, estés donde estés.
           </p>
-          <div className="mt-8">
+
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
             <Link href="/registro" className={btnPrimaryLg}>
               Probar gratis 7 días
-              <ArrowRight className="size-4" strokeWidth={3} />
+              <ArrowRight className="size-4" strokeWidth={2.5} />
             </Link>
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/5 px-4 py-2.5 text-sm text-white/70">
+              <PhoneCall className="size-4 text-verde" />
+              Contestando en 10 min
+            </span>
           </div>
-          <p className="mono mt-6 text-[11px] font-bold uppercase tracking-wide text-white/70">
+
+          <p className="mt-7 text-sm text-white/50">
             Sin permanencia · Cancelas cuando quieras
           </p>
-        </Reveal>
-
-        <Reveal
-          delay={120}
-          className="hidden justify-self-center sm:block"
-        >
-          <div className="rotate-2 border-[3px] border-black bg-casco p-4 nb-shadow">
-            <Image
-              src="/currito/pulgar.webp"
-              alt="Currito celebrando con el pulgar hacia arriba"
-              width={890}
-              height={1300}
-              className="w-36 shrink-0 object-contain lg:w-44"
-            />
-          </div>
         </Reveal>
       </div>
     </section>

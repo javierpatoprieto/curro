@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 /**
- * Logotipo de Curro (dirección Cartel): avatar de Currito en círculo bordeado +
- * wordmark "curro" en display. `dark` para secciones oscuras (azul/negro).
+ * Logotipo de Curro: avatar de Currito (el asistente) + wordmark "curro".
+ * `dark` para secciones oscuras.
  */
 export function Logo({
   dark = false,
@@ -16,21 +16,21 @@ export function Logo({
     <Link
       href="/"
       aria-label="Curro — inicio"
-      className={`flex items-center gap-2.5 ${className}`}
+      className={`flex items-center gap-2 ${className}`}
     >
-      <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border-[3px] border-black bg-casco nb-shadow-sm">
+      <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-verde-soft ring-1 ring-ink/5">
         <Image
           src="/currito/cabeza.webp"
-          alt="Currito, la mascota de Curro"
-          width={44}
-          height={44}
+          alt="Currito, el asistente de Curro"
+          width={40}
+          height={40}
           className="size-8 object-contain"
           priority
         />
       </span>
       <span
-        className={`font-display text-[1.65rem] lowercase leading-none tracking-tight ${
-          dark ? "text-white" : "text-black"
+        className={`font-display text-[1.5rem] font-bold lowercase tracking-tight ${
+          dark ? "text-white" : "text-ink"
         }`}
       >
         curro

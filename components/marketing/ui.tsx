@@ -1,21 +1,19 @@
-/** Clases de botón compartidas — dirección "Cartel" (neo-brutal).
- *  La base `.btn-nb` (globals.css) aporta borde negro, sombra dura, tipo display
- *  en mayúsculas y el efecto "hundir" al pulsar. Aquí solo el color y el tamaño. */
+/** Botones compartidos — dirección "Fresh": píldoras, verde vivo, sombra suave. */
 
-export const btnPrimary =
-  "btn-nb rounded-none bg-coral px-6 py-3 text-sm text-black";
+const focus =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-verde/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white";
 
-/** Variante compacta para la barra de navegación. */
-export const btnPrimarySm =
-  "btn-nb rounded-none bg-coral px-5 py-2.5 text-[13px] text-black";
+const base =
+  "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all";
 
-export const btnPrimaryLg =
-  "btn-nb rounded-none bg-coral px-7 py-4 text-base text-black";
+export const btnPrimary = `${base} bg-verde px-6 py-3 text-sm text-ink shadow-lg shadow-verde/25 hover:bg-verde-dark hover:-translate-y-0.5 ${focus}`;
 
-/** Fantasma sobre fondo claro (hueso). */
-export const btnGhost =
-  "btn-nb rounded-none bg-hueso px-6 py-3 text-sm text-black";
+export const btnPrimarySm = `${base} bg-verde px-5 py-2.5 text-sm text-ink shadow-md shadow-verde/25 hover:bg-verde-dark hover:-translate-y-0.5 ${focus}`;
 
-/** Fantasma sobre fondo oscuro (azul) — sticker blanco. */
-export const btnGhostDark =
-  "btn-nb rounded-none bg-white px-6 py-3 text-sm text-black";
+export const btnPrimaryLg = `${base} bg-verde px-7 py-4 text-base text-ink shadow-lg shadow-verde/30 hover:bg-verde-dark hover:-translate-y-0.5 ${focus}`;
+
+/** Secundario claro (borde suave). */
+export const btnGhost = `${base} border border-ink/12 bg-white px-6 py-3 text-sm text-ink hover:border-ink/25 hover:-translate-y-0.5 ${focus}`;
+
+/** Secundario sobre fondo oscuro. */
+export const btnGhostDark = `${base} border border-white/20 bg-white/10 px-6 py-3 text-sm text-white backdrop-blur hover:bg-white/20 ${focus}`;

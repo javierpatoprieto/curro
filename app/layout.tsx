@@ -1,35 +1,28 @@
 import type { Metadata } from "next";
-import { Archivo, Archivo_Black, Space_Mono } from "next/font/google";
+import { Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
 import { CookieConsent } from "@/components/analytics/cookie-consent";
 
-// Dirección "Cartel" (neo-brutal): display bestia + mono técnica + grotesca.
-const sans = Archivo({
+// Dirección "Fresh / En vivo": display moderno (Space Grotesk) + cuerpo Inter.
+const display = Space_Grotesk({
   subsets: ["latin"],
-  variable: "--font-archivo",
+  weight: ["500", "600", "700"],
+  variable: "--font-space-grotesk",
   display: "swap",
 });
 
-const display = Archivo_Black({
+const sans = Inter({
   subsets: ["latin"],
-  weight: "400",
-  variable: "--font-archivo-black",
-  display: "swap",
-});
-
-const mono = Space_Mono({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-space-mono",
+  variable: "--font-inter",
   display: "swap",
 });
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_APP_URL ?? "https://curro-kappa.vercel.app";
 
-const TITULO = "Curro — Recepcionista con IA para reformas";
+const TITULO = "Curro — Recepcionista con IA para autónomos y gremios";
 const DESCRIPCION =
-  "Recepcionista con IA para empresas de reformas y multiservicios del hogar. Curro atiende cada llamada, cualifica al cliente y te avisa por WhatsApp. 24/7 y en español.";
+  "La recepcionista con IA para autónomos y pequeños gremios: fontaneros, electricistas, reformas, pintores y más. Curro contesta cada llamada, apunta al cliente y te lo pasa por WhatsApp. 24/7 y en español.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -89,7 +82,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${sans.variable} ${display.variable} ${mono.variable}`}
+      className={`${sans.variable} ${display.variable}`}
     >
       <body className="min-h-screen antialiased">
         {children}
