@@ -18,7 +18,7 @@ export function CtaFinal() {
             escape ni un presupuesto más.
           </p>
           <div className="mt-8">
-            <Link href="/login" className={btnPrimaryLg}>
+            <Link href="/registro" className={btnPrimaryLg}>
               Probar gratis 7 días
               <ArrowRight className="size-4" />
             </Link>
