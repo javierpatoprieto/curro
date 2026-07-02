@@ -1,17 +1,26 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Instrument_Sans } from "next/font/google";
+import { Archivo, Archivo_Black, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { CookieConsent } from "@/components/analytics/cookie-consent";
 
-const display = Bricolage_Grotesque({
+// Dirección "Cartel" (neo-brutal): display bestia + mono técnica + grotesca.
+const sans = Archivo({
   subsets: ["latin"],
-  variable: "--font-brico",
+  variable: "--font-archivo",
   display: "swap",
 });
 
-const sans = Instrument_Sans({
+const display = Archivo_Black({
   subsets: ["latin"],
-  variable: "--font-instrument",
+  weight: "400",
+  variable: "--font-archivo-black",
+  display: "swap",
+});
+
+const mono = Space_Mono({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-space-mono",
   display: "swap",
 });
 
@@ -78,7 +87,10 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={`${display.variable} ${sans.variable}`}>
+    <html
+      lang="es"
+      className={`${sans.variable} ${display.variable} ${mono.variable}`}
+    >
       <body className="min-h-screen antialiased">
         {children}
         <CookieConsent />

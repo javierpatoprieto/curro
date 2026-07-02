@@ -1,21 +1,21 @@
-/** Clases compartidas de la landing (botones), para no repetirlas. */
-
-const focusRing =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2 focus-visible:ring-offset-cream";
+/** Clases de botón compartidas — dirección "Cartel" (neo-brutal).
+ *  La base `.btn-nb` (globals.css) aporta borde negro, sombra dura, tipo display
+ *  en mayúsculas y el efecto "hundir" al pulsar. Aquí solo el color y el tamaño. */
 
 export const btnPrimary =
-  `inline-flex items-center justify-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white shadow-md shadow-brand/20 transition-all hover:bg-brand-strong hover:-translate-y-0.5 ${focusRing}`;
+  "btn-nb rounded-none bg-coral px-6 py-3 text-sm text-black";
 
 /** Variante compacta para la barra de navegación. */
 export const btnPrimarySm =
-  `inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-brand/20 transition-all hover:bg-brand-strong ${focusRing}`;
+  "btn-nb rounded-none bg-coral px-5 py-2.5 text-[13px] text-black";
 
 export const btnPrimaryLg =
-  `inline-flex items-center justify-center gap-2 rounded-full bg-brand px-8 py-4 text-base font-semibold text-white shadow-md shadow-brand/20 transition-all hover:bg-brand-strong hover:-translate-y-0.5 ${focusRing}`;
+  "btn-nb rounded-none bg-coral px-7 py-4 text-base text-black";
 
+/** Fantasma sobre fondo claro (hueso). */
 export const btnGhost =
-  "inline-flex items-center justify-center gap-2 rounded-full border border-ink/15 bg-transparent px-6 py-3 text-sm font-semibold text-ink transition-colors hover:bg-ink/5";
+  "btn-nb rounded-none bg-hueso px-6 py-3 text-sm text-black";
 
-/** Botón fantasma sobre fondo oscuro. */
+/** Fantasma sobre fondo oscuro (azul) — sticker blanco. */
 export const btnGhostDark =
-  "inline-flex items-center justify-center gap-2 rounded-full border border-cream/25 bg-transparent px-6 py-3 text-sm font-semibold text-cream transition-colors hover:bg-cream/10";
+  "btn-nb rounded-none bg-white px-6 py-3 text-sm text-black";
