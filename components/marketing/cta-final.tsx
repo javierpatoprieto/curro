@@ -5,21 +5,21 @@ import { btnPrimaryLg } from "./ui";
 
 export function CtaFinal() {
   return (
-    <section className="section-dark relative overflow-hidden">
-      <div className="pointer-events-none absolute -right-24 top-1/2 size-[26rem] -translate-y-1/2 rounded-full bg-brand/20 blur-3xl" />
-      <div className="mx-auto grid max-w-5xl items-center gap-8 px-6 py-20 sm:grid-cols-[1fr_auto]">
+    <section className="section-dark blueprint-dark relative isolate overflow-hidden border-t border-cream/10">
+      <div className="pointer-events-none absolute -right-24 top-1/2 size-[26rem] -translate-y-1/2 rounded-full bg-brand/18 blur-[130px]" />
+      <div className="mx-auto grid max-w-5xl items-center gap-8 px-6 py-20 sm:grid-cols-[1fr_auto] lg:py-24">
         <div>
           <h2 className="headline text-4xl text-cream sm:text-5xl lg:text-6xl">
-            Pon a Currito a coger{" "}
+            Pon a Curro a coger{" "}
             <span className="text-brand">el teléfono.</span>
           </h2>
-          <p className="mt-5 max-w-xl text-cream/70">
+          <p className="mt-5 max-w-xl text-lg leading-relaxed text-cream/70">
             En 10 minutos lo tienes atendiendo llamadas por ti. Que no se te
             escape ni un presupuesto más.
           </p>
           <div className="mt-8">
             <Link href="/login" className={btnPrimaryLg}>
-              Probar gratis 14 días
+              Probar gratis 7 días
               <ArrowRight className="size-4" />
             </Link>
           </div>
@@ -32,7 +32,7 @@ export function CtaFinal() {
           alt="Currito celebrando con el pulgar hacia arriba"
           width={890}
           height={1300}
-          className="mx-auto w-40 shrink-0 object-contain drop-shadow-2xl sm:w-52 lg:w-64"
+          className="mx-auto hidden w-36 shrink-0 object-contain drop-shadow-2xl sm:block lg:w-44"
         />
       </div>
     </section>

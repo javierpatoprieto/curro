@@ -1,9 +1,13 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { PhoneCall, LogOut } from "lucide-react";
 import { getSessionUser, getCurrentContext } from "@/lib/auth";
 import { isDemoMode } from "@/lib/demo";
 import { PanelNav } from "@/components/panel/panel-nav";
 import { Button } from "@/components/ui/button";
+
+// El panel es privado: nunca debe indexarse.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default async function PanelLayout({
   children,

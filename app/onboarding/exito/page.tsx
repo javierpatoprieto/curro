@@ -28,8 +28,8 @@ export default async function ExitoPage({
       </h1>
       <p className="mt-2 text-[var(--muted-foreground)]">
         {def
-          ? `Tu plan ${def.nombre} (${def.precio}€/mes) está listo con 14 días de prueba.`
-          : "Tu cuenta está lista con 14 días de prueba."}
+          ? `Tu plan ${def.nombre} (${def.precio}€/mes) está listo con 7 días de prueba.`
+          : "Tu cuenta está lista con 7 días de prueba."}
         {demo && " (demo: no se ha realizado ningún cobro real)."}
       </p>
 

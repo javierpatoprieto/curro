@@ -14,13 +14,63 @@ const sans = Instrument_Sans({
   display: "swap",
 });
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_APP_URL ?? "https://curro-kappa.vercel.app";
+
+const TITULO = "Curro — Recepcionista con IA para reformas";
+const DESCRIPCION =
+  "Recepcionista con IA para empresas de reformas y multiservicios del hogar. Curro atiende cada llamada, cualifica al cliente y te avisa por WhatsApp. 24/7 y en español.";
+
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://curro-kappa.vercel.app",
-  ),
-  title: "Curro — Tu recepcionista con IA para reformas",
-  description:
-    "Curro coge el teléfono cuando tú no puedes. Recepcionista con inteligencia artificial para empresas de reformas y multiservicios del hogar: atiende cada llamada, cualifica al cliente y te pasa el presupuesto por WhatsApp. 24/7 y en español.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: TITULO,
+    template: "%s · Curro",
+  },
+  description: DESCRIPCION,
+  applicationName: "Curro",
+  authors: [{ name: "Curro" }],
+  creator: "Curro",
+  publisher: "Curro",
+  category: "technology",
+  keywords: [
+    "recepcionista IA",
+    "recepcionista virtual reformas",
+    "contestador inteligente",
+    "atención de llamadas reformas",
+    "IA para autónomos",
+    "recepcionista con inteligencia artificial",
+    "captación de leads reformas",
+    "asistente de voz en español",
+    "no perder llamadas",
+    "recepcionista 24/7",
+  ],
+  alternates: { canonical: "/" },
+  formatDetection: { telephone: false },
+  openGraph: {
+    type: "website",
+    locale: "es_ES",
+    url: "/",
+    siteName: "Curro",
+    title: TITULO,
+    description: DESCRIPCION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITULO,
+    description: DESCRIPCION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
 };
 
 export default function RootLayout({

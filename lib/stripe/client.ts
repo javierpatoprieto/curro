@@ -18,7 +18,7 @@ export interface CheckoutParams {
 }
 
 /**
- * Crea una sesión de Stripe Checkout (suscripción con 14 días de prueba) y
+ * Crea una sesión de Stripe Checkout (suscripción con 7 días de prueba) y
  * devuelve la URL a la que redirigir. En modo mock/sin clave, salta Stripe y
  * devuelve directamente la pantalla de éxito (para demos sin datos reales).
  */
@@ -38,7 +38,7 @@ export async function crearCheckout({
       cancel_url: `${appUrl()}/onboarding?cancelado=1`,
       customer_email: email ?? undefined,
       subscription_data: {
-        trial_period_days: 14,
+        trial_period_days: 7,
         metadata: { business_id: businessId, plan },
       },
       metadata: { business_id: businessId, plan },

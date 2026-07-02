@@ -33,7 +33,7 @@ export default async function OnboardingPage({
 
       <h1 className="text-3xl font-bold tracking-tight">Da de alta tu negocio</h1>
       <p className="mt-2 text-[var(--muted-foreground)]">
-        En un minuto creamos tu recepcionista con IA. 14 días de prueba gratis,
+        En un minuto creamos tu recepcionista con IA. 7 días de prueba gratis,
         sin permanencia.
       </p>
 
