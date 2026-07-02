@@ -14,12 +14,15 @@ const schema = z.object({
   plan: z.enum(["trial", "starter", "pro", "premium", "cancelado"]),
   activo: z.boolean(),
   cal_link: z.union([z.url(), z.literal("")]).optional(),
-  servicios: z.string().optional(),
-  zonas: z.string().optional(),
-  horario: z.string().optional(),
-  tono: z.string().optional(),
-  preguntas_clave: z.string().optional(),
-  conocimiento: z.string().optional(),
+  // Campos de texto libre: se concatenan al system prompt del assistant, así que
+  // se acotan para evitar prompts gigantes o inyección sobre el propio tenant.
+  servicios: z.string().max(1000).optional(),
+  zonas: z.string().max(1000).optional(),
+  horario: z.string().max(200).optional(),
+  // tono: solo los 3 valores que entiende el assistant (ver lib/vapi/assistant.ts).
+  tono: z.enum(["cercano", "profesional", "comercial"]).or(z.literal("")).optional(),
+  preguntas_clave: z.string().max(1000).optional(),
+  conocimiento: z.string().max(4000).optional(),
 });
 
 /** Edita/personaliza un cliente y re-sincroniza su assistant de Vapi. */
@@ -91,7 +94,7 @@ export async function guardarCliente(id: string, formData: FormData) {
  * Borra un cliente por completo. Confirmación por nombre. Además:
  *  - cancela su suscripción de Stripe (deja de facturar),
  *  - borra su assistant de Vapi (evita coste huérfano),
- *  - elimina sus datos (hijos primero, por si no hay ON DELETE CASCADE).
+ *  - elimina la fila de businesses (las tablas hijas caen por ON DELETE CASCADE).
  */
 export async function borrarCliente(id: string, formData: FormData) {
   await exigirAdmin();
@@ -123,16 +126,9 @@ export async function borrarCliente(id: string, formData: FormData) {
     console.error("[admin] no se pudo borrar el assistant:", e);
   }
 
-  const tablasHijas = [
-    "messages",
-    "call_events",
-    "leads",
-    "owners",
-    "business_integrations",
-  ] as const;
-  for (const tabla of tablasHijas) {
-    await admin.from(tabla).delete().eq("business_id", id);
-  }
+  // Las FKs de las tablas hijas (owners, leads, messages, call_events,
+  // business_integrations) declaran ON DELETE CASCADE: basta con borrar la fila
+  // de businesses para que Postgres elimine el resto de forma atómica.
   await admin.from("businesses").delete().eq("id", id);
 
   revalidatePath("/admin");

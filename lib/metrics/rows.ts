@@ -41,7 +41,9 @@ export function mrrDeNegocio(
     return redondear(mrrStripe[negocio.id]);
   }
   if (!negocio.activo || negocio.plan === "cancelado") return 0;
-  return redondear(PRECIO_MENSUAL_PLAN[negocio.plan] ?? 0);
+  return redondear(
+    PRECIO_MENSUAL_PLAN[negocio.plan as keyof typeof PRECIO_MENSUAL_PLAN] ?? 0,
+  );
 }
 
 /**

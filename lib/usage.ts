@@ -28,9 +28,16 @@ export interface Uso {
   coste: number;
 }
 
-function inicioDeMesISO(): string {
+/**
+ * Inicio del mes actual en ISO (UTC). Se calcula con componentes UTC para
+ * evitar el bug de zona horaria: usar la hora LOCAL del servidor metía/quitaba
+ * horas del mes anterior al convertir a ISO/UTC en servidores con offset != 0.
+ */
+export function inicioDeMesISO(): string {
   const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  return new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+  ).toISOString();
 }
 
 type Admin = ReturnType<typeof createAdminClient>;

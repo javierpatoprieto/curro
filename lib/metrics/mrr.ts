@@ -7,16 +7,18 @@
  *
  * No importa `@/lib/env` ni clientes: recibe todo por parámetro para poder
  * probarse en aislamiento (ver lib/metrics/mrr.test.ts).
+ *
+ * Los precios por plan vienen de `lib/stripe/precios` (módulo PURO, sin env),
+ * ÚNICA fuente de verdad compartida con `lib/stripe/plans`.
  */
+import { PRECIO_MENSUAL } from "@/lib/stripe/precios";
 
-/** Precio mensual (en euros) de cada plan de pago. Espejo de lib/stripe/plans. */
-export const PRECIO_MENSUAL_PLAN: Record<string, number> = {
-  trial: 0,
-  starter: 99,
-  pro: 149,
-  premium: 199,
-  cancelado: 0,
-};
+/**
+ * Alias retrocompatible: otros módulos (p. ej. lib/metrics/rows) importan este
+ * nombre desde aquí. Ya NO es una copia hardcodeada, sino la única fuente de
+ * verdad reexportada desde lib/stripe/precios.
+ */
+export const PRECIO_MENSUAL_PLAN = PRECIO_MENSUAL;
 
 /** Forma mínima de un ítem de precio de una suscripción de Stripe. */
 export interface PrecioSuscripcion {
@@ -90,7 +92,7 @@ export interface NegocioMRR {
 export function mrrDesdeBaseDatos(negocios: NegocioMRR[]): number {
   const total = negocios.reduce((acc, n) => {
     if (!n.activo) return acc;
-    return acc + (PRECIO_MENSUAL_PLAN[n.plan] ?? 0);
+    return acc + (PRECIO_MENSUAL[n.plan as keyof typeof PRECIO_MENSUAL] ?? 0);
   }, 0);
   return redondear(total);
 }

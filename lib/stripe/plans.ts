@@ -1,5 +1,6 @@
 import { env } from "@/lib/env";
 import type { Plan } from "@/lib/types";
+import { PRECIO_MENSUAL } from "@/lib/stripe/precios";
 
 /** Planes de pago (los que aparecen en la landing). */
 export type PlanPago = "starter" | "pro" | "premium";
@@ -15,14 +16,19 @@ export const PLANES_PAGO: Record<PlanPago, PlanDef> = {
   starter: {
     id: "starter",
     nombre: "Básico",
-    precio: 99,
+    precio: PRECIO_MENSUAL.starter,
     priceId: env.STRIPE_PRICE_STARTER,
   },
-  pro: { id: "pro", nombre: "Pro", precio: 149, priceId: env.STRIPE_PRICE_PRO },
+  pro: {
+    id: "pro",
+    nombre: "Pro",
+    precio: PRECIO_MENSUAL.pro,
+    priceId: env.STRIPE_PRICE_PRO,
+  },
   premium: {
     id: "premium",
     nombre: "Premium",
-    precio: 199,
+    precio: PRECIO_MENSUAL.premium,
     priceId: env.STRIPE_PRICE_PREMIUM,
   },
 };

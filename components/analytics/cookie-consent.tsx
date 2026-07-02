@@ -63,6 +63,8 @@ export function CookieConsent() {
     if (!GA_ID) return;
     const guardado = localStorage.getItem(STORAGE_KEY);
     if (guardado === "granted") cargarGA();
+    // Decisión client-only al montar (depende de localStorage, no disponible en SSR).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     else if (guardado !== "denied") setVisible(true);
 
     const abrir = () => setVisible(true);
@@ -93,9 +95,6 @@ export function CookieConsent() {
 
   const rechazar = useCallback(() => {
     localStorage.setItem(STORAGE_KEY, "denied");
-    if (window.gtag) {
-      window.gtag("consent", "update", { analytics_storage: "denied" });
-    }
     borrarCookiesGA();
     setVisible(false);
   }, []);
