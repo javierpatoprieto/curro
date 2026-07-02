@@ -24,6 +24,12 @@ export function Footer() {
           <Link href="/aviso-legal" className="transition-colors hover:text-ink">
             Aviso legal
           </Link>
+          <Link href="/condiciones" className="transition-colors hover:text-ink">
+            Condiciones
+          </Link>
+          <Link href="/cookies" className="transition-colors hover:text-ink">
+            Cookies
+          </Link>
           <Link href="/login" className="transition-colors hover:text-ink">
             Acceder
           </Link>
