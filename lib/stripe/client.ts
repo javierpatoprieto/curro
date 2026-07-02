@@ -37,6 +37,11 @@ export async function crearCheckout({
       success_url: `${appUrl()}/onboarding/exito?plan=${plan}`,
       cancel_url: `${appUrl()}/onboarding?cancelado=1`,
       customer_email: email ?? undefined,
+      // Datos fiscales para que la factura sirva para desgravar (autónomos):
+      // dirección obligatoria + NIF/CIF opcional. Stripe los guarda en el
+      // cliente y los imprime en la factura.
+      billing_address_collection: "required",
+      tax_id_collection: { enabled: true },
       subscription_data: {
         trial_period_days: 7,
         metadata: { business_id: businessId, plan },
@@ -47,4 +52,22 @@ export async function crearCheckout({
   }
 
   return `${appUrl()}/onboarding/exito?plan=${plan}&demo=1`;
+}
+
+/**
+ * Crea una sesión del Portal de Cliente de Stripe, donde el negocio puede
+ * descargar sus facturas (PDF), cambiar la tarjeta y cancelar la suscripción.
+ * Devuelve la URL a la que redirigir. Requiere el `stripe_customer_id` del
+ * negocio (existe una vez que ha pasado por el Checkout).
+ */
+export async function crearPortalFacturacion(
+  customerId: string,
+  returnUrl?: string,
+): Promise<string> {
+  const stripe = getStripe();
+  const session = await stripe.billingPortal.sessions.create({
+    customer: customerId,
+    return_url: returnUrl ?? `${appUrl()}/panel/facturacion`,
+  });
+  return session.url;
 }
