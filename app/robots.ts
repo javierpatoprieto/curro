@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
       // Zonas privadas / transaccionales: no indexar.
-      disallow: ["/panel", "/onboarding", "/login", "/api", "/auth"],
+      disallow: ["/panel", "/onboarding", "/login", "/api", "/auth", "/admin"],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,

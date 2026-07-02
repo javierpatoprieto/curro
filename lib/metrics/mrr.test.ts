@@ -5,10 +5,11 @@ import {
   mrrDesdeStripe,
   mrrDesdeBaseDatos,
   arrDesdeMrr,
-  PRECIO_MENSUAL_PLAN,
   type SuscripcionMRR,
   type ItemSuscripcion,
 } from "@/lib/metrics/mrr";
+import { PRECIO_MENSUAL } from "@/lib/stripe/precios";
+import { PLANES_PAGO } from "@/lib/stripe/plans";
 
 function item(
   unit_amount: number | null,
@@ -89,12 +90,15 @@ describe("mrrDesdeBaseDatos", () => {
     expect(mrrDesdeBaseDatos(negocios)).toBe(248);
   });
 
-  it("los precios del mapa coinciden con los planes de pago", () => {
-    expect(PRECIO_MENSUAL_PLAN.starter).toBe(99);
-    expect(PRECIO_MENSUAL_PLAN.pro).toBe(149);
-    expect(PRECIO_MENSUAL_PLAN.premium).toBe(199);
-    expect(PRECIO_MENSUAL_PLAN.trial).toBe(0);
-    expect(PRECIO_MENSUAL_PLAN.cancelado).toBe(0);
+  it("los precios que usa el MRR coinciden con los planes de pago (guardia anti-divergencia)", () => {
+    // PRECIO_MENSUAL es la única fuente de verdad: PLANES_PAGO deriva de él.
+    // Este test rompe si algún día se vuelven a definir precios por separado.
+    for (const plan of Object.values(PLANES_PAGO)) {
+      expect(PRECIO_MENSUAL[plan.id]).toBe(plan.precio);
+    }
+    // Valores esperados de los planes que no son de pago.
+    expect(PRECIO_MENSUAL.trial).toBe(0);
+    expect(PRECIO_MENSUAL.cancelado).toBe(0);
   });
 });
 
