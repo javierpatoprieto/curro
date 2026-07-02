@@ -13,35 +13,47 @@ const enlaces = [
 
 export function Footer() {
   return (
-    <footer className="border-t-[3px] border-black bg-black text-white">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-8 px-5 py-10 sm:flex-row">
-        <Logo dark />
+    <footer className="section-dark bg-ink">
+      <div className="mx-auto max-w-6xl px-5 py-14">
+        <div className="flex flex-col items-center gap-8 text-center sm:flex-row sm:items-start sm:justify-between sm:text-left">
+          <div className="max-w-xs">
+            <Logo dark />
+            <p className="mt-4 text-sm leading-relaxed text-white/60">
+              La recepcionista con IA para autónomos y gremios. Contesta cada
+              llamada y te la pasa por WhatsApp.
+            </p>
+          </div>
 
-        <nav className="mono flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[13px] font-bold uppercase tracking-wide">
-          {enlaces.map(({ label, href }) =>
-            href.startsWith("#") ? (
-              <a
-                key={label}
-                href={href}
-                className="text-white/80 transition-colors hover:text-casco"
-              >
-                {label}
-              </a>
-            ) : (
-              <Link
-                key={label}
-                href={href}
-                className="text-white/80 transition-colors hover:text-casco"
-              >
-                {label}
-              </Link>
-            ),
-          )}
-        </nav>
+          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm font-medium text-white/70">
+            {enlaces.map(({ label, href }) =>
+              href.startsWith("#") ? (
+                <a
+                  key={label}
+                  href={href}
+                  className="transition-colors hover:text-verde"
+                >
+                  {label}
+                </a>
+              ) : (
+                <Link
+                  key={label}
+                  href={href}
+                  className="transition-colors hover:text-verde"
+                >
+                  {label}
+                </Link>
+              ),
+            )}
+          </nav>
+        </div>
 
-        <p className="mono text-[12px] font-bold uppercase tracking-wide text-white/60">
-          © 2026 Curro
-        </p>
+        <div className="mt-12 flex flex-col items-center gap-3 border-t border-white/10 pt-6 text-sm text-white/50 sm:flex-row sm:justify-between">
+          <p>© 2026 Curro</p>
+          <p className="inline-flex items-center gap-2">
+            <span className="live-dot" />
+            Cogiendo el teléfono ahora mismo
+          </p>
+        </div>
       </div>
     </footer>
   );
