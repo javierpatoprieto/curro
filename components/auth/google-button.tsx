@@ -7,6 +7,14 @@ import { Button } from "@/components/ui/button";
 
 const supabaseListo = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
+/**
+ * El login con Google solo se muestra si está activado explícitamente. Requiere
+ * tener el proveedor Google configurado en Supabase (app OAuth de Google Cloud).
+ * Mientras no lo esté, el botón queda oculto para no dar error al pulsarlo.
+ */
+export const googleLoginActivo =
+  process.env.NEXT_PUBLIC_GOOGLE_LOGIN === "true";
+
 /** Logo oficial de Google (multicolor). */
 function GoogleIcon() {
   return (
