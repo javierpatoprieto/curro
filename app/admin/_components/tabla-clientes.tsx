@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -42,7 +43,14 @@ export function TablaClientes({ filas }: { filas: FilaCliente[] }) {
                     key={f.id}
                     className="border-b border-[var(--border)] last:border-0"
                   >
-                    <td className="py-3 pr-4 font-medium">{f.nombre}</td>
+                    <td className="py-3 pr-4 font-medium">
+                      <Link
+                        href={`/admin/clientes/${f.id}`}
+                        className="hover:text-[var(--primary)] hover:underline"
+                      >
+                        {f.nombre}
+                      </Link>
+                    </td>
                     <td className="py-3 pr-4 text-[var(--muted-foreground)]">
                       {f.ciudad ?? "—"}
                     </td>

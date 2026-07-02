@@ -11,6 +11,7 @@
  */
 
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 
 const COOKIE = "curro_admin";
@@ -66,4 +67,9 @@ export async function iniciarSesionAdmin(): Promise<void> {
 /** Cierra la sesión de admin. */
 export async function cerrarSesionAdmin(): Promise<void> {
   (await cookies()).delete(COOKIE);
+}
+
+/** Guard para páginas y server actions de /admin: redirige si no hay acceso. */
+export async function exigirAdmin(): Promise<void> {
+  if (!(await adminAutenticado())) redirect("/admin/login");
 }

@@ -162,3 +162,20 @@ export async function actualizarAssistant(
   });
   if (!res.ok) throw new Error(`Vapi ${res.status}: ${await res.text()}`);
 }
+
+/**
+ * Borra el assistant de Vapi (al eliminar un negocio) para no dejar coste
+ * huérfano. No-op en mock/sin key; ignora 404 (ya no existe).
+ */
+export async function eliminarAssistant(assistantId: string): Promise<void> {
+  if (!vapiActivo() || !assistantId || assistantId.startsWith("asst_mock_")) {
+    return;
+  }
+  const res = await fetch(`https://api.vapi.ai/assistant/${assistantId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${env.VAPI_API_KEY}` },
+  });
+  if (!res.ok && res.status !== 404) {
+    throw new Error(`Vapi ${res.status}: ${await res.text()}`);
+  }
+}
