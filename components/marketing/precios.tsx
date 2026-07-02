@@ -87,7 +87,7 @@ export function Precios() {
               </span>
             </p>
             <Link
-              href="/login"
+              href="/registro"
               className={`mt-6 w-full ${plan.destacado ? btnPrimary : btnGhost}`}
             >
               Probar gratis

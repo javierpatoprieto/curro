@@ -67,7 +67,7 @@ export function Nav() {
           >
             Acceder
           </Link>
-          <Link href="/login" className={btnPrimarySm}>
+          <Link href="/registro" className={btnPrimarySm}>
             Probar gratis
           </Link>
         </div>
