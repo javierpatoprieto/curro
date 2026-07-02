@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CookieSettingsButton } from "@/components/analytics/cookie-settings-button";
 
 export const metadata: Metadata = { title: "Política de cookies" };
 
@@ -13,30 +14,38 @@ export default function CookiesPage() {
       <h2 className="pt-4 text-lg font-semibold">Qué son las cookies</h2>
       <p>
         Las cookies son pequeños archivos que un sitio web guarda en tu navegador
-        para que ciertas funciones operen correctamente.
+        para que ciertas funciones operen correctamente o para obtener información
+        sobre el uso del sitio.
       </p>
 
-      <h2 className="pt-4 text-lg font-semibold">Qué cookies usamos</h2>
+      <h2 className="pt-4 text-lg font-semibold">Cookies que usamos</h2>
       <p>
-        Curro solo utiliza <strong>cookies técnicas o esenciales</strong>,
-        necesarias para el inicio de sesión y para mantener tu sesión mientras
-        usas el panel (gestionadas por nuestro proveedor de autenticación,
-        Supabase). <strong>No usamos cookies de analítica, publicidad ni
-        seguimiento de terceros.</strong>
+        <strong>1. Técnicas o esenciales.</strong> Necesarias para el inicio de
+        sesión y para mantener tu sesión mientras usas el panel (gestionadas por
+        nuestro proveedor de autenticación, Supabase). No requieren
+        consentimiento y no se pueden desactivar.
+      </p>
+      <p>
+        <strong>2. Analíticas (Google Analytics 4).</strong> Nos permiten medir de
+        forma estadística cómo se usa la web (páginas vistas, origen del tráfico)
+        para mejorarla. Utilizan cookies como <code>_ga</code> y{" "}
+        <code>_ga_&lt;id&gt;</code>, con una duración de hasta 2 años. El proveedor
+        es Google, que puede tratar datos fuera del EEE con las garantías
+        previstas en la normativa. <strong>Estas cookies solo se instalan si das
+        tu consentimiento</strong>; hasta entonces, Google Analytics no se carga.
       </p>
 
       <h2 className="pt-4 text-lg font-semibold">Consentimiento</h2>
       <p>
-        Las cookies estrictamente necesarias no requieren consentimiento previo,
-        por lo que no mostramos un banner de cookies. Si en el futuro
-        incorporamos cookies analíticas o de terceros, actualizaremos esta
-        política y solicitaremos tu consentimiento cuando corresponda.
+        Al entrar por primera vez te mostramos un aviso para aceptar o rechazar
+        las cookies analíticas. Puedes cambiar tu decisión en cualquier momento
+        aquí: <CookieSettingsButton />.
       </p>
 
       <h2 className="pt-4 text-lg font-semibold">Cómo gestionarlas</h2>
       <p>
-        Puedes bloquear o eliminar las cookies desde la configuración de tu
-        navegador. Ten en cuenta que, si bloqueas las cookies esenciales, es
+        Además, puedes bloquear o eliminar las cookies desde la configuración de
+        tu navegador. Ten en cuenta que, si bloqueas las cookies esenciales, es
         posible que no puedas iniciar sesión ni usar el panel.
       </p>
     </>

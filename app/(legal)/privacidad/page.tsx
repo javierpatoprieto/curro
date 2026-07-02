@@ -76,9 +76,13 @@ export default function PrivacidadPage() {
       <h2 className="pt-4 text-lg font-semibold">Encargados del tratamiento</h2>
       <p>
         Usamos proveedores para prestar el servicio: Vapi (voz), Supabase (base
-        de datos), WhatsApp/Meta y Resend (comunicaciones) y Stripe (pagos).
-        Algunos pueden tratar datos fuera del EEE con las garantías previstas en
-        la normativa.
+        de datos), WhatsApp/Meta y Resend (comunicaciones), Stripe (pagos) y
+        Google Analytics (analítica web, solo con tu consentimiento; ver la{" "}
+        <a href="/cookies" className="underline">
+          política de cookies
+        </a>
+        ). Algunos pueden tratar datos fuera del EEE con las garantías previstas
+        en la normativa.
       </p>
 
       <h2 className="pt-4 text-lg font-semibold">Tus derechos</h2>

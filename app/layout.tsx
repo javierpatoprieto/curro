@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Instrument_Sans } from "next/font/google";
 import "./globals.css";
+import { CookieConsent } from "@/components/analytics/cookie-consent";
 
 const display = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -78,7 +79,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es" className={`${display.variable} ${sans.variable}`}>
-      <body className="min-h-screen antialiased">{children}</body>
+      <body className="min-h-screen antialiased">
+        {children}
+        <CookieConsent />
+      </body>
     </html>
   );
 }

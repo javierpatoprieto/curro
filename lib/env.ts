@@ -41,6 +41,10 @@ const schema = z.object({
   APP_URL: z.string().url().optional(),
   NEXT_PUBLIC_APP_URL: z.string().url().optional(),
 
+  // Google Analytics 4 (Measurement ID G-XXXXXXXXXX). Es público; el banner de
+  // consentimiento solo carga GA4 si esta variable está definida.
+  NEXT_PUBLIC_GA_ID: z.string().optional(),
+
   // Si es "false", los adaptadores llaman a los proveedores reales.
   // Por defecto usamos mocks para no depender de cuentas externas.
   MOCK_PROVIDERS: z.enum(["true", "false"]).optional(),
