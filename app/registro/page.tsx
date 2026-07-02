@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { Loader2, MailCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { GoogleButton } from "@/components/auth/google-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -99,6 +100,11 @@ function RegistroForm() {
           <CardDescription>7 días gratis. Sin permanencia.</CardDescription>
         </CardHeader>
         <CardContent>
+          <GoogleButton texto="Registrarse con Google" />
+          <div className="my-4 flex items-center gap-3 text-xs text-[var(--muted-foreground)]">
+            <span className="h-px flex-1 bg-[var(--border)]" />o
+            <span className="h-px flex-1 bg-[var(--border)]" />
+          </div>
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Correo electrónico</Label>
