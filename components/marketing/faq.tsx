@@ -29,32 +29,29 @@ export const faqs = [
 
 export function Faq() {
   return (
-    <section id="faq" className="relative overflow-hidden bg-mist">
-      <div className="pointer-events-none absolute -right-24 top-16 size-[26rem] rounded-full bg-verde/10 blur-3xl" />
-      <div className="pointer-events-none absolute -left-28 bottom-8 size-[22rem] rounded-full bg-violeta/10 blur-3xl" />
-
-      <div className="relative mx-auto max-w-3xl px-5 py-20 lg:py-28">
+    <section id="faq" className="bg-nieve">
+      <div className="mx-auto max-w-3xl px-5 py-20 lg:py-28">
         <Reveal className="text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-ink/8 bg-white px-3 py-1.5 text-xs font-semibold text-ink-soft">
-            <span className="live-dot" />
+          <span className="inline-flex items-center gap-2 rounded-full border border-linea3 bg-white px-3 py-1.5 text-xs font-semibold text-bosque">
+            <span className="size-1.5 rounded-full bg-lima" />
             Dudas
           </span>
-          <h2 className="headline mt-5 text-4xl text-ink sm:text-5xl">
-            Preguntas <span className="grad">frecuentes</span>
+          <h2 className="titular mt-5 text-4xl text-bosque sm:text-5xl">
+            Preguntas <span className="marca-lima">frecuentes</span>
           </h2>
         </Reveal>
 
         <div className="mt-12 space-y-3">
           {faqs.map(({ q, a }, i) => (
             <Reveal key={q} delay={i * 70}>
-              <details className="card-fresh group transition-shadow duration-300 open:shadow-xl">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5 text-lg font-semibold text-ink [&::-webkit-details-marker]:hidden">
+              <details className="group rounded-xl border border-linea3 bg-white transition-colors open:border-bosque/25">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5 text-lg font-semibold text-bosque [&::-webkit-details-marker]:hidden">
                   {q}
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-verde-soft text-2xl font-light leading-none text-verde-dark transition-transform duration-300 group-open:rotate-45">
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-bosque text-2xl font-light leading-none text-lima transition-transform duration-300 group-open:rotate-45">
                     +
                   </span>
                 </summary>
-                <p className="border-t border-ink/6 px-6 py-5 leading-relaxed text-ink-soft">
+                <p className="border-t border-linea3 px-6 py-5 leading-relaxed text-bosque-soft">
                   {a}
                 </p>
               </details>

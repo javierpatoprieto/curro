@@ -51,11 +51,11 @@ function responder(texto: string): string {
 
 function Typing() {
   return (
-    <div className="flex w-max items-center gap-1 rounded-2xl bg-mist px-3 py-2.5">
+    <div className="flex w-max items-center gap-1 rounded-2xl border border-linea3 bg-nieve px-3 py-2.5">
       {[0, 1, 2].map((i) => (
         <span
           key={i}
-          className="size-1.5 animate-bounce rounded-full bg-ink-soft/50"
+          className="size-1.5 animate-bounce rounded-full bg-bosque-soft/50"
           style={{ animationDelay: `${i * 0.15}s` }}
         />
       ))}
@@ -94,10 +94,10 @@ export function CurroChat() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="fixed bottom-5 right-5 z-[60] inline-flex items-center gap-2 rounded-full bg-ink py-2 pl-2 pr-4 text-sm font-semibold text-white shadow-xl shadow-ink/20 transition-transform hover:-translate-y-0.5"
+          className="fixed bottom-5 right-5 z-[60] inline-flex items-center gap-2 rounded-full bg-bosque py-2 pl-2 pr-4 text-sm font-semibold text-nieve shadow-xl shadow-bosque/20 transition-transform hover:-translate-y-0.5"
           aria-label="Abrir chat con Curro"
         >
-          <span className="flex size-8 items-center justify-center overflow-hidden rounded-full bg-verde-soft ring-2 ring-white/20">
+          <span className="flex size-8 items-center justify-center overflow-hidden rounded-full bg-lima ring-2 ring-nieve/20">
             <Image
               src="/currito/cabeza.webp"
               alt=""
@@ -107,16 +107,16 @@ export function CurroChat() {
             />
           </span>
           Habla con Curro
-          <span className="live-dot ml-0.5" />
+          <span className="ml-0.5 size-1.5 rounded-full bg-lima" />
         </button>
       )}
 
       {/* Panel */}
       {open && (
-        <div className="fixed bottom-5 right-5 z-[60] flex h-[520px] max-h-[calc(100vh-2.5rem)] w-[370px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-3xl border border-ink/10 bg-white shadow-2xl shadow-ink/20">
+        <div className="fixed bottom-5 right-5 z-[60] flex h-[520px] max-h-[calc(100vh-2.5rem)] w-[370px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-linea3 bg-white shadow-2xl shadow-bosque/20">
           {/* Header */}
-          <div className="flex items-center gap-3 border-b border-ink/6 bg-ink px-4 py-3 text-white">
-            <span className="flex size-9 items-center justify-center overflow-hidden rounded-full bg-verde-soft">
+          <div className="flex items-center gap-3 bg-bosque px-4 py-3 text-nieve">
+            <span className="flex size-9 items-center justify-center overflow-hidden rounded-full bg-lima">
               <Image
                 src="/currito/cabeza.webp"
                 alt="Currito"
@@ -127,14 +127,14 @@ export function CurroChat() {
             </span>
             <div className="leading-tight">
               <p className="text-sm font-semibold">Curro</p>
-              <p className="flex items-center gap-1.5 text-xs text-white/70">
-                <span className="live-dot" /> en línea
+              <p className="flex items-center gap-1.5 text-xs text-nieve/70">
+                <span className="size-1.5 rounded-full bg-lima" /> en línea
               </p>
             </div>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="ml-auto text-white/70 hover:text-white"
+              className="ml-auto text-nieve/70 hover:text-nieve"
               aria-label="Cerrar chat"
             >
               <X className="size-5" />
@@ -142,14 +142,14 @@ export function CurroChat() {
           </div>
 
           {/* Mensajes */}
-          <div ref={scroller} className="flex-1 space-y-3 overflow-y-auto bg-mist/40 p-4">
+          <div ref={scroller} className="flex-1 space-y-3 overflow-y-auto bg-nieve p-4">
             {msgs.map((m, i) => (
               <div
                 key={i}
                 className={`animate-rise-in max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                   m.from === "bot"
-                    ? "bg-white text-ink shadow-sm"
-                    : "ml-auto bg-verde text-ink"
+                    ? "border border-linea3 bg-white text-bosque"
+                    : "ml-auto bg-bosque text-nieve"
                 }`}
               >
                 {m.text}
@@ -165,7 +165,7 @@ export function CurroChat() {
                     key={f.q}
                     type="button"
                     onClick={() => enviar(f.q)}
-                    className="rounded-full border border-ink/10 bg-white px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-verde hover:text-verde-dark"
+                    className="rounded-full border border-linea3 bg-white px-3 py-1.5 text-xs font-medium text-bosque transition-colors hover:border-bosque/40 hover:text-bosque"
                   >
                     {f.q}
                   </button>
@@ -180,23 +180,23 @@ export function CurroChat() {
               e.preventDefault();
               enviar(input);
             }}
-            className="flex items-center gap-2 border-t border-ink/6 p-3"
+            className="flex items-center gap-2 border-t border-linea3 p-3"
           >
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Escribe tu pregunta…"
-              className="min-w-0 flex-1 rounded-full bg-mist px-4 py-2.5 text-sm text-ink outline-none placeholder:text-ink-soft/60 focus:ring-2 focus:ring-verde/40"
+              className="min-w-0 flex-1 rounded-lg border border-linea3 bg-nieve px-4 py-2.5 text-sm text-bosque outline-none placeholder:text-bosque-soft/60 focus:ring-2 focus:ring-bosque/30"
             />
             <button
               type="submit"
-              className="flex size-10 shrink-0 items-center justify-center rounded-full bg-verde text-ink transition-colors hover:bg-verde-dark"
+              className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-lima text-bosque transition-colors hover:bg-lima-dark"
               aria-label="Enviar"
             >
               <Send className="size-4" />
             </button>
           </form>
-          <p className="flex items-center justify-center gap-1 pb-2 text-[10px] text-ink-soft/50">
+          <p className="flex items-center justify-center gap-1 pb-2 text-[10px] text-bosque-soft/50">
             <Sparkles className="size-3" /> Respuestas automáticas de Curro
           </p>
         </div>

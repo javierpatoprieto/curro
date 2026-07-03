@@ -29,7 +29,7 @@ export function guion(config: AssistantConfig): string {
   const tono = TONOS[clean(config.tono) ?? ""] ?? "cercano, claro y profesional";
 
   const lineas: string[] = [
-    `Eres «Curro», la recepcionista virtual de ${negocio}, una empresa de reformas y multiservicios del hogar${donde}. Hablas español de España, con tono ${tono}. Frases cortas.`,
+    `Eres «Curro», el recepcionista virtual de ${negocio}, una empresa de reformas y multiservicios del hogar${donde}. Hablas español de España, con tono ${tono}. Frases cortas.`,
     "",
     "Objetivo: atender la llamada cuando el dueño no puede, cualificar al cliente y tomar sus datos para devolverle la llamada y agendar una visita.",
     "",

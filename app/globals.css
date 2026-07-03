@@ -74,7 +74,7 @@
 
   /* Tipografías — dirección "Fresh / En vivo" */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-space-grotesk), var(--font-inter), sans-serif;
+  --font-display: var(--font-manrope), var(--font-inter), sans-serif;
 
   /* Paleta "Fresh": blanco + tinta casi negra + verde vivo (primario) +
      violeta (secundario) + menta suave para paneles. */
@@ -100,6 +100,14 @@
   --color-azul: #5b5bf5;
   --color-coral: #12d97a;
   --color-casco: #5b5bf5;
+
+  /* ---- Dirección "Reflex" (verde bosque + lima, plano y formal) ---- */
+  --color-nieve: #f4f5ee; /* hueso off-white cálido (fondo base) */
+  --color-bosque: #182714; /* verde bosque muy oscuro (texto y secciones) */
+  --color-bosque-soft: #4a5245; /* verde-gris apagado (texto secundario, ~7.5:1 sobre nieve) */
+  --color-lima: #c8f24e; /* lima / chartreuse (acento) */
+  --color-lima-dark: #b6e23a; /* lima hover */
+  --color-linea3: #e3e5da; /* borde/filete sutil sobre nieve */
 }
 
 @layer base {
@@ -352,4 +360,25 @@
     transform: none;
     transition: none;
   }
+}
+
+/* ============================================================
+   Dirección "Reflex" (verde bosque + lima) — utilidades
+   ============================================================ */
+
+/* Titular plano y ligero (grotesca neutra, peso medio, poco tracking). */
+.titular {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+/* Palabra de acento (sin subrayado): resalta por color, no por fondo/trazo.
+   En secciones CLARAS hereda el bosque del titular y destaca por el peso (negrita).
+   En secciones OSCURAS se le añade `text-lima` en el componente para que el color
+   sea el que contrasta con el fondo (lima brillante). */
+.marca-lima {
+  font-weight: 700;
 }

@@ -1,9 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
+import { PhoneCall } from "lucide-react";
 
 /**
- * Logotipo de Curro: avatar de Currito (el asistente) + wordmark "curro".
- * `dark` para secciones oscuras.
+ * Logotipo de Curro — dirección "Reflex": marca verde bosque con glifo lima +
+ * wordmark. `dark` para fondos oscuros (verde bosque).
  */
 export function Logo({
   dark = false,
@@ -16,21 +16,18 @@ export function Logo({
     <Link
       href="/"
       aria-label="Curro — inicio"
-      className={`flex items-center gap-2 ${className}`}
+      className={`flex items-center gap-2.5 ${className}`}
     >
-      <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-verde-soft ring-1 ring-ink/5">
-        <Image
-          src="/currito/cabeza.webp"
-          alt="Currito, el asistente de Curro"
-          width={40}
-          height={40}
-          className="size-8 object-contain"
-          priority
-        />
+      <span
+        className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${
+          dark ? "bg-lima text-bosque" : "bg-bosque text-lima"
+        }`}
+      >
+        <PhoneCall className="size-[17px]" strokeWidth={2.5} />
       </span>
       <span
-        className={`font-display text-[1.5rem] font-bold lowercase tracking-tight ${
-          dark ? "text-white" : "text-ink"
+        className={`font-display text-[1.5rem] font-bold tracking-tight ${
+          dark ? "text-nieve" : "text-bosque"
         }`}
       >
         curro

@@ -1,7 +1,8 @@
 import { Nav } from "@/components/marketing/nav";
 import { Hero } from "@/components/marketing/hero";
-import { Gremios } from "@/components/marketing/gremios";
+import { Escena } from "@/components/marketing/escena";
 import { Drama } from "@/components/marketing/drama";
+import { ComoHabla } from "@/components/marketing/como-habla";
 import { Pasos } from "@/components/marketing/pasos";
 import { PorQue } from "@/components/marketing/por-que";
 import { Precios } from "@/components/marketing/precios";
@@ -17,8 +18,9 @@ export default function Home() {
       <JsonLd />
       <Nav />
       <Hero />
-      <Gremios />
+      <Escena />
       <Drama />
+      <ComoHabla />
       <Pasos />
       <PorQue />
       <Precios />

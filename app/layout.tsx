@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Inter } from "next/font/google";
+import { Manrope, Inter } from "next/font/google";
 import "./globals.css";
 import { CookieConsent } from "@/components/analytics/cookie-consent";
 
-// Dirección "Fresh / En vivo": display moderno (Space Grotesk) + cuerpo Inter.
-const display = Space_Grotesk({
+// Dirección "Fresh": display plano y neutro (Manrope) + cuerpo Inter.
+const display = Manrope({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-space-grotesk",
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-manrope",
   display: "swap",
 });
 
@@ -22,7 +22,7 @@ const SITE_URL =
 
 const TITULO = "Curro — Recepcionista con IA para autónomos y gremios";
 const DESCRIPCION =
-  "La recepcionista con IA para autónomos y pequeños gremios: fontaneros, electricistas, reformas, pintores y más. Curro contesta cada llamada, apunta al cliente y te lo pasa por WhatsApp. 24/7 y en español.";
+  "El recepcionista con IA para autónomos y pequeños gremios: fontaneros, electricistas, reformas, pintores y más. Curro contesta cada llamada, apunta al cliente y te lo pasa por WhatsApp. 24/7 y en español.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
