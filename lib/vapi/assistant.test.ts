@@ -56,6 +56,21 @@ describe("guion", () => {
     expect(g).toContain("agendarVisita");
     expect(g).toContain("plan B");
   });
+
+  it("SIN Cal: pide el teléfono activamente y enfoca en devolver la llamada, sin agendar", () => {
+    const g = guion({ negocio: "Reformas García" });
+    expect(g).toContain("Pídele SIEMPRE su número de teléfono");
+    expect(g).toContain("Reformas García le devuelva la llamada");
+    expect(g).not.toContain("agendar una visita");
+    expect(g).not.toContain("si no, no insistas"); // no queda la regla pasiva
+  });
+
+  it("CON Cal: mantiene el agendado y el teléfono como opcional", () => {
+    const g = guion({ negocio: "X", calConectado: true });
+    expect(g).toContain("agendar una visita");
+    expect(g).toContain("si no, no insistas");
+    expect(g).not.toContain("Pídele SIEMPRE su número");
+  });
 });
 
 describe("buildAssistantConfig", () => {

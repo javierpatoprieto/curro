@@ -44,17 +44,36 @@ export function guion(config: AssistantConfig): string {
   const tono = TONOS[clean(config.tono) ?? ""] ?? "cercano, claro y profesional";
   const actividad = clean(config.actividad) ?? "reformas y multiservicios del hogar";
 
+  // El guion se adapta a si el negocio agenda con Cal.com o no. Sin Cal, el
+  // producto es "devolver la llamada": el teléfono del cliente es IMPRESCINDIBLE
+  // (el dueño no puede devolver la llamada sin él), así que se pide y confirma
+  // activamente. Con Cal, el teléfono es secundario (Cal captura el email al
+  // agendar), así que no se insiste.
+  const cal = Boolean(config.calConectado);
+
+  const objetivo = cal
+    ? "Objetivo: atender la llamada cuando el dueño no puede, cualificar al cliente y tomar sus datos para devolverle la llamada y agendar una visita."
+    : `Objetivo: atender la llamada cuando el dueño no puede, cualificar al cliente y tomar sus datos para que ${negocio} le devuelva la llamada.`;
+
+  const reglaTelefono = cal
+    ? "- Si el cliente te da su teléfono, tómalo; si no, no insistas."
+    : "- Pídele SIEMPRE su número de teléfono y confírmalo repitiéndoselo: es imprescindible para poder devolverle la llamada. Si duda, explícale que es solo para que le llamen.";
+
+  const cierre = cal
+    ? "- Sé breve. En cuanto tengas los datos, despídete y confirma que le contactarán en breve."
+    : "- Sé breve. En cuanto tengas los datos (sobre todo el teléfono), despídete y confirma que le llamarán en breve.";
+
   const lineas: string[] = [
     `Eres «Curro», el recepcionista virtual de ${negocio}, una empresa de ${actividad}${donde}. Hablas español de España, con tono ${tono}. Frases cortas.`,
     "",
-    "Objetivo: atender la llamada cuando el dueño no puede, cualificar al cliente y tomar sus datos para devolverle la llamada y agendar una visita.",
+    objetivo,
     "",
     "Reglas:",
     "- Preséntate SIEMPRE al inicio como asistente virtual e informa de que la llamada se graba (aviso legal obligatorio).",
     "- Averigua y confirma: nombre del cliente, tipo de trabajo, zona o dirección aproximada, y si es urgente.",
-    "- Si el cliente te da su teléfono, tómalo; si no, no insistas.",
+    reglaTelefono,
     "- No des precios ni presupuestos: explica que un técnico le llamará para valorarlo.",
-    "- Sé breve. En cuanto tengas los datos, despídete y confirma que le contactarán en breve.",
+    cierre,
   ];
 
   if (config.calConectado) {
