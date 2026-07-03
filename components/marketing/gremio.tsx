@@ -3,7 +3,33 @@ import Link from "next/link";
 import { ArrowRight, PhoneCall } from "lucide-react";
 import { btnBosqueLg } from "./ui";
 import type { Gremio } from "@/lib/gremios";
-import { PROVINCIAS, type Provincia } from "@/lib/provincias";
+import { PROVINCIAS, indiceEstable, type Provincia } from "@/lib/provincias";
+
+/** Primera letra en mayúscula (los nombres de gremio van en minúscula). */
+function cap1(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/** Une una lista en lenguaje natural: "A, B y C". */
+function listaNatural(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? "";
+  return `${items.slice(0, -1).join(", ")} y ${items[items.length - 1]}`;
+}
+
+/**
+ * Frase localizada del hero, elegida de forma estable según el gremio+provincia
+ * para que las páginas de un mismo gremio no repitan el mismo texto (anti-duplicado).
+ */
+function lineaHero(gremio: Gremio, p: Provincia): string {
+  const prov = p.nombre;
+  const variantes = [
+    `En ${prov} y toda su provincia, Curro coge el teléfono cuando tú no puedes: contesta, apunta al cliente y te lo pasa por WhatsApp.`,
+    `Trabajes donde trabajes en ${prov}, Curro atiende la llamada por ti, cualifica al cliente y te avisa al instante por WhatsApp.`,
+    `Curro contesta tus llamadas de ${gremio.nombre} en ${prov} a cualquier hora, apunta lo que necesita el cliente y te lo pasa al momento.`,
+    `¿Te entra una llamada mientras trabajas en ${prov}? Curro la coge por ti, toma los datos y te la pasa por WhatsApp sin perder al cliente.`,
+  ];
+  return variantes[indiceEstable(gremio.slug + p.slug) % variantes.length];
+}
 
 /** Hero de la landing por gremio (y opcionalmente por provincia). */
 export function GremioHero({
@@ -37,9 +63,7 @@ export function GremioHero({
 
           {provincia && (
             <p className="mt-3 max-w-lg leading-relaxed text-bosque-soft">
-              En {provincia.nombre} y toda su provincia, Curro coge el teléfono
-              cuando tú no puedes: contesta, apunta al cliente y te lo pasa por
-              WhatsApp.
+              {lineaHero(gremio, provincia)}
             </p>
           )}
 
@@ -163,6 +187,59 @@ export function GremioProvincias({ gremio }: { gremio: Gremio }) {
             </Link>
           ))}
         </nav>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Sección de zonas: capital + municipios REALES de la provincia. Es el bloque de
+ * contenido local único que diferencia cada página (anti thin-content).
+ */
+export function GremioZonas({
+  gremio,
+  provincia,
+}: {
+  gremio: Gremio;
+  provincia: Provincia;
+}) {
+  const cap = provincia.capital;
+  const lista = listaNatural(provincia.municipios);
+  const g = gremio.nombre;
+  const i = indiceEstable(gremio.slug + provincia.slug);
+
+  const h2Variantes = [
+    `${cap1(g)} en ${provincia.nombre} y toda su provincia`,
+    `Curro para ${g} en la provincia de ${provincia.nombre}`,
+    `Cubrimos ${provincia.nombre} entero para ${g}`,
+  ];
+  const introVariantes = [
+    `Curro atiende llamadas de ${g} en ${provincia.nombre}: desde ${cap} hasta ${lista}. Da igual el municipio, coge el teléfono por ti y te pasa el cliente por WhatsApp.`,
+    `Estés en ${cap} o en ${lista}, Curro coge las llamadas de ${g} en toda la provincia de ${provincia.nombre} y te avisa al instante.`,
+    `De ${cap} a ${lista}: Curro no deja escapar ninguna llamada de ${g} en ${provincia.nombre}. Contesta, cualifica y te lo pasa por WhatsApp.`,
+  ];
+
+  const zonas = [cap, ...provincia.municipios];
+
+  return (
+    <section className="bg-white">
+      <div className="mx-auto max-w-6xl px-5 py-16 lg:py-20">
+        <h2 className="titular max-w-3xl text-3xl text-bosque sm:text-4xl">
+          {h2Variantes[i % h2Variantes.length]}
+        </h2>
+        <p className="mt-4 max-w-2xl leading-relaxed text-bosque-soft">
+          {introVariantes[i % introVariantes.length]}
+        </p>
+        <div className="mt-8 flex flex-wrap gap-2">
+          {zonas.map((z) => (
+            <span
+              key={z}
+              className="rounded-full border border-linea3 bg-nieve px-3 py-1.5 text-sm text-bosque"
+            >
+              {z}
+            </span>
+          ))}
+        </div>
       </div>
     </section>
   );

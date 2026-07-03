@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Nav } from "@/components/marketing/nav";
-import { GremioHero, GremioDolores } from "@/components/marketing/gremio";
+import {
+  GremioHero,
+  GremioDolores,
+  GremioZonas,
+} from "@/components/marketing/gremio";
 import { Pasos } from "@/components/marketing/pasos";
 import { PorQue } from "@/components/marketing/por-que";
 import { Precios } from "@/components/marketing/precios";
@@ -62,6 +66,7 @@ export default async function GremioProvinciaPage({ params }: { params: Params }
       <Nav />
       <GremioHero gremio={g} provincia={p} />
       <GremioDolores gremio={g} provincia={p} />
+      <GremioZonas gremio={g} provincia={p} />
       <Pasos />
       <PorQue />
       <Precios />

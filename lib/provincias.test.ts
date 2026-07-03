@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { PROVINCIAS, PROVINCIA_SLUGS, getProvincia } from "@/lib/provincias";
+import {
+  PROVINCIAS,
+  PROVINCIA_SLUGS,
+  getProvincia,
+  indiceEstable,
+} from "@/lib/provincias";
 import { GREMIOS } from "@/lib/gremios";
 
 describe("provincias", () => {
@@ -11,9 +16,22 @@ describe("provincias", () => {
     }
   });
 
-  it("cada provincia tiene nombre visible", () => {
+  it("cada provincia tiene nombre, capital y municipios (contenido local único)", () => {
     for (const p of PROVINCIAS) {
       expect(p.nombre.length).toBeGreaterThan(2);
+      expect(p.capital.length).toBeGreaterThan(2);
+      expect(p.municipios.length).toBeGreaterThanOrEqual(3);
+      // La capital no se repite en la lista de municipios.
+      expect(p.municipios).not.toContain(p.capital);
+    }
+  });
+
+  it("indiceEstable es determinista y acotado", () => {
+    expect(indiceEstable("madrid")).toBe(indiceEstable("madrid"));
+    for (const p of PROVINCIAS) {
+      const n = indiceEstable(p.slug);
+      expect(n).toBeGreaterThanOrEqual(0);
+      expect(n).toBeLessThan(997);
     }
   });
 
