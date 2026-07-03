@@ -24,7 +24,7 @@ type ToolCall = { id?: string; function?: { name?: string; arguments?: unknown }
  * llamada sería peor que un plan B hablado.
  */
 export async function POST(request: NextRequest) {
-  const bloqueo = rateLimit(request, "vapi-tools");
+  const bloqueo = await rateLimit(request, "vapi-tools");
   if (bloqueo) return bloqueo;
 
   const rawBody = await request.text();

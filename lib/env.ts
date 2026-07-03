@@ -62,6 +62,18 @@ const schema = z.object({
   // Opcional: si se define, el layout renderiza el meta google-site-verification.
   GOOGLE_SITE_VERIFICATION: z.string().optional(),
 
+  // --- Superadmin (/admin) ---
+  // Secreto propio (aleatorio, p. ej. `openssl rand -hex 32`) con el que se firma
+  // el token de sesión de admin. Si falta, se firma con ADMIN_PASSWORD (menos
+  // seguro). ADMIN_PASSWORD se lee directamente de process.env en lib/admin/auth.
+  ADMIN_SESSION_SECRET: z.string().optional(),
+
+  // --- Rate limit durable (Upstash Redis, REST) ---
+  // Si ambas están, el rate limit de los webhooks públicos es global (compartido
+  // entre instancias). Sin ellas, se usa un contador en memoria por instancia.
+  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+
   // Si es "false", los adaptadores llaman a los proveedores reales.
   // Por defecto usamos mocks para no depender de cuentas externas.
   MOCK_PROVIDERS: z.enum(["true", "false"]).optional(),

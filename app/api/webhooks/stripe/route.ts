@@ -15,7 +15,7 @@ type Admin = ReturnType<typeof createAdminClient>;
 const PLANES_PAGO_VALIDOS = new Set<PlanPago>(["starter", "pro", "premium"]);
 
 export async function POST(request: NextRequest) {
-  const bloqueo = rateLimit(request, "stripe");
+  const bloqueo = await rateLimit(request, "stripe");
   if (bloqueo) return bloqueo;
 
   if (!stripeConfigurado()) {
