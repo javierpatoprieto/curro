@@ -24,6 +24,19 @@ const schema = z.object({
   WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
   WHATSAPP_VERIFY_TOKEN: z.string().optional(),
 
+  // --- WhatsApp vía Twilio (alternativa a Meta directo) ---
+  // Si estas están y MOCK_PROVIDERS=false, se usa Twilio en vez de Meta.
+  TWILIO_ACCOUNT_SID: z.string().optional(),
+  TWILIO_AUTH_TOKEN: z.string().optional(),
+  // Número emisor de WhatsApp en Twilio, formato "whatsapp:+14155238886"
+  // (el sandbox o tu número aprobado).
+  TWILIO_WHATSAPP_FROM: z.string().optional(),
+  // ContentSid (HX…) de las plantillas aprobadas en Twilio (producción, opcional).
+  // Sin ellos, las plantillas se mandan como texto libre (válido en sandbox y
+  // dentro de la ventana de 24 h).
+  TWILIO_WA_CONTENT_CLIENTE: z.string().optional(),
+  TWILIO_WA_CONTENT_DUENO: z.string().optional(),
+
   // --- Email (Resend) ---
   RESEND_API_KEY: z.string().optional(),
   // Remitente de los emails (debe ser un dominio verificado en Resend).

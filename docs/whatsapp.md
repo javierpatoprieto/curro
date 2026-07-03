@@ -1,65 +1,73 @@
-# WhatsApp (Cloud API de Meta)
+# WhatsApp
 
-Cómo conectar el canal de WhatsApp para que Curro avise al cliente y al dueño
-cuando entra un lead. El **envío ya está implementado** (`lib/messaging/whatsapp.ts`
-+ `templates.ts`); esto es el "qué tienes que dar de alta en Meta" para pasar de
-mock a real.
+Curro avisa al cliente y al dueño por WhatsApp cuando entra un lead. El **envío
+ya está implementado** con una interfaz intercambiable (`lib/messaging/whatsapp.ts`):
+soporta **Twilio** (elegido) o **Meta directo**, y cae a **mock** si no hay
+credenciales o `MOCK_PROVIDERS` no es `false`.
 
 ## Flujo
 
 ```
 Llamada → webhook Vapi → lead guardado → notificarNuevoLead():
-   ├─ WhatsApp al CLIENTE   (plantilla curro_confirmacion_cliente + enlace Cal.com)
-   └─ WhatsApp + email al DUEÑO (plantilla curro_aviso_lead con el resumen)
+   ├─ WhatsApp al CLIENTE   (confirmación + enlace Cal.com)
+   └─ WhatsApp + email al DUEÑO (resumen del lead)
 ```
 
-Sin `WHATSAPP_TOKEN` + `WHATSAPP_PHONE_NUMBER_ID` (o con `MOCK_PROVIDERS` distinto
-de `false`), el cliente cae a **mock** (log en consola, no envía). Es seguro.
+Selección de proveedor (en `getWhatsAppClient`): si `MOCK_PROVIDERS=false` y están
+las envs de **Twilio** → Twilio; si no, si están las de **Meta** → Meta; si no → mock.
 
-## 1. Variables de entorno (Vercel, las pone Javi)
+---
 
-- `WHATSAPP_TOKEN` — token de acceso del número de WhatsApp (System User token,
-  permanente; el token temporal de 24 h solo sirve para probar).
-- `WHATSAPP_PHONE_NUMBER_ID` — ID del número (no el número en sí), en la API Setup.
-- `WHATSAPP_VERIFY_TOKEN` — una cadena que TÚ inventas; se usa para verificar el
-  webhook (ver abajo). Debe ser el mismo valor aquí y en Meta.
-- `MOCK_PROVIDERS=false` — para que use el proveedor real.
+## Opción elegida: Twilio
 
-Tras ponerlas: **redeploy** (son de build/runtime).
+Ventaja: ya usáis Twilio para los números (un proveedor menos) y su **sandbox**
+permite probar HOY sin esperar aprobaciones de plantillas.
 
-## 2. Webhook
+### Envs (Vercel, las pone Javi) + `MOCK_PROVIDERS=false`
 
-- **Callback URL**: `https://soycurro.es/api/webhooks/whatsapp`
-- **Verify token**: el mismo valor que `WHATSAPP_VERIFY_TOKEN`.
-- Al pulsar "Verificar y guardar", Meta hace un `GET` con `hub.challenge`; nuestro
-  endpoint responde el challenge si el token coincide (si no, 403).
-- **Suscríbete** al campo `messages` (para estados de entrega y respuestas). El
-  `POST` de eventos hoy solo acusa recibo (200) y loguea un resumen; no hace falta
-  nada más para que los avisos salgan.
+- `TWILIO_ACCOUNT_SID` — de la consola de Twilio.
+- `TWILIO_AUTH_TOKEN` — de la consola de Twilio.
+- `TWILIO_WHATSAPP_FROM` — número emisor, formato `whatsapp:+14155238886`
+  (el del **sandbox** para pruebas, o tu número de WhatsApp aprobado en producción).
+- `TWILIO_WA_CONTENT_CLIENTE`, `TWILIO_WA_CONTENT_DUENO` — *opcionales*: los
+  `ContentSid` (HX…) de las plantillas aprobadas en Twilio. Sin ellos, las
+  plantillas se envían como **texto libre** (válido en sandbox y en la ventana de
+  24 h tras un mensaje del usuario).
 
-## 3. Plantillas (Message Templates) — hay que crearlas y que Meta las apruebe
+### Probar con el sandbox (sin aprobaciones)
 
-Idioma **Español (es)**, categoría **Utilidad (Utility)**. Los nombres y el orden
-de las variables tienen que coincidir EXACTAMENTE con el código (`templates.ts`).
+1. En Twilio Console → Messaging → **Try it out → WhatsApp sandbox**.
+2. Desde el móvil que vaya a recibir el aviso, envía `join <palabra>` al número del
+   sandbox (Twilio te da la palabra). Esto abre la ventana de 24 h.
+3. Pon las 3 envs de arriba (`TWILIO_WHATSAPP_FROM` = número del sandbox) + redeploy.
+4. Haz una llamada de prueba (Vapi) → debe llegar el WhatsApp de aviso.
+
+> El sandbox solo entrega a números que hayan hecho `join`. Para clientes reales
+> hace falta el número de producción + plantillas aprobadas (ContentSid).
+
+### Producción
+
+- Da de alta tu **número de WhatsApp** en Twilio (Senders) — Twilio guía el alta
+  con Meta por detrás.
+- Crea las **plantillas** (Content Templates) en Twilio, con el mismo contenido y
+  orden de variables que abajo; Twilio las envía a aprobar a Meta. Copia sus
+  `ContentSid` a `TWILIO_WA_CONTENT_CLIENTE/DUENO`.
+
+---
+
+## Plantillas (contenido y variables)
+
+Los nombres/orden deben coincidir con `templates.ts`. Idioma **es**.
 
 ### `curro_confirmacion_cliente` (al cliente)
-
-Variables: `{{1}}` = nombre del cliente · `{{2}}` = nombre del negocio ·
-`{{3}}` = enlace de Cal.com.
-
+`{{1}}`=nombre · `{{2}}`=negocio · `{{3}}`=enlace Cal.com.
 ```
 Hola {{1}}, soy el asistente de {{2}}. Hemos recibido tu solicitud y te
 contactaremos enseguida. Puedes reservar tu visita de valoración aquí: {{3}}
 ```
 
-Ejemplos para la revisión de Meta: `{{1}}=María`, `{{2}}=Reformas García`,
-`{{3}}=https://cal.com/reformas-garcia/visita`.
-
 ### `curro_aviso_lead` (al dueño)
-
-Variables: `{{1}}` = negocio · `{{2}}` = nombre cliente · `{{3}}` = teléfono ·
-`{{4}}` = tipo de trabajo · `{{5}}` = zona · `{{6}}` = urgencia (Sí/No).
-
+`{{1}}`=negocio · `{{2}}`=nombre · `{{3}}`=teléfono · `{{4}}`=trabajo · `{{5}}`=zona · `{{6}}`=urgencia.
 ```
 🔔 Nuevo lead en {{1}}
 👤 {{2}} · {{3}}
@@ -68,18 +76,18 @@ Variables: `{{1}}` = negocio · `{{2}}` = nombre cliente · `{{3}}` = teléfono 
 Urgente: {{6}}
 ```
 
-Ejemplos: `{{1}}=Reformas García`, `{{2}}=María`, `{{3}}=611222333`,
-`{{4}}=Reforma de baño`, `{{5}}=Chamberí`, `{{6}}=Sí`.
+> ⚠️ **Variables vacías**: tanto Meta como Twilio (con plantilla) rechazan
+> parámetros en blanco. Si un lead llega sin nombre/teléfono/enlace, el código manda
+> `""`/`"—"`. Con ContentSid conviene asegurar que ningún parámetro va vacío. En
+> **texto libre** (sandbox / ventana 24 h) no hay problema.
 
-> ⚠️ **Cuidado con variables vacías**: Meta rechaza mensajes con parámetros en
-> blanco. Si un lead llega sin nombre/teléfono/enlace, el código manda `""` o `"—"`.
-> Conviene asegurar que ningún parámetro va vacío (usar "—" o similar). Revisar en
-> `templates.ts` antes de activar el envío real al cliente.
+---
 
-## 4. Probar
+## Alternativa: Meta directo (WhatsApp Cloud API)
 
-1. Con las envs puestas y `MOCK_PROVIDERS=false`, haz una llamada de prueba (Vapi).
-2. Debe llegar el WhatsApp al dueño (y al cliente si dio teléfono).
-3. Los envíos quedan registrados en la tabla `messages` (canal, plantilla, estado).
-4. Mientras las plantillas no estén aprobadas, Meta devolverá error de plantilla;
-   el lead se guarda igual (el fallo de envío no tumba el webhook).
+Sin intermediario ni markup, pero te gestionas tú Business Manager + verificación +
+plantillas. Envs: `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`,
+`WHATSAPP_VERIFY_TOKEN` + `MOCK_PROVIDERS=false`. Webhook de verificación en
+`https://soycurro.es/api/webhooks/whatsapp` (GET valida `hub.challenge` con
+`WHATSAPP_VERIFY_TOKEN`). Ese webhook es **específico de Meta**; con Twilio no se usa
+(Twilio tiene sus propios callbacks, opcionales para el envío saliente).

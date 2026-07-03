@@ -1,4 +1,5 @@
 import { env } from "@/lib/env";
+import { PLANTILLA_CLIENTE, PLANTILLA_DUENO } from "@/lib/messaging/templates";
 
 export type WhatsAppMessage =
   | { kind: "template"; to: string; template: string; variables: string[]; texto: string }
@@ -80,6 +81,77 @@ class RealWhatsAppClient implements WhatsAppClient {
   }
 }
 
+const TWILIO_API = "https://api.twilio.com/2010-04-01";
+
+/** Asegura el prefijo whatsapp: y el + en el número destino para Twilio. */
+export function twilioTo(phone: string): string {
+  return `whatsapp:+${normalizeTo(phone)}`;
+}
+
+/**
+ * Cuerpo (form-urlencoded) para la API de Twilio. Si hay ContentSid de plantilla,
+ * usa la plantilla aprobada con ContentVariables ({"1":.., "2":..}); si no, manda
+ * el texto libre (válido en sandbox y dentro de la ventana de 24 h).
+ */
+export function buildTwilioParams(
+  msg: WhatsAppMessage,
+  from: string,
+  contentSid?: string,
+): URLSearchParams {
+  const params = new URLSearchParams({ From: from, To: twilioTo(msg.to) });
+  if (msg.kind === "template" && contentSid) {
+    params.set("ContentSid", contentSid);
+    const vars: Record<string, string> = {};
+    msg.variables.forEach((v, i) => {
+      vars[String(i + 1)] = v;
+    });
+    params.set("ContentVariables", JSON.stringify(vars));
+  } else {
+    params.set("Body", msg.kind === "text" ? msg.body : msg.texto);
+  }
+  return params;
+}
+
+class TwilioWhatsAppClient implements WhatsAppClient {
+  readonly modo = "real" as const;
+  constructor(
+    private accountSid: string,
+    private authToken: string,
+    private from: string,
+    private contentSids: Record<string, string>,
+  ) {}
+
+  async send(msg: WhatsAppMessage): Promise<WhatsAppResult> {
+    const contentSid =
+      msg.kind === "template" ? this.contentSids[msg.template] : undefined;
+    const params = buildTwilioParams(msg, this.from, contentSid);
+    const auth = Buffer.from(`${this.accountSid}:${this.authToken}`).toString(
+      "base64",
+    );
+    const res = await fetch(
+      `${TWILIO_API}/Accounts/${this.accountSid}/Messages.json`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${auth}`,
+          "content-type": "application/x-www-form-urlencoded",
+        },
+        body: params.toString(),
+      },
+    );
+    const json = (await res.json().catch(() => ({}))) as {
+      sid?: string;
+      message?: string;
+    };
+    if (!res.ok) {
+      throw new Error(
+        `Twilio WhatsApp ${res.status}: ${json.message ?? "error desconocido"}`,
+      );
+    }
+    return { id: json.sid ?? null, request: Object.fromEntries(params) };
+  }
+}
+
 class MockWhatsAppClient implements WhatsAppClient {
   readonly modo = "mock" as const;
   async send(msg: WhatsAppMessage): Promise<WhatsAppResult> {
@@ -90,15 +162,34 @@ class MockWhatsAppClient implements WhatsAppClient {
 }
 
 export function getWhatsAppClient(): WhatsAppClient {
+  if (env.mockProviders) return new MockWhatsAppClient();
+
+  // Twilio tiene prioridad si está configurado (proveedor elegido).
   if (
-    !env.mockProviders &&
-    env.WHATSAPP_TOKEN &&
-    env.WHATSAPP_PHONE_NUMBER_ID
+    env.TWILIO_ACCOUNT_SID &&
+    env.TWILIO_AUTH_TOKEN &&
+    env.TWILIO_WHATSAPP_FROM
   ) {
+    const contentSids: Record<string, string> = {};
+    if (env.TWILIO_WA_CONTENT_CLIENTE)
+      contentSids[PLANTILLA_CLIENTE] = env.TWILIO_WA_CONTENT_CLIENTE;
+    if (env.TWILIO_WA_CONTENT_DUENO)
+      contentSids[PLANTILLA_DUENO] = env.TWILIO_WA_CONTENT_DUENO;
+    return new TwilioWhatsAppClient(
+      env.TWILIO_ACCOUNT_SID,
+      env.TWILIO_AUTH_TOKEN,
+      env.TWILIO_WHATSAPP_FROM,
+      contentSids,
+    );
+  }
+
+  // Meta directo (WhatsApp Cloud API) como alternativa.
+  if (env.WHATSAPP_TOKEN && env.WHATSAPP_PHONE_NUMBER_ID) {
     return new RealWhatsAppClient(
       env.WHATSAPP_TOKEN,
       env.WHATSAPP_PHONE_NUMBER_ID,
     );
   }
+
   return new MockWhatsAppClient();
 }
