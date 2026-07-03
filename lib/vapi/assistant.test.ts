@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { guion, buildAssistantConfig } from "@/lib/vapi/assistant";
+import {
+  guion,
+  buildAssistantConfig,
+  herramientasCal,
+} from "@/lib/vapi/assistant";
 
 describe("guion", () => {
   it("incluye negocio, ciudad, tono y el aviso legal", () => {
@@ -35,6 +39,14 @@ describe("guion", () => {
     expect(g).not.toContain("Zonas que cubre");
     expect(g).not.toContain("Base de conocimiento");
   });
+
+  it("añade el bloque de agendado solo cuando Cal.com está conectado", () => {
+    expect(guion({ negocio: "X" })).not.toContain("consultarHuecos");
+    const g = guion({ negocio: "X", calConectado: true });
+    expect(g).toContain("consultarHuecos");
+    expect(g).toContain("agendarVisita");
+    expect(g).toContain("plan B");
+  });
 });
 
 describe("buildAssistantConfig", () => {
@@ -48,5 +60,32 @@ describe("buildAssistantConfig", () => {
   it("respeta el maxDuracionSeg indicado", () => {
     const c = buildAssistantConfig({ negocio: "X", maxDuracionSeg: 120 });
     expect(c.maxDurationSeconds).toBe(120);
+  });
+
+  it("no adjunta tools si Cal.com no está conectado", () => {
+    const c = buildAssistantConfig({ negocio: "X" });
+    expect((c.model as { tools?: unknown[] }).tools).toBeUndefined();
+  });
+
+  it("adjunta las 2 tools de agendado cuando Cal.com está conectado", () => {
+    const c = buildAssistantConfig({ negocio: "X", calConectado: true });
+    const tools = (c.model as { tools?: { function: { name: string } }[] }).tools;
+    expect(tools).toHaveLength(2);
+    expect(tools?.map((t) => t.function.name)).toEqual([
+      "consultarHuecos",
+      "agendarVisita",
+    ]);
+  });
+});
+
+describe("herramientasCal", () => {
+  it("define las 2 function-tools apuntando a /api/vapi/tools", () => {
+    const tools = herramientasCal();
+    expect(tools).toHaveLength(2);
+    for (const t of tools) {
+      expect(t.type).toBe("function");
+      expect(t.server.url).toContain("/api/vapi/tools");
+    }
+    expect(tools[1].function.parameters.required).toContain("email");
   });
 });

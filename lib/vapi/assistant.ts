@@ -11,6 +11,8 @@ export interface AssistantConfig {
   preguntas_clave?: string | null;
   conocimiento?: string | null;
   maxDuracionSeg?: number | null;
+  /** Si el negocio tiene Cal.com conectado, el assistant puede agendar la visita. */
+  calConectado?: boolean;
 }
 
 const TONOS: Record<string, string> = {
@@ -40,6 +42,17 @@ export function guion(config: AssistantConfig): string {
     "- No des precios ni presupuestos: explica que un técnico le llamará para valorarlo.",
     "- Sé breve. En cuanto tengas los datos, despídete y confirma que le contactarán en breve.",
   ];
+
+  if (config.calConectado) {
+    lineas.push(
+      "",
+      "Agendado de visita (tienes herramientas para hacerlo en la misma llamada):",
+      "- Cuando tengas el nombre y el tipo de trabajo, ofrece agendar una visita.",
+      "- Usa la herramienta «consultarHuecos» para ver fechas libres y propón 2 o 3 opciones concretas al cliente (di día y hora de forma natural, p. ej. «el martes a las 10 o el miércoles a las 17»).",
+      "- Cuando el cliente elija, pídele un email para enviarle la confirmación y usa «agendarVisita» con la fecha y hora elegidas.",
+      "- Si la herramienta falla o no hay huecos, no lo intentes más: di que un técnico le llamará para cerrar la visita (plan B), y continúa tomando los datos con normalidad.",
+    );
+  }
 
   const servicios = clean(config.servicios);
   if (servicios) {
@@ -78,6 +91,72 @@ const DURACION_POR_DEFECTO = 300; // 5 minutos de tope por llamada
 const appUrl = () =>
   env.APP_URL || env.NEXT_PUBLIC_APP_URL || "https://curro-kappa.vercel.app";
 
+/**
+ * Function-tools de agendado (Cal.com). Vapi las invoca durante la llamada y
+ * hace POST a nuestro endpoint /api/vapi/tools (con el mismo secreto del webhook).
+ * El endpoint resuelve el negocio por assistantId y usa su API key de Cal.com.
+ */
+export function herramientasCal() {
+  const server = env.VAPI_WEBHOOK_SECRET
+    ? {
+        url: `${appUrl()}/api/vapi/tools`,
+        headers: { "x-vapi-secret": env.VAPI_WEBHOOK_SECRET },
+      }
+    : { url: `${appUrl()}/api/vapi/tools` };
+
+  return [
+    {
+      type: "function",
+      server,
+      function: {
+        name: "consultarHuecos",
+        description:
+          "Consulta las próximas fechas y horas libres para agendar una visita. Úsala antes de proponer horarios al cliente.",
+        parameters: {
+          type: "object",
+          properties: {
+            dias: {
+              type: "number",
+              description:
+                "Número de días hacia delante a consultar (opcional, por defecto 14).",
+            },
+          },
+          required: [],
+        },
+      },
+    },
+    {
+      type: "function",
+      server,
+      function: {
+        name: "agendarVisita",
+        description:
+          "Reserva una visita en una fecha y hora concretas que el cliente haya elegido de las ofrecidas.",
+        parameters: {
+          type: "object",
+          properties: {
+            fecha_hora: {
+              type: "string",
+              description:
+                "Fecha y hora de inicio elegidas, en formato ISO 8601 (la misma que devolvió consultarHuecos).",
+            },
+            nombre: { type: "string", description: "Nombre del cliente." },
+            email: {
+              type: "string",
+              description: "Email del cliente para enviarle la confirmación.",
+            },
+            telefono: {
+              type: "string",
+              description: "Teléfono del cliente (opcional).",
+            },
+          },
+          required: ["fecha_hora", "nombre", "email"],
+        },
+      },
+    },
+  ];
+}
+
 export function buildAssistantConfig(config: AssistantConfig) {
   const { negocio } = config;
   return {
@@ -89,6 +168,7 @@ export function buildAssistantConfig(config: AssistantConfig) {
       provider: "openai",
       model: "gpt-4o",
       messages: [{ role: "system", content: guion(config) }],
+      ...(config.calConectado ? { tools: herramientasCal() } : {}),
     },
     voice: { provider: "11labs", voiceId: "sarah", model: "eleven_turbo_v2_5" },
     transcriber: { provider: "deepgram", model: "nova-2", language: "es" },
