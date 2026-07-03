@@ -6,7 +6,11 @@ export default defineConfig({
     // Tests de lógica de negocio (parsers, máquina de estados, activación Stripe).
     // No necesitamos jsdom: probamos funciones puras del servidor.
     environment: "node",
-    include: ["tests/**/*.test.ts", "lib/**/*.test.ts"],
+    include: [
+      "tests/**/*.test.ts",
+      "lib/**/*.test.ts",
+      "app/**/*.test.ts",
+    ],
     globals: true,
   },
   resolve: {
