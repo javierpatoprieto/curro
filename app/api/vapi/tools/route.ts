@@ -125,14 +125,52 @@ async function onAgendarVisita(
     return "Faltan datos para agendar (necesito fecha, nombre y email). Pídeselos al cliente.";
   }
 
+  // No nos fiamos del `fecha_hora` que teclea el modelo: Cal solo acepta una
+  // reserva si el `start` coincide EXACTAMENTE con un hueco libre. El modelo
+  // suele reformatear la fecha (quita milisegundos, cambia `Z` por `+00:00`,
+  // redondea el minuto…) y entonces Cal la rechaza. Revalidamos contra los huecos
+  // vivos y reservamos con el string CANÓNICO de Cal.
+  const huecos = await obtenerHuecos(integ.cal_api_key!, integ.cal_event_type_id!, {
+    dias: 21,
+    timeZone: ZONA,
+  });
+  if (huecos.length === 0) {
+    return "Ya no quedan huecos libres. Ofrece el plan B: un técnico le llamará para cerrar la visita.";
+  }
+  const canonico = elegirHueco(start, huecos);
+  if (!canonico) {
+    const opciones = huecos
+      .slice(0, 4)
+      .map((iso) => `- ${formatoFecha(iso)} (${iso})`)
+      .join("\n");
+    return (
+      "Esa fecha ya no está libre o no coincide con un hueco válido. Ofrece de nuevo " +
+      "una de estas opciones y agenda con la fecha ISO exacta entre paréntesis:\n" +
+      opciones
+    );
+  }
+
   await crearReserva(integ.cal_api_key!, integ.cal_event_type_id!, {
-    start,
+    start: canonico,
     nombre,
     email,
     telefono,
     timeZone: ZONA,
   });
-  return `Visita confirmada para el ${formatoFecha(start)}. Se le ha enviado la confirmación por email. Despídete.`;
+  return `Visita confirmada para el ${formatoFecha(canonico)}. Se le ha enviado la confirmación por email. Despídete.`;
+}
+
+/**
+ * Devuelve el `start` CANÓNICO de Cal que corresponde al instante pedido por el
+ * modelo, o null si ninguno coincide. Compara por INSTANTE (no por texto), así
+ * toleramos variantes de formato que representan la misma hora (milisegundos
+ * omitidos, `Z` vs `+00:00`, etc.) y reservamos siempre con el string exacto que
+ * Cal considera reservable.
+ */
+export function elegirHueco(pedido: string, huecos: string[]): string | null {
+  const t = new Date(pedido).getTime();
+  if (Number.isNaN(t)) return null;
+  return huecos.find((h) => new Date(h).getTime() === t) ?? null;
 }
 
 // --- Utilidades -------------------------------------------------------------
