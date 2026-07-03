@@ -45,6 +45,10 @@ const schema = z.object({
   // consentimiento solo carga GA4 si esta variable está definida.
   NEXT_PUBLIC_GA_ID: z.string().optional(),
 
+  // Token de verificación de Google Search Console (método "Etiqueta HTML").
+  // Opcional: si se define, el layout renderiza el meta google-site-verification.
+  GOOGLE_SITE_VERIFICATION: z.string().optional(),
+
   // Si es "false", los adaptadores llaman a los proveedores reales.
   // Por defecto usamos mocks para no depender de cuentas externas.
   MOCK_PROVIDERS: z.enum(["true", "false"]).optional(),

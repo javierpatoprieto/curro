@@ -74,6 +74,13 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
+  // Verificación de Google Search Console por meta-tag (método "Etiqueta HTML").
+  // Opcional: si defines GOOGLE_SITE_VERIFICATION en Vercel, se renderiza el
+  // <meta name="google-site-verification">. Si verificas por el método "Google
+  // Analytics" (GA4 ya está activo), no hace falta.
+  verification: process.env.GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.GOOGLE_SITE_VERIFICATION }
+    : undefined,
 };
 
 export default function RootLayout({
