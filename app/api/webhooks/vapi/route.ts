@@ -21,7 +21,7 @@ const supabaseListo = () =>
  * Respondemos siempre 200 a eventos válidos para que Vapi no reintente en bucle.
  */
 export async function POST(request: NextRequest) {
-  const bloqueo = rateLimit(request, "vapi");
+  const bloqueo = await rateLimit(request, "vapi");
   if (bloqueo) return bloqueo;
 
   const rawBody = await request.text();
