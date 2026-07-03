@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Nav } from "@/components/marketing/nav";
-import { GremioHero, GremioDolores } from "@/components/marketing/gremio";
+import {
+  GremioHero,
+  GremioDolores,
+  GremioProvincias,
+} from "@/components/marketing/gremio";
 import { Pasos } from "@/components/marketing/pasos";
 import { PorQue } from "@/components/marketing/por-que";
 import { Precios } from "@/components/marketing/precios";
@@ -65,6 +69,7 @@ export default async function GremioPage({
       <PorQue />
       <Precios />
       <Faq />
+      <GremioProvincias gremio={g} />
       <CtaFinal />
       <Footer />
       <CurroChat />

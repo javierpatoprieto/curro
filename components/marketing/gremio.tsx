@@ -3,10 +3,18 @@ import Link from "next/link";
 import { ArrowRight, PhoneCall } from "lucide-react";
 import { btnBosqueLg } from "./ui";
 import type { Gremio } from "@/lib/gremios";
+import { PROVINCIAS, type Provincia } from "@/lib/provincias";
 
-/** Hero de la landing por gremio: clona el hero principal con copy del oficio. */
-export function GremioHero({ gremio }: { gremio: Gremio }) {
+/** Hero de la landing por gremio (y opcionalmente por provincia). */
+export function GremioHero({
+  gremio,
+  provincia,
+}: {
+  gremio: Gremio;
+  provincia?: Provincia;
+}) {
   const { ejemplo } = gremio;
+  const enProvincia = provincia ? ` en ${provincia.nombre}` : "";
   return (
     <section className="bg-nieve">
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:py-24">
@@ -14,16 +22,26 @@ export function GremioHero({ gremio }: { gremio: Gremio }) {
           <span className="inline-flex items-center gap-2 rounded-full border border-linea3 bg-white px-3 py-1.5 text-xs font-semibold text-bosque">
             <span className="size-1.5 rounded-full bg-lima" />
             Recepcionista con IA · {gremio.nombre}
+            {provincia ? ` · ${provincia.nombre}` : ""}
           </span>
 
           <h1 className="titular mt-6 text-5xl text-bosque sm:text-6xl lg:text-[4.4rem]">
             El recepcionista con IA para{" "}
-            <span className="marca-lima">{gremio.nombre}</span>.
+            <span className="marca-lima">{gremio.nombre}</span>
+            {enProvincia}.
           </h1>
 
           <p className="mt-7 max-w-lg text-lg leading-relaxed text-bosque-soft">
             {gremio.subtitulo}
           </p>
+
+          {provincia && (
+            <p className="mt-3 max-w-lg leading-relaxed text-bosque-soft">
+              En {provincia.nombre} y toda su provincia, Curro coge el teléfono
+              cuando tú no puedes: contesta, apunta al cliente y te lo pasa por
+              WhatsApp.
+            </p>
+          )}
 
           <div className="mt-8 flex flex-wrap items-center gap-5">
             <Link href="/registro" className={btnBosqueLg}>
@@ -49,7 +67,7 @@ export function GremioHero({ gremio }: { gremio: Gremio }) {
           <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-linea3">
             <Image
               src="/img/llamada.jpg"
-              alt={`Un ${gremio.nombre.replace(/s$/, "")} sujeta el móvil con una llamada que Curro atiende por él`}
+              alt="Un profesional sujeta el móvil con una llamada entrante que Curro atiende por él"
               width={880}
               height={1100}
               priority
@@ -89,12 +107,21 @@ export function GremioHero({ gremio }: { gremio: Gremio }) {
 }
 
 /** Sección de dolores/beneficios específicos del gremio (3 tarjetas). */
-export function GremioDolores({ gremio }: { gremio: Gremio }) {
+export function GremioDolores({
+  gremio,
+  provincia,
+}: {
+  gremio: Gremio;
+  provincia?: Provincia;
+}) {
+  const titulo = provincia
+    ? `Curro para ${gremio.nombre} en ${provincia.nombre}`
+    : gremio.doloresTitulo;
   return (
     <section className="bg-white">
       <div className="mx-auto max-w-6xl px-5 py-20 lg:py-24">
         <h2 className="titular max-w-2xl text-4xl text-bosque sm:text-5xl">
-          {gremio.doloresTitulo}
+          {titulo}
         </h2>
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {gremio.dolores.map((d) => (
@@ -109,6 +136,33 @@ export function GremioDolores({ gremio }: { gremio: Gremio }) {
             </div>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+/** Enlaces a las páginas por provincia de un gremio (para la página nacional). */
+export function GremioProvincias({ gremio }: { gremio: Gremio }) {
+  return (
+    <section className="bg-nieve">
+      <div className="mx-auto max-w-6xl px-5 py-16 lg:py-20">
+        <h2 className="titular text-3xl text-bosque sm:text-4xl">
+          Curro para {gremio.nombre} en tu provincia
+        </h2>
+        <p className="mt-3 max-w-2xl text-bosque-soft">
+          Estés donde estés, Curro coge el teléfono por ti. Elige tu provincia:
+        </p>
+        <nav className="mt-8 flex flex-wrap gap-x-5 gap-y-3 text-sm">
+          {PROVINCIAS.map((p) => (
+            <Link
+              key={p.slug}
+              href={`/para/${gremio.slug}/${p.slug}`}
+              className="text-bosque-soft transition-colors hover:text-bosque"
+            >
+              {gremio.nombre} en {p.nombre}
+            </Link>
+          ))}
+        </nav>
       </div>
     </section>
   );

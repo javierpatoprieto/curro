@@ -196,6 +196,166 @@ export const GREMIOS: Gremio[] = [
     ],
     ejemplo: { trabajo: "Instalar aire", zona: "Tetuán", etiqueta: "Presupuesto" },
   },
+  {
+    slug: "albaniles",
+    nombre: "albañiles",
+    metaTitle: "Recepcionista con IA para albañiles · Curro",
+    metaDescription:
+      "Curro coge el teléfono mientras estás en el andamio. Cualifica el trabajo y te pasa el cliente por WhatsApp. 24/7 en español. Prueba 7 días.",
+    subtitulo:
+      "En el andamio o con la hormigonera en marcha no oyes el móvil. Curro contesta y te avisa.",
+    doloresTitulo: "Para la albañilería del día a día",
+    dolores: [
+      {
+        titulo: "El ruido se come las llamadas",
+        texto:
+          "Entre radial y hormigonera no oyes el teléfono. Curro las coge todas por ti.",
+      },
+      {
+        titulo: "No bajas del andamio a atender",
+        texto:
+          "Mientras trabajas, Curro atiende, pregunta lo justo y te manda el aviso.",
+      },
+      {
+        titulo: "Obras que valen dinero",
+        texto:
+          "Cada obra perdida es mucho. Curro capta al cliente y toma los datos del trabajo.",
+      },
+    ],
+    ejemplo: { trabajo: "Levantar tabique", zona: "Vallecas", etiqueta: "Presupuesto" },
+  },
+  {
+    slug: "carpinteros",
+    nombre: "carpinteros",
+    metaTitle: "Recepcionista con IA para carpinteros · Curro",
+    metaDescription:
+      "Curro coge el teléfono mientras estás en el taller o montando. Cualifica y te pasa el cliente por WhatsApp. 24/7 en español. Prueba 7 días.",
+    subtitulo:
+      "Con la sierra en marcha o montando una cocina no coges el móvil. Curro atiende por ti.",
+    doloresTitulo: "A medida para carpinteros",
+    dolores: [
+      {
+        titulo: "El taller es ruidoso",
+        texto: "Entre máquinas no oyes el teléfono. Curro contesta cada llamada.",
+      },
+      {
+        titulo: "Montando no atiendes",
+        texto: "Mientras montas, Curro coge la llamada y toma los datos.",
+      },
+      {
+        titulo: "Encargos que se escapan",
+        texto:
+          "Cada llamada perdida es un encargo para otro. Curro capta al cliente.",
+      },
+    ],
+    ejemplo: { trabajo: "Armario a medida", zona: "Chamartín", etiqueta: "Presupuesto" },
+  },
+  {
+    slug: "cristaleros",
+    nombre: "cristaleros",
+    metaTitle: "Recepcionista con IA para cristaleros · Curro",
+    metaDescription:
+      "Curro coge las urgencias de cristalería cuando no puedes. Cualifica y te pasa el cliente por WhatsApp al instante. 24/7. Prueba 7 días.",
+    subtitulo:
+      "Un cristal roto no espera y tú estás en otra instalación. Curro contesta y te avisa al momento.",
+    doloresTitulo: "Para la cristalería y sus urgencias",
+    dolores: [
+      {
+        titulo: "Roturas que corren prisa",
+        texto:
+          "Un escaparate roto llama al que contesta. Curro contesta siempre.",
+      },
+      {
+        titulo: "No sueltas el cristal",
+        texto: "Mientras instalas, Curro coge la llamada y toma los datos.",
+      },
+      {
+        titulo: "El primero que responde gana",
+        texto:
+          "Curro contesta al primer tono y te pasa el cliente por WhatsApp.",
+      },
+    ],
+    ejemplo: { trabajo: "Cambiar cristal", zona: "Centro", etiqueta: "Urgente" },
+  },
+  {
+    slug: "manitas",
+    nombre: "manitas",
+    metaTitle: "Recepcionista con IA para manitas y multiservicios · Curro",
+    metaDescription:
+      "Curro coge el teléfono mientras estás en un arreglo. Cualifica el encargo y te pasa el cliente por WhatsApp. 24/7 en español. Prueba 7 días.",
+    subtitulo:
+      "Saltas de un arreglo a otro y el teléfono no para. Curro atiende cada llamada por ti.",
+    doloresTitulo: "Para el manitas y el multiservicios",
+    dolores: [
+      {
+        titulo: "Mil arreglos, un teléfono",
+        texto: "Entre encargos no atiendes bien. Curro coge todas las llamadas.",
+      },
+      {
+        titulo: "Con las manos ocupadas",
+        texto: "Mientras arreglas, Curro atiende y toma los datos del encargo.",
+      },
+      {
+        titulo: "Trabajos que se pierden",
+        texto:
+          "Cada llamada sin coger es un cliente para otro. Curro lo capta.",
+      },
+    ],
+    ejemplo: { trabajo: "Montar muebles", zona: "Latina", etiqueta: "Hoy" },
+  },
+  {
+    slug: "escayolistas",
+    nombre: "escayolistas",
+    metaTitle: "Recepcionista con IA para escayolistas y pladur · Curro",
+    metaDescription:
+      "Curro coge el teléfono mientras estás con el pladur. Cualifica el trabajo y te pasa el cliente por WhatsApp. 24/7 en español. Prueba 7 días.",
+    subtitulo:
+      "Subido a la borriqueta con las manos llenas de pasta no coges el móvil. Curro atiende por ti.",
+    doloresTitulo: "Para escayola y pladur",
+    dolores: [
+      {
+        titulo: "No bajas a coger el teléfono",
+        texto: "Mientras trabajas el techo, Curro atiende cada llamada.",
+      },
+      {
+        titulo: "Presupuestos que se escapan",
+        texto:
+          "Cada llamada perdida es un presupuesto para otro. Curro lo capta.",
+      },
+      {
+        titulo: "Datos claros del trabajo",
+        texto:
+          "Curro pregunta metros y para cuándo, y te lo pasa por WhatsApp.",
+      },
+    ],
+    ejemplo: { trabajo: "Techo de pladur", zona: "Carabanchel", etiqueta: "Presupuesto" },
+  },
+  {
+    slug: "parquetistas",
+    nombre: "parquetistas",
+    metaTitle: "Recepcionista con IA para parquetistas · Curro",
+    metaDescription:
+      "Curro coge el teléfono mientras instalas o acuchillas el suelo. Cualifica y te pasa el cliente por WhatsApp. 24/7 en español. Prueba 7 días.",
+    subtitulo:
+      "Instalando o acuchillando un suelo no paras a coger el móvil. Curro atiende por ti.",
+    doloresTitulo: "Para el parquet y los suelos",
+    dolores: [
+      {
+        titulo: "De rodillas no atiendes",
+        texto: "Mientras instalas el suelo, Curro coge cada llamada.",
+      },
+      {
+        titulo: "Trabajos que valen la pena",
+        texto: "Un suelo perdido es mucho dinero. Curro capta al cliente.",
+      },
+      {
+        titulo: "Datos claros del trabajo",
+        texto:
+          "Curro pregunta metros y tipo de suelo, y te lo pasa por WhatsApp.",
+      },
+    ],
+    ejemplo: { trabajo: "Instalar tarima", zona: "Retiro", etiqueta: "Presupuesto" },
+  },
 ];
 
 /** Slugs para generateStaticParams y el sitemap. */
