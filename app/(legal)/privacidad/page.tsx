@@ -9,7 +9,7 @@ export default function PrivacidadPage() {
         Política de privacidad
       </h1>
       <p className="text-[var(--muted-foreground)]">
-        Última actualización: 2 de julio de 2026
+        Última actualización: 3 de julio de 2026
       </p>
 
       <h2 className="pt-4 text-lg font-semibold">Responsable del tratamiento</h2>
@@ -76,8 +76,9 @@ export default function PrivacidadPage() {
       <h2 className="pt-4 text-lg font-semibold">Encargados del tratamiento</h2>
       <p>
         Usamos proveedores para prestar el servicio: Vapi (voz), Supabase (base
-        de datos), WhatsApp/Meta y Resend (comunicaciones), Stripe (pagos) y
-        Google Analytics (analítica web, solo con tu consentimiento; ver la{" "}
+        de datos), WhatsApp/Meta y Resend (comunicaciones), Stripe (pagos),
+        Cal.com (agendado de visitas) y Google Analytics (analítica web, solo con
+        tu consentimiento; ver la{" "}
         <a href="/cookies" className="underline">
           política de cookies
         </a>

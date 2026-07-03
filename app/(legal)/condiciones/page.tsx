@@ -9,7 +9,7 @@ export default function CondicionesPage() {
         Condiciones de contratación
       </h1>
       <p className="text-[var(--muted-foreground)]">
-        Última actualización: 2 de julio de 2026
+        Última actualización: 3 de julio de 2026
       </p>
 
       <h2 className="pt-4 text-lg font-semibold">1. Partes</h2>

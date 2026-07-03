@@ -8,7 +8,7 @@ export default function CookiesPage() {
     <>
       <h1 className="text-3xl font-bold tracking-tight">Política de cookies</h1>
       <p className="text-[var(--muted-foreground)]">
-        Última actualización: 2 de julio de 2026
+        Última actualización: 3 de julio de 2026
       </p>
 
       <h2 className="pt-4 text-lg font-semibold">Qué son las cookies</h2>
