@@ -12,7 +12,9 @@
 
 const CAL_API = "https://api.cal.com/v2";
 const CAL_VERSION_SLOTS = "2024-09-04";
-const CAL_VERSION_BOOKINGS = "2024-08-13";
+// OJO: una versión antigua del endpoint de bookings NO acepta API keys normales
+// (devuelve 401 "Invalid Access Token"). La versión actual sí. No bajar de aquí.
+const CAL_VERSION_BOOKINGS = "2026-02-25";
 
 export interface Hueco {
   /** Inicio del hueco en ISO 8601 (UTC), tal cual lo devuelve Cal.com. */
