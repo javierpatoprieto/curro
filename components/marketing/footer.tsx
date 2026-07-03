@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "./logo";
+import { GREMIOS } from "@/lib/gremios";
 
 const enlaces = [
   { label: "Precios", href: "#precios" },
@@ -47,7 +48,24 @@ export function Footer() {
           </nav>
         </div>
 
-        <div className="mt-12 flex flex-col items-center gap-3 border-t border-nieve/10 pt-6 text-sm text-nieve/50 sm:flex-row sm:justify-between">
+        <div className="mt-10 border-t border-nieve/10 pt-6">
+          <p className="text-xs font-semibold uppercase tracking-wide text-nieve/50">
+            Curro para
+          </p>
+          <nav className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-nieve/70">
+            {GREMIOS.map((g) => (
+              <Link
+                key={g.slug}
+                href={`/para/${g.slug}`}
+                className="capitalize transition-colors hover:text-lima"
+              >
+                {g.nombre}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        <div className="mt-10 flex flex-col items-center gap-3 border-t border-nieve/10 pt-6 text-sm text-nieve/50 sm:flex-row sm:justify-between">
           <p>© 2026 Curro</p>
           <p className="inline-flex items-center gap-2">
             <span className="size-1.5 rounded-full bg-lima" />
