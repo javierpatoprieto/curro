@@ -31,6 +31,8 @@ export const DEMO_BUSINESS: Business = {
     "¿Es vivienda o local? ¿Metros aproximados? ¿Para cuándo lo necesita?",
   conocimiento:
     "Ofrecemos 2 años de garantía en todas las obras y presupuesto sin compromiso tras la visita.",
+  voz: "femenina",
+  actividad: "reformas y multiservicios del hogar",
   max_duracion_seg: 300,
   created_at: "2026-01-15T09:00:00.000Z",
   updated_at: "2026-06-20T12:00:00.000Z",

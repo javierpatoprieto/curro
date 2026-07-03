@@ -40,6 +40,15 @@ describe("guion", () => {
     expect(g).not.toContain("Base de conocimiento");
   });
 
+  it("usa la actividad indicada (tipo de empresa) o el valor por defecto", () => {
+    expect(guion({ negocio: "X", actividad: "fontanería" })).toContain(
+      "una empresa de fontanería",
+    );
+    expect(guion({ negocio: "X" })).toContain(
+      "una empresa de reformas y multiservicios del hogar",
+    );
+  });
+
   it("añade el bloque de agendado solo cuando Cal.com está conectado", () => {
     expect(guion({ negocio: "X" })).not.toContain("consultarHuecos");
     const g = guion({ negocio: "X", calConectado: true });
@@ -60,6 +69,16 @@ describe("buildAssistantConfig", () => {
   it("respeta el maxDuracionSeg indicado", () => {
     const c = buildAssistantConfig({ negocio: "X", maxDuracionSeg: 120 });
     expect(c.maxDurationSeconds).toBe(120);
+  });
+
+  it("elige la voz de 11labs según el género (femenina por defecto)", () => {
+    expect(buildAssistantConfig({ negocio: "X" }).voice.voiceId).toBe("sarah");
+    expect(
+      buildAssistantConfig({ negocio: "X", voz: "masculina" }).voice.voiceId,
+    ).toBe("george");
+    expect(
+      buildAssistantConfig({ negocio: "X", voz: "femenina" }).voice.voiceId,
+    ).toBe("sarah");
   });
 
   it("no adjunta tools si Cal.com no está conectado", () => {

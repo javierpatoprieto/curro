@@ -14,6 +14,8 @@ const schema = z.object({
   plan: z.enum(["trial", "starter", "pro", "premium", "cancelado"]),
   activo: z.boolean(),
   cal_link: z.union([z.url(), z.literal("")]).optional(),
+  voz: z.enum(["femenina", "masculina"]),
+  actividad: z.string().max(120).optional(),
   // Campos de texto libre: se concatenan al system prompt del assistant, así que
   // se acotan para evitar prompts gigantes o inyección sobre el propio tenant.
   servicios: z.string().max(1000).optional(),
@@ -36,6 +38,8 @@ export async function guardarCliente(id: string, formData: FormData) {
     plan: g("plan"),
     activo: formData.get("activo") === "on",
     cal_link: formData.get("cal_link") || "",
+    voz: g("voz"),
+    actividad: g("actividad"),
     servicios: g("servicios"),
     zonas: g("zonas"),
     horario: g("horario"),
@@ -55,6 +59,8 @@ export async function guardarCliente(id: string, formData: FormData) {
       plan: d.plan,
       activo: d.activo,
       cal_link: d.cal_link || null,
+      voz: d.voz,
+      actividad: d.actividad ?? null,
       servicios: d.servicios ?? null,
       zonas: d.zonas ?? null,
       horario: d.horario ?? null,
@@ -73,6 +79,8 @@ export async function guardarCliente(id: string, formData: FormData) {
       await actualizarAssistant(biz.vapi_assistant_id, {
         negocio: d.nombre,
         ciudad: d.ciudad ?? null,
+        voz: d.voz,
+        actividad: d.actividad ?? null,
         servicios: d.servicios ?? null,
         zonas: d.zonas ?? null,
         horario: d.horario ?? null,

@@ -1,5 +1,6 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Plus } from "lucide-react";
 import { adminAutenticado } from "@/lib/admin/auth";
 import { salirAdmin } from "@/app/admin/actions";
 import { getAdminDashboard } from "@/lib/admin/data";
@@ -45,13 +46,21 @@ export default async function AdminPage() {
       </header>
 
       <main className="mx-auto max-w-6xl space-y-8 px-6 py-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Backend de control
-          </h1>
-          <p className="text-[var(--muted-foreground)]">
-            Métricas del SaaS y estado de todos los negocios (tenants).
-          </p>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Backend de control
+            </h1>
+            <p className="text-[var(--muted-foreground)]">
+              Métricas del SaaS y estado de todos los negocios (tenants).
+            </p>
+          </div>
+          <Link
+            href="/admin/clientes/nuevo"
+            className="inline-flex items-center gap-1.5 rounded-md bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-[var(--primary-foreground)] hover:opacity-90"
+          >
+            <Plus className="size-4" /> Nuevo cliente
+          </Link>
         </div>
 
         <Kpis data={data} />

@@ -114,6 +114,20 @@ export default async function ClienteAdminPage({
                     <option value="comercial">Comercial</option>
                   </select>
                 </Campo>
+                <Campo label="Voz de Curro">
+                  <select name="voz" defaultValue={b.voz ?? "femenina"} className={inputCls}>
+                    <option value="femenina">Femenina</option>
+                    <option value="masculina">Masculina</option>
+                  </select>
+                </Campo>
+                <Campo label="Tipo de empresa">
+                  <input
+                    name="actividad"
+                    defaultValue={b.actividad ?? ""}
+                    placeholder="fontanería, reformas…"
+                    className={inputCls}
+                  />
+                </Campo>
               </div>
 
               <label className="flex items-center gap-2 text-sm">

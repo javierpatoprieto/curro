@@ -52,6 +52,9 @@ export interface Business {
   tono: string | null;
   preguntas_clave: string | null;
   conocimiento: string | null;
+  // Voz del asistente ('femenina' | 'masculina') y actividad (tipo de empresa).
+  voz: "femenina" | "masculina" | null;
+  actividad: string | null;
   max_duracion_seg: number | null;
   created_at: string;
   updated_at: string;

@@ -13,7 +13,20 @@ export interface AssistantConfig {
   maxDuracionSeg?: number | null;
   /** Si el negocio tiene Cal.com conectado, el assistant puede agendar la visita. */
   calConectado?: boolean;
+  /** Voz del asistente: femenina (por defecto) o masculina. */
+  voz?: "femenina" | "masculina" | null;
+  /** Actividad / tipo de empresa (p. ej. "fontanería"); personaliza el guion. */
+  actividad?: string | null;
 }
+
+/**
+ * voiceId de 11labs por género. Son nombres de voces de 11labs (multilingües con
+ * eleven_turbo_v2_5); se pueden cambiar por un voice_id concreto tras probarlas.
+ */
+const VOCES: Record<"femenina" | "masculina", string> = {
+  femenina: "sarah",
+  masculina: "george",
+};
 
 const TONOS: Record<string, string> = {
   cercano: "cercano y de confianza, como un vecino que sabe del oficio",
@@ -29,9 +42,10 @@ export function guion(config: AssistantConfig): string {
   const ciudad = clean(config.ciudad);
   const donde = ciudad ? ` en ${ciudad}` : "";
   const tono = TONOS[clean(config.tono) ?? ""] ?? "cercano, claro y profesional";
+  const actividad = clean(config.actividad) ?? "reformas y multiservicios del hogar";
 
   const lineas: string[] = [
-    `Eres «Curro», el recepcionista virtual de ${negocio}, una empresa de reformas y multiservicios del hogar${donde}. Hablas español de España, con tono ${tono}. Frases cortas.`,
+    `Eres «Curro», el recepcionista virtual de ${negocio}, una empresa de ${actividad}${donde}. Hablas español de España, con tono ${tono}. Frases cortas.`,
     "",
     "Objetivo: atender la llamada cuando el dueño no puede, cualificar al cliente y tomar sus datos para devolverle la llamada y agendar una visita.",
     "",
@@ -170,7 +184,11 @@ export function buildAssistantConfig(config: AssistantConfig) {
       messages: [{ role: "system", content: guion(config) }],
       ...(config.calConectado ? { tools: herramientasCal() } : {}),
     },
-    voice: { provider: "11labs", voiceId: "sarah", model: "eleven_turbo_v2_5" },
+    voice: {
+      provider: "11labs",
+      voiceId: VOCES[config.voz ?? "femenina"],
+      model: "eleven_turbo_v2_5",
+    },
     transcriber: { provider: "deepgram", model: "nova-2", language: "es" },
     analysisPlan: {
       summaryPlan: { enabled: true },
