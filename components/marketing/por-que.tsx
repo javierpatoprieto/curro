@@ -51,7 +51,7 @@ export function PorQue() {
             Todo lo que hace por ti
           </span>
           <h2 className="titular mt-6 text-4xl text-nieve sm:text-5xl lg:text-6xl">
-            Tu mejor recepcionista, <span className="marca-lima text-lima">sin nómina</span> ni
+            Tu mejor recepcionista, <span className="marca-lima en-oscuro">sin nómina</span> ni
             bajas.
           </h2>
           <p className="mt-6 max-w-lg text-lg leading-relaxed text-nieve/70">

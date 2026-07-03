@@ -105,8 +105,9 @@
   --color-nieve: #f4f5ee; /* hueso off-white cálido (fondo base) */
   --color-bosque: #182714; /* verde bosque muy oscuro (texto y secciones) */
   --color-bosque-soft: #4a5245; /* verde-gris apagado (texto secundario, ~7.5:1 sobre nieve) */
-  --color-lima: #c8f24e; /* lima / chartreuse (acento) */
+  --color-lima: #c8f24e; /* lima / chartreuse (acento, sobre fondo oscuro) */
   --color-lima-dark: #b6e23a; /* lima hover */
+  --color-lima-ink: #6b8a18; /* lima oscuro legible como texto sobre fondo claro (~3.6:1 sobre nieve) */
   --color-linea3: #e3e5da; /* borde/filete sutil sobre nieve */
 }
 
@@ -380,5 +381,10 @@
    En secciones OSCURAS se le añade `text-lima` en el componente para que el color
    sea el que contrasta con el fondo (lima brillante). */
 .marca-lima {
+  color: var(--color-lima-ink); /* lima oscuro: legible sobre las secciones claras */
   font-weight: 700;
+}
+/* En secciones de fondo oscuro, lima brillante (contrasta con el bosque). */
+.marca-lima.en-oscuro {
+  color: var(--color-lima);
 }

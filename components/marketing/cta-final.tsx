@@ -14,7 +14,7 @@ export function CtaFinal() {
           </span>
 
           <h2 className="titular mx-auto mt-6 max-w-2xl text-4xl text-nieve sm:text-5xl lg:text-6xl">
-            Pon a Curro a coger <span className="marca-lima text-lima">el teléfono</span>.
+            Pon a Curro a coger <span className="marca-lima en-oscuro">el teléfono</span>.
           </h2>
 
           <p className="mx-auto mt-6 max-w-lg text-lg leading-relaxed text-nieve/75">
