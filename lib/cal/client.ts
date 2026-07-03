@@ -12,13 +12,18 @@
 
 const CAL_API = "https://api.cal.com/v2";
 const CAL_VERSION_SLOTS = "2024-09-04";
-// OJO CON LA VERSIÓN DE BOOKINGS. Debe ser "2024-08-13": es la versión del endpoint
-// de creación de reserva que autentica con API key personal (cal_live_) por
-// `Authorization: Bearer`. Otras versiones (p. ej. "2026-02-25") enrutan a un guard
-// que espera un token OAuth y devuelven 401 "Invalid Access Token" con la API key,
-// AUNQUE la misma key funcione en /slots. Verificado contra un fallo real en prod
-// (log de Vercel: `Cal.com booking 401: … "Invalid Access Token"`).
 const CAL_VERSION_BOOKINGS = "2024-08-13";
+
+// AUTENTICACIÓN DE /bookings — LEER ANTES DE TOCAR.
+// El endpoint de creación de reserva de Cal v2 NO acepta la API key personal por
+// `Authorization: Bearer`: ese header activa un guard de token que la rechaza con
+// 401 "Invalid Access Token" (aunque la MISMA key funcione en /slots). La API key
+// debe ir como QUERY PARAM `?apiKey=…` y SIN cabecera Authorization.
+// Verificado empíricamente contra api.cal.com (2026-07-03):
+//   - POST /bookings sin auth           → 400 "past meeting"  (pasa la auth)
+//   - POST /bookings Authorization Bearer → 401 "Invalid API Key"
+//   - POST /bookings ?apiKey=…          → 400 "past meeting"  (pasa la auth)
+// /slots sí acepta Bearer, por eso su helper `auth()` no se toca.
 
 export interface Hueco {
   /** Inicio del hueco en ISO 8601 (UTC), tal cual lo devuelve Cal.com. */
@@ -129,9 +134,14 @@ export async function crearReserva(
     ...(datos.notas ? { metadata: { notas: datos.notas } } : {}),
   };
 
-  const res = await fetch(`${CAL_API}/bookings`, {
+  // La API key va como query param (?apiKey=), NO como Bearer (ver nota arriba).
+  const url = `${CAL_API}/bookings?apiKey=${encodeURIComponent(apiKey)}`;
+  const res = await fetch(url, {
     method: "POST",
-    headers: auth(apiKey, CAL_VERSION_BOOKINGS),
+    headers: {
+      "cal-api-version": CAL_VERSION_BOOKINGS,
+      "content-type": "application/json",
+    },
     body: JSON.stringify(body),
   });
   if (!res.ok) {

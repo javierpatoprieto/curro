@@ -39,9 +39,10 @@ describe("extraerStarts", () => {
 describe("crearReserva (cabeceras y auth)", () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it("crea la reserva con cal-api-version 2024-08-13 y API key por Bearer", async () => {
-    // Regresión: la versión 2026-02-25 hacía que Cal devolviera 401
-    // "Invalid Access Token" con la API key personal. 2024-08-13 sí la acepta.
+  it("autentica con ?apiKey= en la URL y SIN cabecera Authorization", async () => {
+    // Regresión: mandar la API key como `Authorization: Bearer` en /bookings
+    // provoca 401 "Invalid Access Token" (guard de token). La key debe ir como
+    // query param ?apiKey= y sin cabecera Authorization. Verificado contra Cal.
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ data: { uid: "bk_1", start: "2026-07-06T08:00:00.000Z" } }), {
         status: 200,
@@ -57,9 +58,11 @@ describe("crearReserva (cabeceras y auth)", () => {
     expect(reserva.uid).toBe("bk_1");
 
     const [url, init] = fetchMock.mock.calls[0]!;
-    expect(String(url)).toBe("https://api.cal.com/v2/bookings");
+    expect(String(url)).toBe(
+      "https://api.cal.com/v2/bookings?apiKey=cal_live_test",
+    );
     const headers = (init as RequestInit).headers as Record<string, string>;
     expect(headers["cal-api-version"]).toBe("2024-08-13");
-    expect(headers.Authorization).toBe("Bearer cal_live_test");
+    expect(headers.Authorization).toBeUndefined();
   });
 });
