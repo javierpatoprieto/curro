@@ -6,10 +6,10 @@ import type { Plan } from "@/lib/types";
 
 /** Límite de llamadas incluidas al mes por plan. */
 export const LIMITE_LLAMADAS: Record<Plan, number> = {
-  trial: 50,
-  starter: 100,
-  pro: 300,
-  premium: 5000, // "sin límite razonable"
+  trial: 15,
+  starter: 35,
+  pro: 75,
+  premium: 225,
   cancelado: 0,
 };
 

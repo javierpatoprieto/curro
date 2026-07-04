@@ -5,7 +5,12 @@ import { exigirAdmin } from "@/lib/admin/auth";
 import { getClienteDetalle } from "@/lib/admin/data";
 import { formatoFecha } from "@/lib/metrics/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { calConectado } from "@/lib/cal/integracion";
+import { puede } from "@/lib/plans";
+import { CalConectar } from "@/components/panel/cal-conectar";
 import { guardarCliente, borrarCliente } from "./actions";
+import { guardarCalAdmin, desconectarCalAdmin } from "./cal-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +34,13 @@ export default async function ClienteAdminPage({
 
   const guardar = guardarCliente.bind(null, id);
   const borrar = borrarCliente.bind(null, id);
+  const guardarCal = guardarCalAdmin.bind(null, id);
+  const desconectarCalAccion = desconectarCalAdmin.bind(null, id);
+
+  const agendaPermitida = puede(b.plan, "agenda");
+  const calYaConectado = agendaPermitida
+    ? await calConectado(createAdminClient(), b.id)
+    : false;
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
@@ -59,7 +71,9 @@ export default async function ClienteAdminPage({
               ? "El nombre de confirmación no coincide; no se ha borrado nada."
               : error === "validacion"
                 ? "Revisa los datos del formulario."
-                : "No se pudo completar la operación."}
+                : error === "plan_agenda"
+                  ? "Este cliente no tiene la agenda en su plan actual."
+                  : "No se pudo completar la operación."}
           </p>
         )}
 
@@ -174,6 +188,26 @@ export default async function ClienteAdminPage({
                 Guardar cambios
               </button>
             </form>
+          </CardContent>
+        </Card>
+
+        {/* Agenda (Cal.com) */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Agenda (Cal.com)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {agendaPermitida ? (
+              <CalConectar
+                conectado={calYaConectado}
+                action={guardarCal}
+                desconectarAction={desconectarCalAccion}
+              />
+            ) : (
+              <p className="text-sm text-[var(--muted-foreground)]">
+                La agenda automática está disponible en el plan Pro.
+              </p>
+            )}
           </CardContent>
         </Card>
 

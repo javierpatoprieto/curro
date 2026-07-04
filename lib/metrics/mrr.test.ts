@@ -81,13 +81,13 @@ describe("mrrDesdeStripe", () => {
 describe("mrrDesdeBaseDatos", () => {
   it("suma el precio del plan solo de los negocios activos", () => {
     const negocios = [
-      { plan: "pro", activo: true }, // 149
-      { plan: "starter", activo: true }, // 99
+      { plan: "pro", activo: true }, // 99
+      { plan: "starter", activo: true }, // 49
       { plan: "premium", activo: false }, // 0 (inactivo)
       { plan: "trial", activo: true }, // 0 (trial no cobra)
       { plan: "cancelado", activo: false }, // 0
     ];
-    expect(mrrDesdeBaseDatos(negocios)).toBe(248);
+    expect(mrrDesdeBaseDatos(negocios)).toBe(148);
   });
 
   it("los precios que usa el MRR coinciden con los planes de pago (guardia anti-divergencia)", () => {
