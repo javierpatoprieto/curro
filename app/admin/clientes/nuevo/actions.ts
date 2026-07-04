@@ -6,6 +6,9 @@ import { z } from "zod";
 import { exigirAdmin } from "@/lib/admin/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { crearAssistant } from "@/lib/vapi/assistant";
+import { guardarCalIntegracion } from "@/lib/cal/integracion";
+import { puede } from "@/lib/plans";
+import type { Plan } from "@/lib/types";
 
 const schema = z.object({
   nombre: z.string().min(2),
@@ -23,7 +26,29 @@ const schema = z.object({
   horario: z.string().max(200).optional(),
   preguntas_clave: z.string().max(1000).optional(),
   conocimiento: z.string().max(4000).optional(),
+  agenda: z.boolean().optional(),
+  confirmacion_cliente: z.boolean().optional(),
+  cal_api_key: z.string().optional(),
+  cal_event_type_id: z.string().optional(),
+  phone_mode: z.enum(["forward", "new", "none"]).optional(),
 });
+
+/**
+ * Aplica el gating por plan a las capacidades pedidas en el formulario de alta:
+ * si el plan no incluye "agenda" o "confirmacionCliente", se ignoran aunque el
+ * admin las haya marcado (fuente única de verdad: lib/plans.ts). Pura y
+ * testeable sin tocar red/DB.
+ */
+export function capacidadesEfectivas(
+  plan: Plan,
+  pedidas: { agenda?: boolean; confirmacionCliente?: boolean },
+) {
+  return {
+    agenda: Boolean(pedidas.agenda) && puede(plan, "agenda"),
+    confirmacionCliente:
+      Boolean(pedidas.confirmacionCliente) && puede(plan, "confirmacionCliente"),
+  };
+}
 
 /**
  * Alta de cliente desde el panel de admin: crea el assistant de Vapi con la
@@ -50,9 +75,22 @@ export async function crearClienteAdmin(formData: FormData) {
     horario: g("horario"),
     preguntas_clave: g("preguntas_clave"),
     conocimiento: g("conocimiento"),
+    agenda: formData.get("agenda") === "on",
+    confirmacion_cliente: formData.get("confirmacion_cliente") === "on",
+    cal_api_key: g("cal_api_key"),
+    cal_event_type_id: g("cal_event_type_id"),
+    phone_mode: g("phone_mode"),
   });
   if (!parsed.success) redirect("/admin/clientes/nuevo?error=validacion");
   const d = parsed.data;
+
+  // Gating por plan: lo pedido en el formulario solo se aplica si el plan lo
+  // incluye (starter no puede acabar con agenda aunque el admin la marque).
+  const caps = capacidadesEfectivas(d.plan, {
+    agenda: d.agenda,
+    confirmacionCliente: d.confirmacion_cliente,
+  });
+  const calConectado = caps.agenda && Boolean(d.cal_api_key && d.cal_event_type_id);
 
   const config = {
     negocio: d.nombre,
@@ -65,6 +103,7 @@ export async function crearClienteAdmin(formData: FormData) {
     tono: d.tono || null,
     preguntas_clave: d.preguntas_clave ?? null,
     conocimiento: d.conocimiento ?? null,
+    calConectado,
   };
 
   // 1) Crear el assistant de Vapi (mock si no hay VAPI_API_KEY). Si falla, abortamos
@@ -102,6 +141,20 @@ export async function crearClienteAdmin(formData: FormData) {
   if (error || !biz) {
     console.error("[admin] no se pudo crear el negocio:", error);
     redirect("/admin/clientes/nuevo?error=db");
+  }
+
+  // 2b) Si el plan permite agenda y nos dieron credenciales de Cal.com, las
+  // guardamos ya. No abortamos el alta si esto falla: el dueño puede
+  // conectarlo luego desde su panel.
+  if (caps.agenda && d.cal_api_key && d.cal_event_type_id) {
+    try {
+      await guardarCalIntegracion(admin, biz.id, {
+        cal_api_key: d.cal_api_key,
+        cal_event_type_id: d.cal_event_type_id,
+      });
+    } catch (e) {
+      console.error("[admin] no se pudo guardar la integración de Cal.com:", e);
+    }
   }
 
   // 3) Crear el propietario (se enlazará a su usuario al primer login por email).
