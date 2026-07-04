@@ -35,3 +35,24 @@ export const ENTITLEMENTS: Record<Plan, Entitlement> = {
 export function puede(plan: Plan, cap: Capacidad): boolean {
   return ENTITLEMENTS[plan]?.[cap] ?? false;
 }
+
+/** ¿El plan del cliente incluye la capacidad "agenda"? (helper de conveniencia). */
+export function calPermitidoParaPlan(plan: Plan): boolean {
+  return puede(plan, "agenda");
+}
+
+/**
+ * Aplica el gating por plan a las capacidades pedidas en el alta: si el plan no
+ * incluye "agenda"/"confirmacionCliente", se ignoran aunque el admin las marque.
+ * Pura y testeable (vive aquí, NO en un fichero "use server").
+ */
+export function capacidadesEfectivas(
+  plan: Plan,
+  pedidas: { agenda?: boolean; confirmacionCliente?: boolean },
+) {
+  return {
+    agenda: Boolean(pedidas.agenda) && puede(plan, "agenda"),
+    confirmacionCliente:
+      Boolean(pedidas.confirmacionCliente) && puede(plan, "confirmacionCliente"),
+  };
+}

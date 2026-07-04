@@ -8,13 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { actualizarAssistant } from "@/lib/vapi/assistant";
 import { configDesdeNegocio } from "@/lib/vapi/config-negocio";
 import { guardarCalIntegracion } from "@/lib/cal/integracion";
-import { puede } from "@/lib/plans";
-import type { Plan } from "@/lib/types";
-
-/** ¿El plan del cliente incluye la capacidad "agenda"? Gating puro y testable. */
-export function calPermitidoParaPlan(plan: Plan): boolean {
-  return puede(plan, "agenda");
-}
+import { calPermitidoParaPlan } from "@/lib/plans";
 
 const calSchema = z.object({
   cal_api_key: z.string().min(8),

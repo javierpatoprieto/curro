@@ -7,8 +7,7 @@ import { exigirAdmin } from "@/lib/admin/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { crearAssistant } from "@/lib/vapi/assistant";
 import { guardarCalIntegracion } from "@/lib/cal/integracion";
-import { puede } from "@/lib/plans";
-import type { Plan } from "@/lib/types";
+import { capacidadesEfectivas } from "@/lib/plans";
 
 const schema = z.object({
   nombre: z.string().min(2),
@@ -32,23 +31,6 @@ const schema = z.object({
   cal_event_type_id: z.string().optional(),
   phone_mode: z.enum(["forward", "new", "none"]).optional(),
 });
-
-/**
- * Aplica el gating por plan a las capacidades pedidas en el formulario de alta:
- * si el plan no incluye "agenda" o "confirmacionCliente", se ignoran aunque el
- * admin las haya marcado (fuente única de verdad: lib/plans.ts). Pura y
- * testeable sin tocar red/DB.
- */
-export function capacidadesEfectivas(
-  plan: Plan,
-  pedidas: { agenda?: boolean; confirmacionCliente?: boolean },
-) {
-  return {
-    agenda: Boolean(pedidas.agenda) && puede(plan, "agenda"),
-    confirmacionCliente:
-      Boolean(pedidas.confirmacionCliente) && puede(plan, "confirmacionCliente"),
-  };
-}
 
 /**
  * Alta de cliente desde el panel de admin: crea el assistant de Vapi con la
