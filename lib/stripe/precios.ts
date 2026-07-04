@@ -12,8 +12,8 @@ import type { Plan } from "@/lib/types";
 /** Precio mensual (en euros) de cada plan. */
 export const PRECIO_MENSUAL: Record<Plan, number> = {
   trial: 0,
-  starter: 99,
-  pro: 149,
+  starter: 49,
+  pro: 99,
   premium: 199,
   cancelado: 0,
 };

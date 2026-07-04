@@ -21,8 +21,8 @@ describe("mrrDeNegocio", () => {
 
   it("deriva del plan si no hay MRR de Stripe para ese negocio", () => {
     const n = negocio({ id: "a", plan: "pro", activo: true });
-    expect(mrrDeNegocio(n, { otro: 50 })).toBe(149);
-    expect(mrrDeNegocio(n, null)).toBe(149);
+    expect(mrrDeNegocio(n, { otro: 50 })).toBe(99);
+    expect(mrrDeNegocio(n, null)).toBe(99);
   });
 
   it("es 0 para negocios inactivos o cancelados sin dato de Stripe", () => {
@@ -33,7 +33,7 @@ describe("mrrDeNegocio", () => {
 
 describe("construirFilas", () => {
   const negocios = [
-    negocio({ id: "a", nombre: "Alfa", plan: "starter", activo: true }), // 99
+    negocio({ id: "a", nombre: "Alfa", plan: "starter", activo: true }), // 49
     negocio({ id: "b", nombre: "Beta", plan: "premium", activo: true }), // 199
     negocio({ id: "c", nombre: "Gamma", plan: "trial", activo: true }), // 0
   ];
@@ -47,7 +47,7 @@ describe("construirFilas", () => {
     );
     expect(filas.map((f) => f.id)).toEqual(["b", "a", "c"]);
     expect(filas[0]).toMatchObject({ id: "b", mrr: 199, llamadasMes: 5, leadsMes: 0 });
-    expect(filas[1]).toMatchObject({ id: "a", mrr: 99, llamadasMes: 10, leadsMes: 3 });
+    expect(filas[1]).toMatchObject({ id: "a", mrr: 49, llamadasMes: 10, leadsMes: 3 });
     expect(filas[2]).toMatchObject({ id: "c", mrr: 0, estado: "prueba", leadsMes: 1 });
   });
 

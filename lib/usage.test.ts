@@ -3,15 +3,15 @@ import { dentroDelLimite, limiteDe, inicioDeMesISO } from "@/lib/usage";
 
 describe("límites de uso por plan", () => {
   it("cada plan tiene su límite de llamadas", () => {
-    expect(limiteDe("starter")).toBe(100);
-    expect(limiteDe("pro")).toBe(300);
+    expect(limiteDe("starter")).toBe(35);
+    expect(limiteDe("pro")).toBe(75);
     expect(limiteDe("cancelado")).toBe(0);
   });
 
   it("permite mientras no se alcance el límite", () => {
-    expect(dentroDelLimite(99, "starter")).toBe(true);
-    expect(dentroDelLimite(100, "starter")).toBe(false);
-    expect(dentroDelLimite(299, "pro")).toBe(true);
+    expect(dentroDelLimite(34, "starter")).toBe(true);
+    expect(dentroDelLimite(35, "starter")).toBe(false);
+    expect(dentroDelLimite(74, "pro")).toBe(true);
     expect(dentroDelLimite(0, "cancelado")).toBe(false);
   });
 });
