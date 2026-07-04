@@ -33,7 +33,7 @@ export function JsonLd() {
       offers: {
         "@type": "AggregateOffer",
         priceCurrency: "EUR",
-        lowPrice: "99",
+        lowPrice: "49",
         highPrice: "199",
         offerCount: 3,
       },
