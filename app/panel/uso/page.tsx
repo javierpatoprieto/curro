@@ -1,6 +1,6 @@
 import { Phone, Clock, Euro } from "lucide-react";
 import { getCurrentContext } from "@/lib/auth";
-import { getUso, limiteDe } from "@/lib/usage";
+import { getUso, limiteDe, limiteMinutosDe, porcentajeUso } from "@/lib/usage";
 import {
   Card,
   CardContent,
@@ -24,6 +24,10 @@ export default async function UsoPage() {
   const limite = limiteDe(plan);
   const pct = limite > 0 ? Math.min(100, Math.round((uso.llamadas / limite) * 100)) : 0;
   const cerca = pct >= 80;
+
+  const limiteMinutos = limiteMinutosDe(plan);
+  const pctMinutos = porcentajeUso(uso.minutos, plan);
+  const cercaMinutos = pctMinutos >= 80;
 
   const tarjetas = [
     { label: "Llamadas este mes", valor: uso.llamadas, icon: Phone },
@@ -83,6 +87,37 @@ export default async function UsoPage() {
             <p className="text-sm text-[var(--destructive)]">
               Estás cerca del límite de tu plan. Al superarlo, seguimos guardando
               tus leads pero se pausan los avisos automáticos.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Minutos incluidos</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-[var(--muted-foreground)]">
+              {uso.minutos} / {limiteMinutos} min este mes
+            </span>
+            <span className={cercaMinutos ? "font-semibold text-[var(--destructive)]" : ""}>
+              {pctMinutos}%
+            </span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--secondary)]">
+            <div
+              className={
+                cercaMinutos
+                  ? "h-full rounded-full bg-[var(--destructive)]"
+                  : "h-full rounded-full bg-[var(--primary)]"
+              }
+              style={{ width: `${pctMinutos}%` }}
+            />
+          </div>
+          {cercaMinutos && (
+            <p className="text-sm text-[var(--destructive)]">
+              Estás cerca del límite de minutos de tu plan este mes.
             </p>
           )}
         </CardContent>

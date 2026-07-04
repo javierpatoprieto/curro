@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { dentroDelLimite, limiteDe, inicioDeMesISO } from "@/lib/usage";
+import {
+  dentroDelLimite,
+  limiteDe,
+  inicioDeMesISO,
+  limiteMinutosDe,
+  dentroDelLimiteMinutos,
+  porcentajeUso,
+} from "@/lib/usage";
 
 describe("límites de uso por plan", () => {
   it("cada plan tiene su límite de llamadas", () => {
@@ -13,6 +20,41 @@ describe("límites de uso por plan", () => {
     expect(dentroDelLimite(35, "starter")).toBe(false);
     expect(dentroDelLimite(74, "pro")).toBe(true);
     expect(dentroDelLimite(0, "cancelado")).toBe(false);
+  });
+});
+
+describe("límites de uso en minutos por plan", () => {
+  it("cada plan tiene su límite de minutos", () => {
+    expect(limiteMinutosDe("trial")).toBe(30);
+    expect(limiteMinutosDe("starter")).toBe(75);
+    expect(limiteMinutosDe("pro")).toBe(150);
+    expect(limiteMinutosDe("premium")).toBe(450);
+    expect(limiteMinutosDe("cancelado")).toBe(0);
+  });
+
+  it("permite mientras no se alcance el límite de minutos", () => {
+    expect(dentroDelLimiteMinutos(29, "trial")).toBe(true);
+    expect(dentroDelLimiteMinutos(30, "trial")).toBe(false);
+    expect(dentroDelLimiteMinutos(149, "pro")).toBe(true);
+    expect(dentroDelLimiteMinutos(150, "pro")).toBe(false);
+    expect(dentroDelLimiteMinutos(0, "cancelado")).toBe(false);
+  });
+});
+
+describe("porcentajeUso", () => {
+  it("calcula el porcentaje de uso sobre el límite del plan", () => {
+    expect(porcentajeUso(75, "pro")).toBe(50);
+    expect(porcentajeUso(0, "pro")).toBe(0);
+    expect(porcentajeUso(150, "pro")).toBe(100);
+  });
+
+  it("hace clamp a 100 cuando se supera el límite", () => {
+    expect(porcentajeUso(300, "pro")).toBe(100);
+  });
+
+  it("no revienta con límite 0 (plan cancelado)", () => {
+    expect(porcentajeUso(0, "cancelado")).toBe(0);
+    expect(porcentajeUso(5, "cancelado")).toBe(100);
   });
 });
 
