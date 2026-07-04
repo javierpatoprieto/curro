@@ -204,6 +204,14 @@ export default async function ClienteAdminPage({
                 Cuenta activa (atiende llamadas)
               </label>
 
+              <Campo label="Número entrante (el que atiende Curro)">
+                <input
+                  name="telefono_entrante"
+                  defaultValue={b.telefono_entrante ?? ""}
+                  placeholder="+34910000000"
+                  className={inputCls}
+                />
+              </Campo>
               <Campo label="Enlace de Cal.com">
                 <input
                   name="cal_link"

@@ -30,6 +30,7 @@ const schema = z.object({
   cal_api_key: z.string().optional(),
   cal_event_type_id: z.string().optional(),
   phone_mode: z.enum(["forward", "new", "none"]).optional(),
+  telefono_entrante: z.string().max(32).optional(),
 });
 
 /**
@@ -62,6 +63,7 @@ export async function crearClienteAdmin(formData: FormData) {
     cal_api_key: g("cal_api_key"),
     cal_event_type_id: g("cal_event_type_id"),
     phone_mode: g("phone_mode"),
+    telefono_entrante: g("telefono_entrante"),
   });
   if (!parsed.success) redirect("/admin/clientes/nuevo?error=validacion");
   const d = parsed.data;
@@ -117,6 +119,7 @@ export async function crearClienteAdmin(formData: FormData) {
       tono: d.tono || null,
       preguntas_clave: d.preguntas_clave ?? null,
       conocimiento: d.conocimiento ?? null,
+      telefono_entrante: d.telefono_entrante ?? null,
     })
     .select("id")
     .single();

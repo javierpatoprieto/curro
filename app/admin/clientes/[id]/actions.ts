@@ -29,6 +29,7 @@ const schema = z.object({
   tono: z.enum(["cercano", "profesional", "comercial"]).or(z.literal("")).optional(),
   preguntas_clave: z.string().max(1000).optional(),
   conocimiento: z.string().max(4000).optional(),
+  telefono_entrante: z.string().max(32).optional(),
 });
 
 /** Edita/personaliza un cliente y re-sincroniza su assistant de Vapi. */
@@ -50,6 +51,7 @@ export async function guardarCliente(id: string, formData: FormData) {
     tono: g("tono"),
     preguntas_clave: g("preguntas_clave"),
     conocimiento: g("conocimiento"),
+    telefono_entrante: g("telefono_entrante"),
   });
   if (!parsed.success) redirect(`/admin/clientes/${id}?error=validacion`);
   const d = parsed.data;
@@ -71,6 +73,7 @@ export async function guardarCliente(id: string, formData: FormData) {
       tono: d.tono ?? null,
       preguntas_clave: d.preguntas_clave ?? null,
       conocimiento: d.conocimiento ?? null,
+      telefono_entrante: d.telefono_entrante ?? null,
     })
     .eq("id", id)
     .select("vapi_assistant_id")
