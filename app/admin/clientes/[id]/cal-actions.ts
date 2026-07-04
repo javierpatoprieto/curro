@@ -1,0 +1,64 @@
+"use server";
+
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { exigirAdmin } from "@/lib/admin/auth";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { actualizarAssistant } from "@/lib/vapi/assistant";
+import { configDesdeNegocio } from "@/lib/vapi/config-negocio";
+import { guardarCalIntegracion } from "@/lib/cal/integracion";
+import { puede } from "@/lib/plans";
+import type { Plan } from "@/lib/types";
+
+/** ¿El plan del cliente incluye la capacidad "agenda"? Gating puro y testable. */
+export function calPermitidoParaPlan(plan: Plan): boolean {
+  return puede(plan, "agenda");
+}
+
+const calSchema = z.object({
+  cal_api_key: z.string().min(8),
+  cal_event_type_id: z.string().min(1),
+});
+
+/**
+ * El ADMIN conecta Cal.com para un cliente desde su ficha (mismo mecanismo que
+ * /panel/ajustes). Gated por plan: solo si el plan del negocio incluye "agenda".
+ */
+export async function guardarCalAdmin(businessId: string, formData: FormData) {
+  await exigirAdmin();
+
+  const admin = createAdminClient();
+  const { data: biz } = await admin
+    .from("businesses")
+    .select("*")
+    .eq("id", businessId)
+    .maybeSingle();
+  if (!biz) redirect("/admin");
+
+  if (!calPermitidoParaPlan(biz.plan)) {
+    redirect(`/admin/clientes/${businessId}?error=plan_agenda`);
+  }
+
+  const parsed = calSchema.safeParse({
+    cal_api_key: (formData.get("cal_api_key") as string)?.trim(),
+    cal_event_type_id: (formData.get("cal_event_type_id") as string)?.trim(),
+  });
+  if (!parsed.success) redirect(`/admin/clientes/${businessId}?error=validacion`);
+
+  await guardarCalIntegracion(admin, businessId, parsed.data);
+
+  try {
+    if (biz.vapi_assistant_id) {
+      await actualizarAssistant(biz.vapi_assistant_id, {
+        ...configDesdeNegocio(biz, true),
+        calConectado: true,
+      });
+    }
+  } catch (e) {
+    console.error("[admin] no se pudo re-sincronizar el assistant:", e);
+  }
+
+  revalidatePath(`/admin/clientes/${businessId}`);
+  redirect(`/admin/clientes/${businessId}?ok=1`);
+}

@@ -6,29 +6,12 @@ import { getCurrentContext, type CurrentContext } from "@/lib/auth";
 import { isDemoMode } from "@/lib/demo";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { actualizarAssistant, type AssistantConfig } from "@/lib/vapi/assistant";
+import { actualizarAssistant } from "@/lib/vapi/assistant";
+import { configDesdeNegocio } from "@/lib/vapi/config-negocio";
 import {
   calConectado as leerCalConectado,
   guardarCalIntegracion,
 } from "@/lib/cal/integracion";
-
-/** Arma la config del assistant desde el negocio (para re-sincronizar). */
-function configDesdeNegocio(
-  b: CurrentContext["business"],
-  calConectado: boolean,
-): AssistantConfig {
-  return {
-    negocio: b.nombre,
-    ciudad: b.ciudad ?? null,
-    servicios: b.servicios ?? null,
-    zonas: b.zonas ?? null,
-    horario: b.horario ?? null,
-    tono: b.tono ?? null,
-    preguntas_clave: b.preguntas_clave ?? null,
-    conocimiento: b.conocimiento ?? null,
-    calConectado,
-  };
-}
 
 const schema = z.object({
   nombre: z.string().min(2),

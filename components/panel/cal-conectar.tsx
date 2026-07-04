@@ -11,7 +11,14 @@ import { Button } from "@/components/ui/button";
  * Conecta la cuenta de Cal.com del negocio para que Curro pueda agendar visitas
  * en la propia llamada. La API key NO se muestra nunca (solo el estado conectado).
  */
-export function CalConectar({ conectado }: { conectado: boolean }) {
+export function CalConectar({
+  conectado,
+  action,
+}: {
+  conectado: boolean;
+  /** Server action opcional para el submit (p. ej. desde /admin). Si no se pasa, usa `conectarCal` (comportamiento actual del panel). */
+  action?: (fd: FormData) => void | Promise<void>;
+}) {
   const [estado, setEstado] = useState<"idle" | "ok" | "error">("idle");
   const [pendiente, startTransition] = useTransition();
 
@@ -20,6 +27,11 @@ export function CalConectar({ conectado }: { conectado: boolean }) {
     const fd = new FormData(e.currentTarget);
     setEstado("idle");
     startTransition(async () => {
+      if (action) {
+        await action(fd);
+        setEstado("ok");
+        return;
+      }
       const r = await conectarCal(fd);
       setEstado(r.ok ? "ok" : "error");
     });
