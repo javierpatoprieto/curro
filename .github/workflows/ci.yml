@@ -1,0 +1,48 @@
+name: CI
+
+# Corre en cada PR a main y en cada push a main. Incluye `next build`, que es el
+# ÚNICO paso que detecta errores como "Server Actions must be async functions"
+# (tsc/eslint/vitest no los pillan). Así un fallo de build se caza en la PR y no
+# en el deploy de producción de Vercel.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      # lib/env.ts hace fail-fast en el build de producción si faltan estas.
+      # Son valores DUMMY solo para que el build de CI compile; no se conecta a nada.
+      NEXT_PUBLIC_SUPABASE_URL: https://dummy.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy-anon-key
+      SUPABASE_SERVICE_ROLE_KEY: dummy-service-role
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Typecheck (tsc)
+        run: npm run typecheck
+
+      - name: Lint (eslint)
+        run: npm run lint
+
+      - name: Tests (vitest)
+        run: npm run test
+
+      - name: Build (next build)  # el paso que faltaba
+        run: npm run build
