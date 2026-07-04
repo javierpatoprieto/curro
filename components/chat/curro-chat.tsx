@@ -20,7 +20,7 @@ const FAQS: { q: string; keywords: string[]; a: string }[] = [
   {
     q: "¿Cuánto cuesta?",
     keywords: ["precio", "cuesta", "cuánto", "cuanto", "plan", "euro", "€", "pago", "gratis"],
-    a: "Desde 99€/mes, con 7 días gratis y sin permanencia. Tienes los planes completos en la sección de Precios.",
+    a: "Desde 49€/mes, con 7 días gratis y sin permanencia. Tienes los planes completos en la sección de Precios.",
   },
   {
     q: "¿Tengo que cambiar mi número?",

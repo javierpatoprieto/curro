@@ -5,28 +5,28 @@ import { Reveal } from "./reveal";
 
 const planes = [
   {
-    nombre: "Básico",
-    precio: "99",
+    nombre: "Starter",
+    precio: "49",
     gancho: "Para empezar a no perder llamadas.",
     destacado: false,
     incluye: [
-      "Recepcionista con IA 24/7",
-      "Hasta 100 llamadas al mes",
-      "Aviso por WhatsApp y email",
-      "Panel de clientes y transcripciones",
+      "Recepción de llamadas 24/7",
+      "Captura y cualificación del lead",
+      "~75 minutos de llamadas al mes",
+      "Aviso al dueño por WhatsApp y email",
     ],
   },
   {
     nombre: "Pro",
-    precio: "149",
+    precio: "99",
     gancho: "El equilibrio perfecto para la mayoría.",
     destacado: true,
     incluye: [
-      "Todo lo del plan Básico",
-      "Hasta 300 llamadas al mes",
-      "Agenda de visitas con Cal.com",
-      "Guion personalizado a tu negocio",
-      "Soporte prioritario",
+      "Todo lo del plan Starter",
+      "~150 minutos de llamadas al mes",
+      "Agenda automática con Cal.com",
+      "Confirmación al cliente por WhatsApp",
+      "Número de teléfono dedicado",
     ],
   },
   {
@@ -36,9 +36,9 @@ const planes = [
     destacado: false,
     incluye: [
       "Todo lo del plan Pro",
-      "Llamadas sin límite razonable",
-      "Varios números / oficios",
-      "Informes de uso mensuales",
+      "~450 minutos de llamadas al mes",
+      "Multi-número / multi-sucursal",
+      "Soporte prioritario",
     ],
   },
 ];
