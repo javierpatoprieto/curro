@@ -12,6 +12,10 @@ import {
   calConectado as leerCalConectado,
   guardarCalIntegracion,
 } from "@/lib/cal/integracion";
+import {
+  parseContactoDueno,
+  normalizarContactoDueno,
+} from "@/lib/owners/contacto";
 
 const schema = z.object({
   nombre: z.string().min(2),
@@ -87,6 +91,32 @@ export async function guardarAjustes(formData: FormData) {
   } catch (e) {
     console.error("[ajustes] no se pudo re-sincronizar el assistant:", e);
   }
+
+  revalidatePath("/panel/ajustes");
+  return { ok: true } as const;
+}
+
+/**
+ * El propio dueño edita su contacto de avisos (email/whatsapp) sobre `owners`.
+ * `owners` no tiene policy de UPDATE para usuarios (ver supabase/schema.sql), así
+ * que escribimos con service_role, acotado a la fila del dueño autenticado. En
+ * demo no persiste.
+ */
+export async function guardarContactoDueno(formData: FormData) {
+  const parsed = parseContactoDueno(formData);
+  if (!parsed.success) return { ok: false, error: "validacion" as const };
+
+  if (isDemoMode()) return { ok: true, demo: true } as const;
+
+  const context = await getCurrentContext();
+  if (!context) return { ok: false, error: "no-autorizado" as const };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("owners")
+    .update(normalizarContactoDueno(parsed.data))
+    .eq("id", context.owner.id);
+  if (error) return { ok: false, error: "db" as const };
 
   revalidatePath("/panel/ajustes");
   return { ok: true } as const;
