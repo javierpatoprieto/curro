@@ -7,6 +7,10 @@ import { exigirAdmin } from "@/lib/admin/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { actualizarAssistant, eliminarAssistant } from "@/lib/vapi/assistant";
 import { getStripe, stripeConfigurado } from "@/lib/stripe/client";
+import {
+  parseContactoDueno,
+  normalizarContactoDueno,
+} from "@/lib/owners/contacto";
 
 const schema = z.object({
   nombre: z.string().min(2),
@@ -96,6 +100,32 @@ export async function guardarCliente(id: string, formData: FormData) {
   revalidatePath(`/admin/clientes/${id}`);
   revalidatePath("/admin");
   redirect(`/admin/clientes/${id}?ok=1`);
+}
+
+/**
+ * Edita el contacto de avisos del dueño (email/whatsapp) sobre la tabla `owners`.
+ * Es donde `lib/messaging/notify.ts` busca a quién avisar de cada lead nuevo, y
+ * hasta ahora solo se podía rellenar en el alta del cliente.
+ */
+export async function guardarContactoDueno(
+  ownerId: string,
+  businessId: string,
+  formData: FormData,
+) {
+  await exigirAdmin();
+
+  const parsed = parseContactoDueno(formData);
+  if (!parsed.success) redirect(`/admin/clientes/${businessId}?error=validacion`);
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("owners")
+    .update(normalizarContactoDueno(parsed.data))
+    .eq("id", ownerId);
+  if (error) redirect(`/admin/clientes/${businessId}?error=db`);
+
+  revalidatePath(`/admin/clientes/${businessId}`);
+  redirect(`/admin/clientes/${businessId}?ok=1`);
 }
 
 /**

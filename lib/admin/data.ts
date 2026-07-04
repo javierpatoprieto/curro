@@ -151,7 +151,7 @@ export interface ClienteDetalle {
   business: Business;
   llamadasMes: number;
   leadsMes: number;
-  owners: { nombre: string | null; email: string }[];
+  owners: { id: string; nombre: string | null; email: string; whatsapp: string | null }[];
 }
 
 /** Detalle de un negocio para la gestión de admin (fila completa + uso del mes). */
@@ -179,7 +179,7 @@ export async function getClienteDetalle(
       .select("id", { count: "exact", head: true })
       .eq("business_id", id)
       .gte("created_at", desdeISO),
-    admin.from("owners").select("nombre, email").eq("business_id", id),
+    admin.from("owners").select("id, nombre, email, whatsapp").eq("business_id", id),
   ]);
 
   return {
@@ -187,6 +187,6 @@ export async function getClienteDetalle(
     llamadasMes: llamadas.count ?? 0,
     leadsMes: leads.count ?? 0,
     owners:
-      (owners.data as { nombre: string | null; email: string }[] | null) ?? [],
+      (owners.data as ClienteDetalle["owners"] | null) ?? [],
   };
 }
