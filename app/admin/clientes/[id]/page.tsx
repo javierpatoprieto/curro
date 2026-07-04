@@ -5,7 +5,7 @@ import { exigirAdmin } from "@/lib/admin/auth";
 import { getClienteDetalle } from "@/lib/admin/data";
 import { formatoFecha } from "@/lib/metrics/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { guardarCliente, borrarCliente } from "./actions";
+import { guardarCliente, borrarCliente, guardarContactoDueno } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +29,10 @@ export default async function ClienteAdminPage({
 
   const guardar = guardarCliente.bind(null, id);
   const borrar = borrarCliente.bind(null, id);
+  const ownerPrincipal = detalle.owners[0];
+  const guardarContacto = ownerPrincipal
+    ? guardarContactoDueno.bind(null, ownerPrincipal.id, id)
+    : null;
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
@@ -76,12 +80,57 @@ export default async function ClienteAdminPage({
             valor={b.stripe_subscription_id ? "activa" : "—"}
           />
         </div>
-        {detalle.owners.length > 0 && (
+        {detalle.owners.length > 1 && (
           <p className="text-sm text-[var(--muted-foreground)]">
             Propietario(s):{" "}
             {detalle.owners.map((o) => o.email).join(", ")}
           </p>
         )}
+
+        {/* Contacto de avisos del dueño (tabla owners) */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Contacto del dueño (avisos)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {guardarContacto && ownerPrincipal ? (
+              <form action={guardarContacto} className="space-y-4">
+                <p className="text-sm text-[var(--muted-foreground)]">
+                  Dónde llegan los avisos de cada lead nuevo (WhatsApp y email).
+                </p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Campo label="Email de avisos">
+                    <input
+                      name="owner_email"
+                      type="email"
+                      required
+                      defaultValue={ownerPrincipal.email}
+                      className={inputCls}
+                    />
+                  </Campo>
+                  <Campo label="WhatsApp de avisos">
+                    <input
+                      name="owner_whatsapp"
+                      defaultValue={ownerPrincipal.whatsapp ?? ""}
+                      placeholder="+34600000000"
+                      className={inputCls}
+                    />
+                  </Campo>
+                </div>
+                <button
+                  type="submit"
+                  className="rounded-md bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-[var(--primary-foreground)] hover:opacity-90"
+                >
+                  Guardar contacto
+                </button>
+              </form>
+            ) : (
+              <p className="text-sm text-[var(--muted-foreground)]">
+                Este negocio aún no tiene un propietario asignado.
+              </p>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Edición / personalización */}
         <Card>

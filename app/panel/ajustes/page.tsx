@@ -1,8 +1,10 @@
 import { getCurrentContext } from "@/lib/auth";
 import { env } from "@/lib/env";
+import { isDemoMode } from "@/lib/demo";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { calConectado as leerCalConectado } from "@/lib/cal/integracion";
 import { AjustesForm } from "@/components/panel/ajustes-form";
+import { ContactoDuenoForm } from "@/components/panel/contacto-dueno-form";
 import { CalConectar } from "@/components/panel/cal-conectar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -24,6 +26,24 @@ export default async function AjustesPage() {
       calConectado = await leerCalConectado(createAdminClient(), b.id);
     } catch {
       calConectado = false;
+    }
+  }
+
+  // Contacto de avisos del dueño (email/whatsapp en `owners`). En demo tiramos
+  // del contexto; con Supabase leemos la fila real del dueño autenticado.
+  let contacto: { email: string; whatsapp: string | null } | null = null;
+  if (context) {
+    if (isDemoMode()) {
+      contacto = { email: context.user.email ?? "", whatsapp: null };
+    } else {
+      const { data } = await createAdminClient()
+        .from("owners")
+        .select("email, whatsapp")
+        .eq("id", context.owner.id)
+        .maybeSingle();
+      contacto = data
+        ? { email: data.email, whatsapp: data.whatsapp }
+        : { email: context.user.email ?? "", whatsapp: null };
     }
   }
 
@@ -56,6 +76,23 @@ export default async function AjustesPage() {
               <AjustesForm business={b} />
             </CardContent>
           </Card>
+
+          {contacto && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Contacto para avisos</CardTitle>
+                <CardDescription>
+                  Dónde te avisamos de cada lead nuevo: por WhatsApp y por email.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ContactoDuenoForm
+                  email={contacto.email}
+                  whatsapp={contacto.whatsapp}
+                />
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader>
