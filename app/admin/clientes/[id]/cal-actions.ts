@@ -62,3 +62,39 @@ export async function guardarCalAdmin(businessId: string, formData: FormData) {
   revalidatePath(`/admin/clientes/${businessId}`);
   redirect(`/admin/clientes/${businessId}?ok=1`);
 }
+
+/**
+ * El ADMIN desconecta Cal.com de un cliente desde su ficha: borra la key + tipo
+ * de evento y re-sincroniza el assistant para quitarle las tools de agendado.
+ * Admin-scoped por businessId (NO usa getCurrentContext).
+ */
+export async function desconectarCalAdmin(businessId: string) {
+  await exigirAdmin();
+
+  const admin = createAdminClient();
+  const { data: biz } = await admin
+    .from("businesses")
+    .select("*")
+    .eq("id", businessId)
+    .maybeSingle();
+  if (!biz) redirect("/admin");
+
+  await guardarCalIntegracion(admin, businessId, {
+    cal_api_key: null,
+    cal_event_type_id: null,
+  });
+
+  try {
+    if (biz.vapi_assistant_id) {
+      await actualizarAssistant(biz.vapi_assistant_id, {
+        ...configDesdeNegocio(biz, false),
+        calConectado: false,
+      });
+    }
+  } catch (e) {
+    console.error("[admin] no se pudo re-sincronizar el assistant:", e);
+  }
+
+  revalidatePath(`/admin/clientes/${businessId}`);
+  redirect(`/admin/clientes/${businessId}?ok=1`);
+}

@@ -14,10 +14,13 @@ import { Button } from "@/components/ui/button";
 export function CalConectar({
   conectado,
   action,
+  desconectarAction,
 }: {
   conectado: boolean;
   /** Server action opcional para el submit (p. ej. desde /admin). Si no se pasa, usa `conectarCal` (comportamiento actual del panel). */
   action?: (fd: FormData) => void | Promise<void>;
+  /** Server action opcional para desconectar (p. ej. desde /admin). Si no se pasa, usa `desconectarCal` (comportamiento actual del panel). */
+  desconectarAction?: (fd: FormData) => void | Promise<void>;
 }) {
   const [estado, setEstado] = useState<"idle" | "ok" | "error">("idle");
   const [pendiente, startTransition] = useTransition();
@@ -40,6 +43,11 @@ export function CalConectar({
   function onDesconectar() {
     setEstado("idle");
     startTransition(async () => {
+      if (desconectarAction) {
+        await desconectarAction(new FormData());
+        setEstado("ok");
+        return;
+      }
       const r = await desconectarCal();
       setEstado(r.ok ? "ok" : "error");
     });

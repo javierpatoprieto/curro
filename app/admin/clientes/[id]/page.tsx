@@ -10,7 +10,7 @@ import { calConectado } from "@/lib/cal/integracion";
 import { puede } from "@/lib/plans";
 import { CalConectar } from "@/components/panel/cal-conectar";
 import { guardarCliente, borrarCliente } from "./actions";
-import { guardarCalAdmin } from "./cal-actions";
+import { guardarCalAdmin, desconectarCalAdmin } from "./cal-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +35,7 @@ export default async function ClienteAdminPage({
   const guardar = guardarCliente.bind(null, id);
   const borrar = borrarCliente.bind(null, id);
   const guardarCal = guardarCalAdmin.bind(null, id);
+  const desconectarCalAccion = desconectarCalAdmin.bind(null, id);
 
   const agendaPermitida = puede(b.plan, "agenda");
   const calYaConectado = agendaPermitida
@@ -197,7 +198,11 @@ export default async function ClienteAdminPage({
           </CardHeader>
           <CardContent>
             {agendaPermitida ? (
-              <CalConectar conectado={calYaConectado} action={guardarCal} />
+              <CalConectar
+                conectado={calYaConectado}
+                action={guardarCal}
+                desconectarAction={desconectarCalAccion}
+              />
             ) : (
               <p className="text-sm text-[var(--muted-foreground)]">
                 La agenda automática está disponible en el plan Pro.
