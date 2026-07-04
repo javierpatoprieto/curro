@@ -22,6 +22,39 @@ export function dentroDelLimite(llamadasUsadas: number, plan: Plan): boolean {
   return llamadasUsadas < limiteDe(plan);
 }
 
+/** Límite de minutos incluidos al mes por plan (los packs se definen en minutos). */
+export const LIMITE_MINUTOS: Record<Plan, number> = {
+  trial: 30,
+  starter: 75,
+  pro: 150,
+  premium: 450,
+  cancelado: 0,
+};
+
+export function limiteMinutosDe(plan: Plan): number {
+  return LIMITE_MINUTOS[plan] ?? 0;
+}
+
+/** ¿Quedan minutos disponibles en el plan? (lógica pura, testeable) */
+export function dentroDelLimiteMinutos(
+  minutosUsados: number,
+  plan: Plan,
+): boolean {
+  return minutosUsados < limiteMinutosDe(plan);
+}
+
+/**
+ * Porcentaje de uso (0-100) de minutos sobre el límite del plan.
+ * Con límite 0 (p. ej. plan cancelado) evita la división por cero:
+ * 100% si hay minutos usados, 0% si no hay ninguno.
+ */
+export function porcentajeUso(minutosUsados: number, plan: Plan): number {
+  const limite = limiteMinutosDe(plan);
+  if (limite <= 0) return minutosUsados > 0 ? 100 : 0;
+  const pct = (minutosUsados / limite) * 100;
+  return Math.min(100, Math.max(0, Math.round(pct)));
+}
+
 export interface Uso {
   llamadas: number;
   minutos: number;
@@ -53,6 +86,24 @@ export async function contarLlamadasMes(
     .eq("business_id", businessId)
     .gte("created_at", inicioDeMesISO());
   return count ?? 0;
+}
+
+/** Cuenta los minutos del mes de un negocio (para el webhook, con service_role). */
+export async function contarMinutosMes(
+  admin: Admin,
+  businessId: string,
+): Promise<number> {
+  const { data } = await admin
+    .from("call_events")
+    .select("duracion_seg")
+    .eq("business_id", businessId)
+    .gte("created_at", inicioDeMesISO());
+
+  const segundos = (data ?? []).reduce(
+    (s, e) => s + (e.duracion_seg ?? 0),
+    0,
+  );
+  return Math.round(segundos / 60);
 }
 
 /** Uso del mes del negocio actual (para el panel; respeta RLS). */
