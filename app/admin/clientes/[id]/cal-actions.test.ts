@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { calPermitidoParaPlan } from "./cal-actions";
+import { calPermitidoParaPlan } from "@/lib/plans";
 
 describe("gating de agenda por plan en admin", () => {
   it("bloquea Starter, permite Pro/Premium/Trial", () => {

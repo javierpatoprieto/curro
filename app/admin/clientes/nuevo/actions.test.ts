@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { capacidadesEfectivas } from "./actions";
+import { capacidadesEfectivas } from "@/lib/plans";
 
 describe("capacidades efectivas según plan en el alta", () => {
   it("ignora agenda/confirmación si el plan no las incluye (Starter)", () => {
