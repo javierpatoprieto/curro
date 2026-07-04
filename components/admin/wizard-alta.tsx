@@ -311,6 +311,18 @@ export function WizardAlta({
           <input type="radio" name="phone_mode" value="new" className="size-4" />
           Número nuevo
         </label>
+
+        <Campo label="Número entrante (el que atiende Curro)">
+          <input
+            name="telefono_entrante"
+            placeholder="+34910000000"
+            className={inputCls}
+          />
+        </Campo>
+        <p className="text-sm text-[var(--muted-foreground)]">
+          Es el número al que enrutan las llamadas: Curro identifica el
+          negocio por este número cuando entra una llamada.
+        </p>
       </div>
 
       {/* Paso 6: Contacto */}
