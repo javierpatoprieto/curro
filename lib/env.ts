@@ -105,8 +105,12 @@ export const env = {
 // --- Fail-fast en producción -----------------------------------------------
 // La app no funciona sin Supabase, así que en prod exigimos lo imprescindible.
 // Si falta algo, rompemos al arrancar (mejor que devolver 500 en un webhook a
-// mitad de una llamada). En el build de Vercel estas variables ya están.
-if (env.isProd) {
+// mitad de una llamada). En el build de Vercel de Production estas variables ya
+// están. En los despliegues Preview de Vercel NO abortamos: el preview solo
+// valida el build (corre en modo mock, sin base de datos real), así que no
+// exigimos las claves de producción y evitamos romper el build de cada PR.
+const esPreviewVercel = process.env.VERCEL_ENV === "preview";
+if (env.isProd && !esPreviewVercel) {
   const imprescindibles = [
     "NEXT_PUBLIC_SUPABASE_URL",
     "NEXT_PUBLIC_SUPABASE_ANON_KEY",
