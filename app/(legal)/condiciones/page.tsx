@@ -39,8 +39,8 @@ export default function CondicionesPage() {
       <h2 className="pt-4 text-lg font-semibold">4. Precios y facturación</h2>
       <p>
         Los precios son los indicados en la página de precios (planes de 49, 99
-        y 199 €/mes), sin IVA; se aplicarán los impuestos que correspondan. La
-        facturación es mensual y por adelantado, gestionada a través de Stripe.
+        y 199 €/mes), IVA incluido. La facturación es mensual y por
+        adelantado, gestionada a través de Stripe.
         La suscripción se renueva automáticamente cada periodo salvo cancelación.
       </p>
 

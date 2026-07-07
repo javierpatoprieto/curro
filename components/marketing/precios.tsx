@@ -56,7 +56,7 @@ export function Precios() {
             Un presupuesto captado <span className="marca-lima">ya lo paga</span>.
           </h2>
           <p className="mt-5 text-lg text-bosque-soft">
-            7 días de prueba gratis. Sin permanencia. Precios sin IVA.
+            7 días de prueba gratis. Sin permanencia. IVA incluido.
           </p>
         </Reveal>
 
@@ -106,6 +106,13 @@ export function Precios() {
                 >
                   /mes
                 </span>
+              </p>
+              <p
+                className={`-mt-1 text-xs ${
+                  plan.destacado ? "text-nieve/50" : "text-bosque-soft/70"
+                }`}
+              >
+                IVA incluido
               </p>
               <Link
                 href="/registro"
