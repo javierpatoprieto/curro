@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { CreditCard } from "lucide-react";
 import { getCurrentContext } from "@/lib/auth";
 import { env } from "@/lib/env";
 import { isDemoMode } from "@/lib/demo";
@@ -7,6 +9,7 @@ import { AjustesForm } from "@/components/panel/ajustes-form";
 import { ContactoDuenoForm } from "@/components/panel/contacto-dueno-form";
 import { CalConectar } from "@/components/panel/cal-conectar";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -74,6 +77,25 @@ export default async function AjustesPage() {
             </CardHeader>
             <CardContent>
               <AjustesForm business={b} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Suscripción</CardTitle>
+              <CardDescription>
+                Gestiona tu plan: facturas, tarjeta y cancelación desde el
+                portal seguro de Stripe.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link
+                href="/panel/facturacion"
+                className={buttonVariants({ variant: "outline" })}
+              >
+                <CreditCard className="size-4" />
+                Gestionar suscripción
+              </Link>
             </CardContent>
           </Card>
 
