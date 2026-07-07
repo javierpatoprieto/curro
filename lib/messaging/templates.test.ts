@@ -48,6 +48,21 @@ describe("whatsappCliente", () => {
     expect(m.texto).toContain("Hola,");
     expect(m.texto).not.toContain("reservar");
   });
+
+  it("nunca deja vacía la variable de nombre (Meta rechaza vars de plantilla vacías)", () => {
+    for (const nombre of [null, "", "   "]) {
+      const m = whatsappCliente({
+        to: "+34611111111",
+        negocio: "Reformas García",
+        calLink: "https://cal.com/reformas-garcia/visita",
+        nombre,
+      });
+      if (m.kind !== "template") throw new Error("esperado template");
+      // {{1}} (nombre) debe ser no vacío en todos los casos.
+      expect(m.variables[0].length).toBeGreaterThan(0);
+      expect(m.variables[0].trim()).not.toBe("");
+    }
+  });
 });
 
 describe("whatsappDueno", () => {
