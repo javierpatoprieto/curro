@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { notificarNuevoLead } from "@/lib/messaging/notify";
+import { PLANTILLA_CLIENTE, PLANTILLA_DUENO } from "@/lib/messaging/templates";
 
 // Admin de Supabase falso: captura las filas insertadas en `messages`.
 // (En test, MOCK_PROVIDERS no es "false", así que los clientes usan mocks.)
@@ -54,5 +55,26 @@ describe("notificarNuevoLead", () => {
     expect(res.enviados).toBe(1);
     expect(inserted).toHaveLength(1);
     expect(inserted[0].row.canal).toBe("email");
+  });
+
+  it("con teléfono de cliente pero sin cal_link, no envía confirmación al cliente (Meta rechaza variables vacías) pero sí avisa al dueño", async () => {
+    const { admin, inserted } = fakeAdmin();
+    const res = await notificarNuevoLead({
+      admin: admin as never,
+      business: { id: "b1", nombre: "Reformas García", cal_link: null },
+      lead,
+      owners: [{ nombre: "Antonio", email: "a@reformas.es", whatsapp: "+34600000000" }],
+    });
+
+    expect(res.enviados).toBe(2);
+    expect(inserted).toHaveLength(2);
+    expect(inserted.every((m) => m.row.plantilla !== PLANTILLA_CLIENTE)).toBe(true);
+    expect(inserted.filter((m) => m.row.canal === "whatsapp")).toHaveLength(1);
+    expect(inserted.filter((m) => m.row.canal === "email")).toHaveLength(1);
+    expect(
+      inserted.some(
+        (m) => m.row.canal === "whatsapp" && m.row.plantilla === PLANTILLA_DUENO,
+      ),
+    ).toBe(true);
   });
 });

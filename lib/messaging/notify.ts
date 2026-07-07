@@ -96,9 +96,11 @@ async function enviarEmail(
 }
 
 /**
- * Al crear un lead: confirma al cliente por WhatsApp (con enlace Cal.com) y avisa
- * al/los dueño(s) por WhatsApp y email. Cada envío se reintenta y se registra en
- * `messages`; los fallos no interrumpen el resto (se guardan como "fallido").
+ * Al crear un lead: confirma al cliente por WhatsApp (con enlace Cal.com) —solo si
+ * el negocio tiene `cal_link`, ya que la plantilla aprobada en Meta no admite
+ * variables vacías— y avisa al/los dueño(s) por WhatsApp y email. Cada envío se
+ * reintenta y se registra en `messages`; los fallos no interrumpen el resto (se
+ * guardan como "fallido").
  */
 export async function notificarNuevoLead({
   admin,
@@ -108,7 +110,7 @@ export async function notificarNuevoLead({
 }: NotifyParams) {
   const tareas: Promise<unknown>[] = [];
 
-  if (lead.cliente_telefono) {
+  if (lead.cliente_telefono && business.cal_link) {
     tareas.push(
       enviarWhatsApp(admin, {
         business_id: business.id,

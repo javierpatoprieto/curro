@@ -27,11 +27,18 @@ export function whatsappCliente(params: {
     : "";
   const texto = `${saludo}, soy el asistente de ${negocio}. Hemos recibido tu solicitud y te contactaremos enseguida.${agenda}`;
 
+  // La plantilla aprobada en Meta NO admite variables vacías: si el envío se
+  // hace como plantilla, cada {{n}} debe tener texto. El nombre puede faltar
+  // (llamada sin nombre), así que usamos un saludo genérico no vacío. El enlace
+  // ({{3}}) lo garantiza quien invoca (notify solo manda esta plantilla cuando
+  // el negocio tiene cal_link), pero por robustez tampoco lo dejamos vacío.
+  const nombreVar = nombre?.trim() || "cliente";
+
   return {
     kind: "template",
     to,
     template: PLANTILLA_CLIENTE,
-    variables: [nombre ?? "", negocio, calLink ?? ""],
+    variables: [nombreVar, negocio, calLink ?? ""],
     texto,
   };
 }
