@@ -85,6 +85,9 @@ export async function guardarAjustes(formData: FormData) {
         tono: d.tono ?? null,
         preguntas_clave: d.preguntas_clave ?? null,
         conocimiento: d.conocimiento ?? null,
+        // El owner no edita voz/actividad aquí; los preservamos para no resetearlos.
+        voz: context.business.voz,
+        actividad: context.business.actividad,
         calConectado: calCon,
       });
     }

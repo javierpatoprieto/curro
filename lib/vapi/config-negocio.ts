@@ -17,6 +17,8 @@ export function configDesdeNegocio(
     | "tono"
     | "preguntas_clave"
     | "conocimiento"
+    | "voz"
+    | "actividad"
   >,
   calConectado: boolean,
 ): AssistantConfig {
@@ -29,6 +31,10 @@ export function configDesdeNegocio(
     tono: b.tono ?? null,
     preguntas_clave: b.preguntas_clave ?? null,
     conocimiento: b.conocimiento ?? null,
+    // Sin estos dos, re-sincronizar (conectar/desconectar Cal, etc.) reseteaba la
+    // voz a femenina y la actividad al valor por defecto del guion.
+    voz: b.voz ?? null,
+    actividad: b.actividad ?? null,
     calConectado,
   };
 }
