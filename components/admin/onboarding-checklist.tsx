@@ -12,32 +12,49 @@ import {
 
 /**
  * Checklist de aprovisionamiento (Fase 2). Muestra el estado por paso leyendo
- * `onboarding_status` y ofrece "Reintentar" en los pasos en error. La acción de
- * reintento se pasa como prop (server action) para no acoplar el componente.
+ * `onboarding_status` y ofrece una acción de reintento. Las acciones se pasan
+ * como props (server actions) para no acoplar el componente.
+ *
+ * Defect 6: ofrecemos acción no solo en `error`, también en `pendiente` (un
+ * paso que se quedó a medias — o el estado vacío `{}` por un throw temprano — no
+ * puede quedarse sin salida en la UI). Además, un botón GLOBAL "Reintentar
+ * aprovisionamiento" que re-ejecuta el orquestador entero, para arrancar/rehacer
+ * un negocio atascado sin ningún paso en error concreto.
  */
 export function OnboardingChecklist({
   businessId,
   status,
   reintentar,
+  reaprovisionar,
 }: {
   businessId: string;
   status: OnboardingStatus;
   /** Server action: reintenta un paso concreto. */
   reintentar: (businessId: string, paso: string) => Promise<void>;
+  /** Server action: re-ejecuta el aprovisionamiento completo (opcional). */
+  reaprovisionar?: (businessId: string) => Promise<void>;
 }) {
   return (
-    <ul className="space-y-2">
-      {PASOS.map((paso) => (
-        <PasoFila
-          key={paso}
+    <div className="space-y-3">
+      <ul className="space-y-2">
+        {PASOS.map((paso) => (
+          <PasoFila
+            key={paso}
+            businessId={businessId}
+            paso={paso}
+            estado={status[paso]?.estado ?? "pendiente"}
+            detalle={status[paso]?.detalle}
+            reintentar={reintentar}
+          />
+        ))}
+      </ul>
+      {reaprovisionar && (
+        <ReaprovisionarBoton
           businessId={businessId}
-          paso={paso}
-          estado={status[paso]?.estado ?? "pendiente"}
-          detalle={status[paso]?.detalle}
-          reintentar={reintentar}
+          reaprovisionar={reaprovisionar}
         />
-      ))}
-    </ul>
+      )}
+    </div>
   );
 }
 
@@ -70,7 +87,9 @@ function PasoFila({
       <span className="text-xs text-[var(--muted-foreground)]">
         {ETIQUETA_ESTADO[estado]}
       </span>
-      {estado === "error" && (
+      {/* Defect 6: acción también en `pendiente`, no solo en `error`. Un paso a
+          medias (o el default vacío) necesita una vía para completarse. */}
+      {(estado === "error" || estado === "pendiente") && (
         <button
           type="button"
           disabled={pendiente}
@@ -82,10 +101,36 @@ function PasoFila({
           className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border)] px-2.5 py-1 text-xs font-medium hover:bg-[var(--muted)] disabled:opacity-60"
         >
           {pendiente && <Loader2 className="size-3.5 animate-spin" />}
-          Reintentar
+          {estado === "error" ? "Reintentar" : "Completar"}
         </button>
       )}
     </li>
+  );
+}
+
+/** Botón global: re-ejecuta el aprovisionamiento completo (defect 6). */
+function ReaprovisionarBoton({
+  businessId,
+  reaprovisionar,
+}: {
+  businessId: string;
+  reaprovisionar: (businessId: string) => Promise<void>;
+}) {
+  const [pendiente, startTransition] = useTransition();
+  return (
+    <button
+      type="button"
+      disabled={pendiente}
+      onClick={() =>
+        startTransition(async () => {
+          await reaprovisionar(businessId);
+        })
+      }
+      className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border)] px-3 py-1.5 text-xs font-medium hover:bg-[var(--muted)] disabled:opacity-60"
+    >
+      {pendiente && <Loader2 className="size-3.5 animate-spin" />}
+      Reintentar aprovisionamiento
+    </button>
   );
 }
 

@@ -29,3 +29,24 @@ export async function reintentarPaso(businessId: string, paso: string) {
 
   revalidatePath(`/admin/clientes/${businessId}`);
 }
+
+/**
+ * Re-ejecuta el aprovisionamiento COMPLETO desde la ficha del cliente (botón
+ * global "Reintentar aprovisionamiento"). Para negocios atascados sin un paso en
+ * error concreto (estado vacío por un throw temprano, o pasos `pendiente`).
+ * Idempotente; no crea assistants/números duplicados (ver aprovisionar.ts).
+ */
+export async function reaprovisionar(businessId: string) {
+  await exigirAdmin();
+
+  const admin = createAdminClient();
+  try {
+    await aprovisionarNegocio(admin, businessId);
+  } catch (e) {
+    // Un fallo duro (assistant/persistencia) queda reflejado en la checklist en
+    // "error"; aquí solo evitamos que reviente la server action.
+    console.error("[admin] fallo re-aprovisionando el negocio:", e);
+  }
+
+  revalidatePath(`/admin/clientes/${businessId}`);
+}

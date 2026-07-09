@@ -76,6 +76,13 @@ export async function crearNegocio(formData: FormData) {
         tono: d.tono ?? null,
         preguntas_clave: d.preguntas_clave ?? null,
         conocimiento: d.conocimiento ?? null,
+        // Defect 7: fijamos un phone_mode EXPLÍCITO. Sin esto el negocio se
+        // activaba con phone_mode nulo → el orquestador lo trataba como "none" y
+        // OMITÍA el teléfono en silencio (routing perdido sin avisar). Con "new",
+        // el paso `telefono` queda VISIBLE como `pendiente` en la checklist para
+        // los planes con número dedicado (el dueño/admin ve que debe configurarlo);
+        // en starter (sin número dedicado) queda `omitido`, que es lo correcto.
+        phone_mode: "new",
       })
       .select("id")
       .single();

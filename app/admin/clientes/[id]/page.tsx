@@ -12,7 +12,7 @@ import { CalConectar } from "@/components/panel/cal-conectar";
 import { OnboardingChecklist } from "@/components/admin/onboarding-checklist";
 import { guardarCliente, borrarCliente, guardarContactoDueno } from "./actions";
 import { guardarCalAdmin, desconectarCalAdmin } from "./cal-actions";
-import { reintentarPaso } from "./provisioning-actions";
+import { reintentarPaso, reaprovisionar } from "./provisioning-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -118,6 +118,7 @@ export default async function ClienteAdminPage({
               businessId={b.id}
               status={b.onboarding_status ?? {}}
               reintentar={reintentarPaso}
+              reaprovisionar={reaprovisionar}
             />
           </CardContent>
         </Card>

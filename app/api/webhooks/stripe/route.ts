@@ -106,14 +106,19 @@ async function onCheckoutCompleted(
     })
     .eq("id", businessId);
 
-  // Aprovisionamiento asíncrono (Fase 2). Idempotente: no recrea el assistant ni
-  // recompra el número si ya existen. Si un paso falla, queda en "error" y se
-  // reintenta desde la ficha del cliente (no rompemos el webhook por eso).
-  try {
-    await aprovisionarNegocio(admin, businessId);
-  } catch (e) {
-    console.error("[stripe] fallo aprovisionando el negocio:", e);
-  }
+  // Aprovisionamiento (Fase 2). Idempotente: no recrea el assistant ni recompra
+  // el número si ya existen.
+  //
+  // Defect 1: NO tragamos un fallo de activación. Si el paso crítico (assistant)
+  // falla, la cuenta NO queda activa y un cliente que PAGÓ se quedaría
+  // inactivo-para-siempre porque Stripe no reintenta un 200. Dejamos que el
+  // error (AprovisionamientoError, o un fallo DURO de persistencia por columna
+  // que falta / RLS — defects 2/3/9) SUBA: el `catch` del POST lo convierte en
+  // 500 → Stripe reintenta el webhook (self-healing).
+  //
+  // Pasos NO críticos pendientes (telefono/agenda) NO lanzan → devolvemos 200 y
+  // el resto se reintenta desde la ficha del cliente.
+  await aprovisionarNegocio(admin, businessId);
 }
 
 async function onSubscriptionChange(

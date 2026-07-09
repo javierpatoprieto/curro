@@ -69,6 +69,20 @@ create table if not exists public.businesses (
   updated_at            timestamptz not null default now()
 );
 
+-- Solo permitimos los tres modos de teléfono que entiende el aprovisionamiento
+-- (espeja la constraint que añade la migración 005: un build fresco = una BD
+-- migrada). Idempotente.
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint where conname = 'businesses_phone_mode_check'
+  ) then
+    alter table public.businesses
+      add constraint businesses_phone_mode_check
+      check (phone_mode in ('forward', 'new', 'none'));
+  end if;
+end $$;
+
 drop trigger if exists trg_businesses_updated_at on public.businesses;
 create trigger trg_businesses_updated_at
   before update on public.businesses

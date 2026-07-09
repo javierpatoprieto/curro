@@ -43,9 +43,33 @@ interface Opciones {
 }
 
 /**
+ * Error DURO de aprovisionamiento: un paso crítico (el assistant) falló, así que
+ * la cuenta NO puede quedar activa. Lo lanzamos para que el llamante decida:
+ *  - el webhook de Stripe lo re-lanza → responde !=200 → Stripe reintenta
+ *    (self-healing: un cliente que pagó no se queda inactivo para siempre).
+ *  - las server actions de admin lo capturan y lo dejan en "error" en la
+ *    checklist (el admin reintenta desde la ficha).
+ * Un paso NO crítico pendiente (telefono/agenda) NO lanza: no bloquea el pago.
+ */
+export class AprovisionamientoError extends Error {
+  constructor(
+    message: string,
+    /** Estado final ya persistido (para inspección/logging). */
+    readonly status: Record<PasoOnboarding, PasoEstado>,
+  ) {
+    super(message);
+    this.name = "AprovisionamientoError";
+  }
+}
+
+/**
  * Aprovisiona (o reaprovisiona) un negocio: crea el assistant, configura el
  * teléfono, marca agenda/whatsapp según plan+credenciales y activa la cuenta.
  * Devuelve el estado final (ya persistido). Idempotente.
+ *
+ * LANZA `AprovisionamientoError` si el paso crítico (assistant) falla y la
+ * cuenta no queda activa: así el webhook de Stripe puede responder !=200 y
+ * reintentar (self-healing). Un teléfono/agenda pendiente NO lanza.
  */
 export async function aprovisionarNegocio(
   admin: Admin,
@@ -74,10 +98,26 @@ export async function aprovisionarNegocio(
 
   // Persiste el estado en la BD (tras cada paso). Actualiza también el `store`
   // local (biz) para que los pasos siguientes lean lo recién escrito.
+  //
+  // Defect 9: NO ignoramos el error del update. Un fallo de escritura (columna
+  // que falta porque no se aplicó la migración 005, RLS, constraint) dejaría el
+  // paso "hecho" en memoria pero SIN persistir → cuenta rota en silencio.
+  // Lanzamos para que el fallo sea RUIDOSO: en el webhook eso fuerza un !=200 y
+  // Stripe reintenta; en local, la columna que falta se detecta de inmediato.
   async function persistir(extra?: Record<string, unknown>) {
     const patch = { onboarding_status: status, ...(extra ?? {}) };
     Object.assign(biz as object, patch);
-    await admin.from("businesses").update(patch).eq("id", businessId);
+    const { error } = await admin
+      .from("businesses")
+      .update(patch)
+      .eq("id", businessId);
+    if (error) {
+      throw new Error(
+        `aprovisionarNegocio: no se pudo persistir el negocio ${businessId}: ${
+          error.message ?? String(error)
+        }`,
+      );
+    }
   }
 
   const debeEjecutar = (paso: PasoOnboarding) =>
@@ -89,13 +129,18 @@ export async function aprovisionarNegocio(
     try {
       let assistantId = biz.vapi_assistant_id;
       if (assistantId) {
-        // Idempotente: si ya existe, re-sincronizamos en vez de recrear.
-        await actualizarAssistant(
-          assistantId,
-          configDesdeNegocio(biz, false),
-        );
+        // Idempotente: si ya existe, re-sincronizamos en vez de recrear (no
+        // creamos un segundo assistant de pago). Cubre el caso del defect 10:
+        // si una ejecución anterior creó el assistant y persistió su id, el
+        // reintento hace UPDATE, nunca un CREATE duplicado.
+        await actualizarAssistant(assistantId, configDesdeNegocio(biz, false));
       } else {
         assistantId = await crearAssistant(configDesdeNegocio(biz, false));
+        // Defect 10: persistimos el id recién creado INMEDIATAMENTE, en su
+        // propia escritura comprobada, ANTES de tocar el estado. Así, si una
+        // escritura posterior falla y se reintenta, ya encontramos el id y
+        // hacemos UPDATE (arriba) en vez de crear un assistant duplicado.
+        await persistir({ vapi_assistant_id: assistantId });
       }
       status = marcarPaso(status, "assistant", "hecho", { detalle: assistantId });
       await persistir({ vapi_assistant_id: assistantId });
@@ -119,24 +164,46 @@ export async function aprovisionarNegocio(
           telefono_entrante: biz.telefono_entrante ?? destino,
         });
       } else if (phoneMode === "new" && puede(plan, "numeroDedicado")) {
+        // Defect 8: idempotencia best-effort (read-then-act, NO atómico). Nos
+        // protege del reintento secuencial habitual; NO de dos aprovisionamientos
+        // concurrentes del mismo negocio (caso muy raro: alta única + webhook).
+        // La seguridad total (lock/único en BD) se difiere a propósito.
         if (biz.vapi_phone_number_id) {
-          // Idempotente: ya hay número comprado, no recompramos.
+          // Ya hay número comprado (en esta u otra ejecución): no recompramos.
           status = marcarPaso(status, "telefono", "hecho", {
             detalle: biz.telefono_entrante ?? biz.vapi_phone_number_id,
           });
           await persistir();
         } else {
           const numero = await buscarNumeroES();
-          const comprado = await comprarNumero(numero, {
-            voiceUrl: inboundUrl(),
-          });
-          status = marcarPaso(status, "telefono", "hecho", {
-            detalle: comprado.phoneNumber,
-          });
-          await persistir({
-            vapi_phone_number_id: comprado.sid,
-            telefono_entrante: comprado.phoneNumber,
-          });
+          // Re-leemos la fila JUSTO antes de comprar: si otra ejecución compró
+          // entre medias, evitamos el doble cobro (double-buy) del número.
+          const { data: fresco } = await admin
+            .from("businesses")
+            .select("vapi_phone_number_id, telefono_entrante")
+            .eq("id", businessId)
+            .maybeSingle();
+          const yaComprado = (fresco as BizRow | null)?.vapi_phone_number_id;
+          if (yaComprado) {
+            const tel =
+              (fresco as BizRow | null)?.telefono_entrante ?? yaComprado;
+            status = marcarPaso(status, "telefono", "hecho", { detalle: tel });
+            await persistir({
+              vapi_phone_number_id: yaComprado,
+              telefono_entrante: tel,
+            });
+          } else {
+            const comprado = await comprarNumero(numero, {
+              voiceUrl: inboundUrl(),
+            });
+            status = marcarPaso(status, "telefono", "hecho", {
+              detalle: comprado.phoneNumber,
+            });
+            await persistir({
+              vapi_phone_number_id: comprado.sid,
+              telefono_entrante: comprado.phoneNumber,
+            });
+          }
         }
       } else {
         // 'none' o 'new' sin numeroDedicado en el plan → no aplica.
@@ -183,22 +250,44 @@ export async function aprovisionarNegocio(
   // --- (e) activo ------------------------------------------------------------
   // La cuenta se activa si el assistant está hecho y el teléfono está hecho u
   // omitido (omitido = no bloquea). Si no, queda pendiente.
-  if (debeEjecutar("activo") || opts.soloPaso === undefined) {
-    const assistantOk = status.assistant?.estado === "hecho";
-    const telefonoOk =
-      status.telefono?.estado === "hecho" ||
-      status.telefono?.estado === "omitido";
-    if (assistantOk && telefonoOk) {
-      status = marcarPaso(status, "activo", "hecho");
-      await persistir({ activo: true });
-    } else {
-      status = marcarPaso(status, "activo", "pendiente");
-      await persistir();
-    }
+  //
+  // Defect 4: SIEMPRE re-evaluamos la puerta de activación tras ejecutar
+  // cualquier paso — también en un reintento `soloPaso` (p. ej. arreglas el
+  // teléfono → la cuenta debe activarse). Antes, un `soloPaso` no re-evaluaba
+  // `activo` y una cuenta arreglada se quedaba inactiva.
+  const assistantOk = status.assistant?.estado === "hecho";
+  const telefonoOk =
+    status.telefono?.estado === "hecho" ||
+    status.telefono?.estado === "omitido";
+  const listo = assistantOk && telefonoOk;
+  if (listo) {
+    status = marcarPaso(status, "activo", "hecho");
+    // Defect 5: el paso `activo` es AUTORITATIVO: solo aquí ponemos activo:true.
+    await persistir({ activo: true });
+  } else {
+    status = marcarPaso(status, "activo", "pendiente");
+    // Defect 5: escribimos activo:false EXPLÍCITAMENTE. Un negocio insertado con
+    // activo:true (default del alta admin) cuyo assistant falle NO puede quedar
+    // activo sin asistente. Nunca dejamos un `true` obsoleto.
+    await persistir({ activo: false });
+  }
+
+  const estadoCompleto = completarEstado(status);
+
+  // Defect 1: si el paso CRÍTICO (assistant) falló, la cuenta no queda activa.
+  // Lanzamos un error DURO para que el webhook de Stripe responda !=200 y
+  // reintente (self-healing). Un teléfono/agenda pendiente NO es crítico: no
+  // lanza (la cuenta puede activarse igual y el resto se reintenta a mano).
+  if (status.assistant?.estado === "error") {
+    throw new AprovisionamientoError(
+      `aprovisionarNegocio: el assistant falló para ${businessId}; la cuenta no se activó` +
+        (status.assistant?.detalle ? ` (${status.assistant.detalle})` : ""),
+      estadoCompleto,
+    );
   }
 
   // Devolvemos el estado completo (todos los pasos presentes).
-  return completarEstado(status);
+  return estadoCompleto;
 }
 
 function msg(e: unknown): string {
