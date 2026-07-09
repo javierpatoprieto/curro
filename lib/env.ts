@@ -18,6 +18,10 @@ const schema = z.object({
   // --- Voz IA (Vapi) ---
   VAPI_API_KEY: z.string().optional(),
   VAPI_WEBHOOK_SECRET: z.string().optional(),
+  // Clave PÚBLICA de Vapi + assistant de demo para la llamada de voz web de
+  // /demo. Son valores de cliente (NEXT_PUBLIC_): van al navegador a propósito.
+  NEXT_PUBLIC_VAPI_PUBLIC_KEY: z.string().optional(),
+  NEXT_PUBLIC_VAPI_DEMO_ASSISTANT_ID: z.string().optional(),
 
   // --- WhatsApp Cloud API (Meta) ---
   WHATSAPP_TOKEN: z.string().optional(),
