@@ -7,7 +7,28 @@ export type WhatsAppMessage =
 
 export interface WhatsAppResult {
   id: string | null;
+  /**
+   * Metadatos NO personales del envío (para auditar en `messages.payload`).
+   * RGPD (minimización): NO incluimos el número destino ni el cuerpo del mensaje
+   * (que contienen PII del cliente). Solo tipo, plantilla y proveedor.
+   */
   request: unknown;
+}
+
+/**
+ * Resumen sin PII de un mensaje de WhatsApp: qué se envió, no a quién ni el texto.
+ * Se guarda en `messages.payload` en lugar del request crudo con teléfono y cuerpo.
+ */
+export function resumenEnvio(
+  msg: WhatsAppMessage,
+  provider: "meta" | "twilio" | "mock",
+): { messaging_product: "whatsapp"; type: string; template: string | null; provider: string } {
+  return {
+    messaging_product: "whatsapp",
+    type: msg.kind,
+    template: msg.kind === "template" ? msg.template : null,
+    provider,
+  };
 }
 
 export interface WhatsAppClient {
@@ -77,7 +98,8 @@ class RealWhatsAppClient implements WhatsAppClient {
         `WhatsApp API ${res.status}: ${json.error?.message ?? "error desconocido"}`,
       );
     }
-    return { id: json.messages?.[0]?.id ?? null, request: body };
+    // RGPD: no persistimos el body (lleva teléfono y texto), solo metadatos.
+    return { id: json.messages?.[0]?.id ?? null, request: resumenEnvio(msg, "meta") };
   }
 }
 
@@ -148,7 +170,8 @@ class TwilioWhatsAppClient implements WhatsAppClient {
         `Twilio WhatsApp ${res.status}: ${json.message ?? "error desconocido"}`,
       );
     }
-    return { id: json.sid ?? null, request: Object.fromEntries(params) };
+    // RGPD: no persistimos los params (llevan To y Body), solo metadatos.
+    return { id: json.sid ?? null, request: resumenEnvio(msg, "twilio") };
   }
 }
 
@@ -157,7 +180,7 @@ class MockWhatsAppClient implements WhatsAppClient {
   async send(msg: WhatsAppMessage): Promise<WhatsAppResult> {
     const preview = msg.kind === "text" ? msg.body : msg.texto;
     console.info(`[whatsapp:mock] → ${msg.to}\n${preview}`);
-    return { id: `mock_wa_${Date.now()}`, request: buildBody(msg) };
+    return { id: `mock_wa_${Date.now()}`, request: resumenEnvio(msg, "mock") };
   }
 }
 

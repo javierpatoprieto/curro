@@ -78,6 +78,11 @@ const schema = z.object({
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
 
+  // --- Cron de retención (RGPD) ---
+  // Secreto que protege /api/cron/retencion. Vercel Cron lo envía como
+  // `Authorization: Bearer <CRON_SECRET>`. Sin él, el endpoint solo corre en dev.
+  CRON_SECRET: z.string().optional(),
+
   // Si es "false", los adaptadores llaman a los proveedores reales.
   // Por defecto usamos mocks para no depender de cuentas externas.
   MOCK_PROVIDERS: z.enum(["true", "false"]).optional(),

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { exigirAdmin } from "@/lib/admin/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { actualizarAssistant, eliminarAssistant } from "@/lib/vapi/assistant";
+import { suprimirLead } from "@/lib/rgpd/supresion";
 import { getStripe, stripeConfigurado } from "@/lib/stripe/client";
 import {
   parseContactoDueno,
@@ -174,4 +175,28 @@ export async function borrarCliente(id: string, formData: FormData) {
 
   revalidatePath("/admin");
   redirect("/admin?borrado=1");
+}
+
+/**
+ * Supresión granular de UN lead (DSAR — derecho de supresión del Art. 17 RGPD).
+ *
+ * A diferencia de `borrarCliente` (borra el negocio entero), esto atiende la
+ * solicitud de una persona concreta: borra su lead + sus `messages` y
+ * `call_events`, e intenta borrar sus grabaciones en Vapi. `businessId` es el
+ * negocio dueño del lead (para revalidar y volver a su ficha).
+ *
+ * La lógica vive en `lib/rgpd/supresion.ts` (testeable con un admin stub); aquí
+ * solo añadimos auth de admin, revalidación y redirección.
+ */
+export async function borrarLead(businessId: string, leadId: string) {
+  await exigirAdmin();
+
+  const admin = createAdminClient();
+  const res = await suprimirLead(admin, leadId);
+
+  revalidatePath(`/admin/clientes/${businessId}`);
+  if (!res.ok) {
+    redirect(`/admin/clientes/${businessId}?error=lead-no-encontrado`);
+  }
+  redirect(`/admin/clientes/${businessId}?lead_borrado=1`);
 }

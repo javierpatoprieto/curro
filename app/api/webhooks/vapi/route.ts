@@ -1,7 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { parseEndOfCallReport, type ParsedVapiCall } from "@/lib/vapi/parser";
+import {
+  parseEndOfCallReport,
+  metadatosCallEvent,
+  type ParsedVapiCall,
+} from "@/lib/vapi/parser";
 import { verifyVapiSecret } from "@/lib/vapi/verify";
 import { notificarNuevoLead } from "@/lib/messaging/notify";
 import { contarLlamadasMes, dentroDelLimite } from "@/lib/usage";
@@ -60,14 +64,14 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    return await persistir(payload, parsed);
+    return await persistir(parsed);
   } catch (e) {
     console.error("[vapi] error guardando el lead:", e);
     return NextResponse.json({ error: "error interno" }, { status: 500 });
   }
 }
 
-async function persistir(payload: unknown, parsed: ParsedVapiCall) {
+async function persistir(parsed: ParsedVapiCall) {
   const admin = createAdminClient();
 
   // Localizar el tenant por assistant y, si no, por número llamado.
@@ -115,11 +119,13 @@ async function persistir(payload: unknown, parsed: ParsedVapiCall) {
     .single();
   if (leadError) throw leadError;
 
+  // RGPD (minimización): NO persistimos el JSON crudo íntegro (contenía PII:
+  // teléfono, transcripción, URLs de audio…). Guardamos SOLO metadatos operativos.
   const { error: eventError } = await admin.from("call_events").insert({
     business_id: business.id,
     lead_id: lead.id,
     vapi_call_id: parsed.vapiCallId,
-    raw_payload: payload,
+    raw_payload: metadatosCallEvent(parsed),
     duracion_seg: parsed.duracionSeg,
     coste_estimado: parsed.costeEstimado,
   });

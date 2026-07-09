@@ -134,6 +134,31 @@ function extraerDatos(message: Dict): Dict {
 }
 
 /**
+ * Metadatos MÍNIMOS de la llamada que persistimos en `call_events.raw_payload`.
+ *
+ * RGPD (minimización): NO guardamos el JSON crudo íntegro del webhook (contenía
+ * PII: teléfono del cliente, transcripción, URLs de audio, etc.). Guardamos solo
+ * los metadatos operativos que ya usábamos aguas abajo (uso, coste, idempotencia)
+ * y que NO son datos personales de la persona que llama. Función pura y testable.
+ */
+export interface CallEventMeta {
+  vapiCallId: string | null;
+  duracionSeg: number | null;
+  costeEstimado: number | null;
+  /** Tipo de evento, útil para depurar sin exponer contenido. */
+  tipo: string | null;
+}
+
+export function metadatosCallEvent(parsed: ParsedVapiCall): CallEventMeta {
+  return {
+    vapiCallId: parsed.vapiCallId,
+    duracionSeg: parsed.duracionSeg,
+    costeEstimado: parsed.costeEstimado,
+    tipo: "end-of-call-report",
+  };
+}
+
+/**
  * Parsea el payload del webhook de Vapi. Devuelve null si no es un
  * "end-of-call-report" (ignoramos el resto de tipos de mensaje).
  */
