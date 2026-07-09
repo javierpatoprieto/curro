@@ -9,8 +9,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { calConectado } from "@/lib/cal/integracion";
 import { puede } from "@/lib/plans";
 import { CalConectar } from "@/components/panel/cal-conectar";
+import { OnboardingChecklist } from "@/components/admin/onboarding-checklist";
 import { guardarCliente, borrarCliente, guardarContactoDueno } from "./actions";
 import { guardarCalAdmin, desconectarCalAdmin } from "./cal-actions";
+import { reintentarPaso } from "./provisioning-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -101,6 +103,24 @@ export default async function ClienteAdminPage({
             {detalle.owners.map((o) => o.email).join(", ")}
           </p>
         )}
+
+        {/* Aprovisionamiento (Fase 2): estado del onboarding por pasos */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Aprovisionamiento</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-3 text-sm text-[var(--muted-foreground)]">
+              Estado del montaje automático (asistente, teléfono, agenda y
+              avisos). Reintenta los pasos que hayan fallado.
+            </p>
+            <OnboardingChecklist
+              businessId={b.id}
+              status={b.onboarding_status ?? {}}
+              reintentar={reintentarPaso}
+            />
+          </CardContent>
+        </Card>
 
         {/* Contacto de avisos del dueño (tabla owners) */}
         <Card>

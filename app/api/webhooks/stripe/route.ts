@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe, stripeConfigurado } from "@/lib/stripe/client";
 import { mapaPreciosAPlan, type PlanPago } from "@/lib/stripe/plans";
 import { resolverCuenta, planDesdePrice } from "@/lib/stripe/activation";
-import { crearAssistant } from "@/lib/vapi/assistant";
+import { aprovisionarNegocio } from "@/lib/onboarding/aprovisionar";
 import { rateLimit } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
@@ -92,45 +92,28 @@ async function onCheckoutCompleted(
       ? (metaPlan as PlanPago)
       : undefined;
 
-  // Traemos el negocio para (a) crear su assistant de Vapi si aún no existe y
-  // (b) alimentar el guion con su personalización. Solo llegamos aquí tras un
-  // pago confirmado, así que es el momento correcto de provisionar el assistant.
-  const { data: biz } = await admin
-    .from("businesses")
-    .select(
-      "vapi_assistant_id, nombre, ciudad, servicios, zonas, horario, tono, preguntas_clave, conocimiento, max_duracion_seg",
-    )
-    .eq("id", businessId)
-    .maybeSingle();
-  if (!biz) return;
-
-  let assistantId = biz.vapi_assistant_id;
-  if (!assistantId) {
-    assistantId = await crearAssistant({
-      negocio: biz.nombre,
-      ciudad: biz.ciudad,
-      servicios: biz.servicios,
-      zonas: biz.zonas,
-      horario: biz.horario,
-      tono: biz.tono,
-      preguntas_clave: biz.preguntas_clave,
-      conocimiento: biz.conocimiento,
-      maxDuracionSeg: biz.max_duracion_seg,
-    });
-  }
-
+  // Solo llegamos aquí tras un pago confirmado: es el momento de fijar el plan y
+  // los ids de Stripe y luego aprovisionar (assistant + teléfono + activación),
+  // que persiste el estado por pasos en `onboarding_status`.
   await admin
     .from("businesses")
     .update({
       ...(plan ? { plan } : {}),
-      activo: true,
-      vapi_assistant_id: assistantId,
       stripe_customer_id:
         typeof session.customer === "string" ? session.customer : null,
       stripe_subscription_id:
         typeof session.subscription === "string" ? session.subscription : null,
     })
     .eq("id", businessId);
+
+  // Aprovisionamiento asíncrono (Fase 2). Idempotente: no recrea el assistant ni
+  // recompra el número si ya existen. Si un paso falla, queda en "error" y se
+  // reintenta desde la ficha del cliente (no rompemos el webhook por eso).
+  try {
+    await aprovisionarNegocio(admin, businessId);
+  } catch (e) {
+    console.error("[stripe] fallo aprovisionando el negocio:", e);
+  }
 }
 
 async function onSubscriptionChange(

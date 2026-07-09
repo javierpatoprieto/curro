@@ -294,8 +294,10 @@ export function WizardAlta({
       {/* Paso 5: Teléfono */}
       <div className={paso === 4 ? "space-y-4" : "hidden"}>
         <p className="text-sm text-[var(--muted-foreground)]">
-          Cómo recibe Curro las llamadas (el aprovisionamiento real se hará en
-          una fase posterior; de momento solo guardamos la preferencia).
+          Cómo recibe Curro las llamadas. Al crear el cliente se monta
+          automáticamente y verás el estado por pasos en su ficha. El número
+          nuevo (Twilio) corre en modo simulado hasta tener el bundle
+          regulatorio; el desvío usa el número que indiques abajo.
         </p>
         <label className="flex items-center gap-2 text-sm">
           <input

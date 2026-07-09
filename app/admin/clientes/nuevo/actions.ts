@@ -5,9 +5,10 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { exigirAdmin } from "@/lib/admin/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { crearAssistant } from "@/lib/vapi/assistant";
 import { guardarCalIntegracion } from "@/lib/cal/integracion";
 import { capacidadesEfectivas } from "@/lib/plans";
+import { estadoInicial } from "@/lib/onboarding/estado";
+import { aprovisionarNegocio } from "@/lib/onboarding/aprovisionar";
 
 const schema = z.object({
   nombre: z.string().min(2),
@@ -30,6 +31,7 @@ const schema = z.object({
   cal_api_key: z.string().optional(),
   cal_event_type_id: z.string().optional(),
   phone_mode: z.enum(["forward", "new", "none"]).optional(),
+  forward_target: z.string().max(32).optional(),
   telefono_entrante: z.string().max(32).optional(),
 });
 
@@ -63,6 +65,7 @@ export async function crearClienteAdmin(formData: FormData) {
     cal_api_key: g("cal_api_key"),
     cal_event_type_id: g("cal_event_type_id"),
     phone_mode: g("phone_mode"),
+    forward_target: g("forward_target"),
     telefono_entrante: g("telefono_entrante"),
   });
   if (!parsed.success) redirect("/admin/clientes/nuevo?error=validacion");
@@ -74,33 +77,11 @@ export async function crearClienteAdmin(formData: FormData) {
     agenda: d.agenda,
     confirmacionCliente: d.confirmacion_cliente,
   });
-  const calConectado = caps.agenda && Boolean(d.cal_api_key && d.cal_event_type_id);
 
-  const config = {
-    negocio: d.nombre,
-    ciudad: d.ciudad ?? null,
-    actividad: d.actividad ?? null,
-    voz: d.voz,
-    servicios: d.servicios ?? null,
-    zonas: d.zonas ?? null,
-    horario: d.horario ?? null,
-    tono: d.tono || null,
-    preguntas_clave: d.preguntas_clave ?? null,
-    conocimiento: d.conocimiento ?? null,
-    calConectado,
-  };
+  const phoneMode = d.phone_mode ?? "none";
 
-  // 1) Crear el assistant de Vapi (mock si no hay VAPI_API_KEY). Si falla, abortamos
-  //    para no dejar un negocio a medias sin assistant.
-  let assistantId: string;
-  try {
-    assistantId = await crearAssistant(config);
-  } catch (e) {
-    console.error("[admin] no se pudo crear el assistant de Vapi:", e);
-    redirect("/admin/clientes/nuevo?error=vapi");
-  }
-
-  // 2) Insertar el negocio ya con su assistant.
+  // 1) Insertar el negocio. El assistant y el teléfono los monta el orquestador
+  //    (Fase 2), que persiste el estado por pasos en `onboarding_status`.
   const admin = createAdminClient();
   const { data: biz, error } = await admin
     .from("businesses")
@@ -112,14 +93,16 @@ export async function crearClienteAdmin(formData: FormData) {
       plan: d.plan,
       activo: d.activo,
       cal_link: d.cal_link || null,
-      vapi_assistant_id: assistantId,
       servicios: d.servicios ?? null,
       zonas: d.zonas ?? null,
       horario: d.horario ?? null,
       tono: d.tono || null,
       preguntas_clave: d.preguntas_clave ?? null,
       conocimiento: d.conocimiento ?? null,
+      phone_mode: phoneMode,
+      forward_target: d.forward_target ?? null,
       telefono_entrante: d.telefono_entrante ?? null,
+      onboarding_status: estadoInicial(d.plan, phoneMode),
     })
     .select("id")
     .single();
@@ -128,9 +111,9 @@ export async function crearClienteAdmin(formData: FormData) {
     redirect("/admin/clientes/nuevo?error=db");
   }
 
-  // 2b) Si el plan permite agenda y nos dieron credenciales de Cal.com, las
-  // guardamos ya. No abortamos el alta si esto falla: el dueño puede
-  // conectarlo luego desde su panel.
+  // 1b) Si el plan permite agenda y nos dieron credenciales de Cal.com, las
+  // guardamos ANTES de aprovisionar, para que el paso "agenda" quede en "hecho".
+  // No abortamos el alta si esto falla: el dueño puede conectarlo luego.
   if (caps.agenda && d.cal_api_key && d.cal_event_type_id) {
     try {
       await guardarCalIntegracion(admin, biz.id, {
@@ -142,13 +125,22 @@ export async function crearClienteAdmin(formData: FormData) {
     }
   }
 
-  // 3) Crear el propietario (se enlazará a su usuario al primer login por email).
+  // 2) Crear el propietario (se enlazará a su usuario al primer login por email).
   await admin.from("owners").insert({
     business_id: biz.id,
     email: d.email,
     whatsapp: d.whatsapp ?? null,
     rol: "owner",
   });
+
+  // 3) Aprovisionar: crea el assistant de Vapi, configura el teléfono y activa la
+  //    cuenta, persistiendo el estado paso a paso. No abortamos el alta si un
+  //    paso falla: queda en "error" y se reintenta desde la ficha del cliente.
+  try {
+    await aprovisionarNegocio(admin, biz.id);
+  } catch (e) {
+    console.error("[admin] fallo aprovisionando el negocio:", e);
+  }
 
   revalidatePath("/admin");
   redirect(`/admin/clientes/${biz.id}?ok=1`);
