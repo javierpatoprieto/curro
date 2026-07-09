@@ -56,6 +56,14 @@ const SUBENCARGADOS: Subencargado[] = [
     enlace: "https://www.twilio.com/legal/privacy",
   },
   {
+    nombre: "Meta Platforms Ireland",
+    finalidad:
+      "Envío de mensajería WhatsApp (WhatsApp Cloud API), como alternativa a Twilio",
+    pais: "Irlanda / EE. UU.",
+    transferencia: "SCC / DPF",
+    enlace: "https://www.whatsapp.com/legal",
+  },
+  {
     nombre: "Supabase",
     finalidad: "Base de datos y autenticación (alojada en la UE, eu-west-1)",
     pais: "UE (eu-west-1)",

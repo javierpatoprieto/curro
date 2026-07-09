@@ -15,11 +15,17 @@
 - **Configurabilidad:** los plazos marcados abajo son valores por defecto propuestos y
   deben poder ajustarse (a nivel de producto o por cliente en su panel).
 
-> ⚠️ **Estado actual (importante):** a fecha de este borrador **no existe implementación
-> automatizada** de purga/retención en el repositorio (no hay cron ni job de borrado). Los
-> plazos de esta política son un **objetivo** que requiere implementarse (ver §5). Hasta
-> entonces, los datos (incluido audio y `raw_payload`) **se conservan indefinidamente** en
-> las tablas `leads` y `call_events`, lo que debe corregirse.
+> ✅ **Estado actual (importante):** la **retención automatizada está implementada y
+> testeada** en el repositorio: la lógica de plazos y vencimiento vive en
+> `lib/rgpd/retencion.ts` (`estaVencido`, `fechaCorte`; plazos configurables por entorno),
+> el job de purga en `lib/rgpd/retencion-job.ts` (`ejecutarRetencion`), el borrado de la
+> grabación en `lib/vapi/grabaciones.ts` (`borrarGrabacionVapi`) y el endpoint protegido en
+> `app/api/cron/retencion/route.ts` (autorización por `CRON_SECRET`, *fail-closed* en
+> producción). El **cron diario** (`0 3 * * *`) está **declarado en `vercel.json`**. Lo
+> único **pendiente es humano**: (i) **activar el cron en Vercel** definiendo `CRON_SECRET`
+> en las variables de entorno y (ii) **confirmar en la cuenta real de Vapi** que su
+> `DELETE` de la llamada elimina también el audio (ver §5). Estos textos son coherentes con
+> lo prometido en `/privacidad`.
 
 ---
 
@@ -29,8 +35,8 @@
 |---|---|---|---|---|---|
 | 1 | **Grabación de audio** de la llamada | `leads.audio_url` (`supabase/schema.sql:101`) + almacenamiento del proveedor de voz | **30 días** | **Borrar** audio (fichero + URL) | Fin del control de calidad; minimización del dato más sensible (voz). |
 | 2 | **Transcripción** + **datos del lead** (nombre, teléfono, tipo, zona, urgencia) | `leads.transcripcion` y campos de `leads` (`supabase/schema.sql:91-105`) | **12 meses** (o hasta que el cliente los borre) | **Borrar** el lead (o anonimizar — ver §3) | Gestión comercial del lead por el negocio cliente; instrucción del Responsable. |
-| 3 | **`raw_payload` íntegro** del proveedor de voz | `call_events.raw_payload` (`supabase/schema.sql:143`) | **No conservar íntegro**; conservar solo **metadatos** (duración, coste, `vapi_call_id`); purgar el payload a **30 días** | **Purgar** `raw_payload` (dejar metadatos) | Minimización; el payload bruto puede contener copia de audio/transcripción. |
-| 4 | **Contenido de notificaciones** (WhatsApp/email enviados/recibidos) | `messages.payload` (`supabase/schema.sql:119-130`) | **12 meses** *(a decidir)* | Borrar/anonimizar | Trazabilidad de avisos; alinear con el lead. |
+| 3 | **`raw_payload`** del proveedor de voz | `call_events.raw_payload` (`supabase/schema.sql:143`) | **No se guarda el JSON crudo**; el campo solo lleva **metadatos** (duración, coste, `vapi_call_id`); se **purga a 30 días** por defensa en profundidad | **Purgar** `raw_payload` (dejar metadatos) | Minimización; evita cualquier copia residual de audio/transcripción. |
+| 4 | **Metadatos del envío de notificaciones** (WhatsApp/email) — canal, plantilla y estado, **sin el cuerpo del mensaje ni el destinatario** | `messages.payload` (`supabase/schema.sql:119-130`) | **12 meses** *(a decidir)* | Borrar/anonimizar | Trazabilidad de avisos; alinear con el lead. |
 | 5 | **Datos de facturación** | Stripe + datos contables | **6 años** | Conservar; luego borrar | **Obligación legal** (Código de Comercio art. 30; normativa fiscal). |
 | 6 | **Datos de cuenta** del suscriptor y usuarios | `businesses`, `owners` (`supabase/schema.sql:51-83`) | Relación **+ 5 años** | Borrar/anonimizar tras la prescripción | Prescripción de acciones civiles/contractuales. |
 | 7 | **Logs con PII** (aplicación, hosting/Vercel) | Logs de Vercel y de la app | **≤ 90 días** | Rotación/borrado | Seguridad y depuración; minimización. |
@@ -63,26 +69,38 @@
 - El borrado en cascada por `business_id` ya está previsto a nivel de esquema
   (`on delete cascade` en `leads`, `messages`, `call_events` —
   `supabase/schema.sql:93`, `:121`, `:140`), lo que facilita la supresión al eliminar el
-  negocio. **Falta** el borrado selectivo por antigüedad (retención).
+  negocio. El **borrado selectivo por antigüedad** (retención) está **implementado** en el
+  job de purga (`lib/rgpd/retencion-job.ts`, `ejecutarRetencion`) — ver §5.
 
 ---
 
-## 5. Implementación técnica (pendiente)
+## 5. Implementación técnica
 
-Para cumplir esta política se propone implementar (no existe hoy):
+La retención está **implementada y testeada** en el repositorio:
 
-1. **Job/cron de purga** periódico (p. ej. Vercel Cron o función programada) que:
-   - borre `leads.audio_url` y el fichero de audio con **> 30 días**;
-   - purgue `call_events.raw_payload` con **> 30 días** dejando los metadatos;
-   - borre/anonimice `leads` (y `messages`) con **> 12 meses** salvo marca de retención;
-   - respete el borrado ya solicitado por el cliente.
-2. **Rotación de logs** para no retener PII > 90 días.
-3. **Configuración de retención en GA4** y en Stripe conforme a los plazos.
-4. **Registro de ejecución** de la purga (evidencia de cumplimiento — accountability).
+1. **Job/cron de purga** diario (Vercel Cron, `0 3 * * *` en `vercel.json`), expuesto en
+   `app/api/cron/retencion/route.ts` y ejecutado por `ejecutarRetencion`
+   (`lib/rgpd/retencion-job.ts`). El job:
+   - borra `leads.audio_url` y solicita a Vapi el borrado del audio con **> 30 días**
+     (`lib/vapi/grabaciones.ts`, `borrarGrabacionVapi`);
+   - purga `call_events.raw_payload` con **> 30 días** dejando los metadatos;
+   - borra/anonimiza `leads` (y `messages`) con **> 12 meses** salvo marca de retención;
+   - respeta el borrado ya solicitado por el cliente.
+   - Los plazos son **configurables por entorno** (`RETENCION_*_DIAS` en
+     `lib/rgpd/retencion.ts`).
+2. El endpoint está **protegido** con `CRON_SECRET` y es *fail-closed* en producción
+   (`app/api/cron/retencion/route.ts`).
+3. **Rotación de logs** (PII ≤ 90 días) y **retención en GA4/Stripe**: se gestionan en la
+   configuración de cada proveedor (fuera del repositorio).
+4. **Registro de ejecución** de la purga como evidencia de cumplimiento (accountability).
 
+> **Pendiente (humano, no de código) para activar la retención en producción:**
+> (i) **definir `CRON_SECRET`** en las variables de entorno de Vercel para que el cron
+> quede autorizado y activo; (ii) **confirmar en la cuenta real de Vapi** que su `DELETE`
+> de la llamada elimina también el audio almacenado.
+>
 > **A decidir por el abogado/DPO:** confirmación final de cada plazo, política de
-> anonimización, ventana de gracia de exportación, y prioridad de implementación del cron
-> (dado que hoy la conservación es indefinida).
+> anonimización y ventana de gracia de exportación.
 
 ---
 

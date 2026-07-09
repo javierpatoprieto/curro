@@ -11,12 +11,13 @@
 ## Naturaleza de este documento
 
 Este Contrato de Encargado del Tratamiento (en adelante, el «**DPA**» o el «**Acuerdo**»)
-está pensado para **incorporarse como Anexo a las Condiciones de contratación** de Curro
-y **aceptarse en el momento del alta** (aceptación electrónica de los Términos), sin
-necesidad de firma manuscrita individualizada. La referencia a esta posibilidad ya existe
-en las Condiciones de contratación (`app/(legal)/condiciones/page.tsx:72-83`), que
-reconocen que respecto de los datos de las personas que llaman «el Cliente es responsable
-del tratamiento y Curro actúa como encargado».
+se **incorpora como Anexo a las Condiciones de contratación** de Curro y **se acepta junto
+con ellas en el momento del alta** (aceptación electrónica de los Términos), sin necesidad
+de firma manuscrita individualizada. Las Condiciones de contratación (cláusula **§8
+«Protección de datos»**, `app/(legal)/condiciones/page.tsx`) reconocen que respecto de los
+datos de las personas que llaman «el Cliente es responsable del tratamiento y Curro actúa
+como encargado» y establecen que **este Anexo DPA forma parte de los Términos y se acepta
+con ellos**.
 
 La aceptación de los Términos en el alta se considera formalización del presente Acuerdo
 a los efectos del art. 28.3 RGPD («por contrato u otro acto jurídico con arreglo al
@@ -32,7 +33,7 @@ Derecho de la Unión o de los Estados miembros»).
 - **Encargado del tratamiento** (en adelante, el «**Encargado**» o «**Curro**»):
   **Javier Pato Prieto**, NIF **71449969D**, con domicilio en Calle Los Remedios 64F,
   39527 Liandres (Cantabria), España. Correo de contacto: **hola@soycurro.es**.
-  (Datos coincidentes con el Aviso legal, `app/(legal)/aviso-legal/page.tsx:19-33`.)
+  (Datos coincidentes con el Aviso legal, `app/(legal)/aviso-legal/page.tsx`.)
 
 > **Delimitación de roles (a decidir/confirmar por el abogado).** Este DPA regula
 > **únicamente** el tratamiento en el que Curro actúa como **encargado**: los datos de
@@ -73,20 +74,25 @@ suscripción). A su terminación se aplica la cláusula 4.9 (supresión o devolu
 
 ### 3.2 Categorías de datos personales
 Con base en la estructura real de datos (`supabase/schema.sql:91-105`, tabla `leads`, y
-el esquema de extracción estructurada en `lib/vapi/assistant.ts:212-228`):
+el esquema de extracción estructurada en `buildAssistantConfig()` de
+`lib/vapi/assistant.ts`):
 
 - **Datos identificativos y de contacto:** nombre (`cliente_nombre`), teléfono
   (`cliente_telefono`), y —cuando se agenda visita— **email** de la persona que llama
-  (`lib/vapi/assistant.ts:176-186`).
+  (herramienta `agendarVisita` en `lib/vapi/assistant.ts`).
 - **Datos de la solicitud:** tipo de trabajo (`tipo_trabajo`), zona/dirección aproximada
   (`zona`), urgencia (`urgencia`).
 - **Grabación de voz** de la llamada (`leads.audio_url`, `supabase/schema.sql:101`) y
   **transcripción** literal de la conversación (`leads.transcripcion`,
   `supabase/schema.sql:100`).
-- **Metadatos de la llamada:** identificador de llamada, duración, coste estimado y el
-  `raw_payload` bruto remitido por el proveedor de voz (`supabase/schema.sql:138-147`).
-- **Contenido de las comunicaciones** de confirmación/aviso enviadas (WhatsApp/email),
-  registradas en `messages` (`supabase/schema.sql:119-130`).
+- **Metadatos de la llamada:** identificador de llamada, duración, coste estimado. El
+  campo `call_events.raw_payload` (`supabase/schema.sql:138-147`) **no guarda el JSON crudo
+  del proveedor**: solo lleva metadatos y se **purga a los 30 días** por defensa en
+  profundidad (ver política de retención).
+- **Metadatos del envío de las notificaciones** (WhatsApp/email): **canal, plantilla y
+  estado del envío, sin el cuerpo del mensaje ni el destinatario**, registrados en
+  `messages.payload` (`supabase/schema.sql:119-130`; ver `resumenEnvio` en
+  `lib/messaging/whatsapp.ts` y `email.ts`).
 
 > ⚠️ **Categorías especiales (Art. 9) — a decidir por el abogado.** El servicio **no
 > persigue** recabar categorías especiales. Sin embargo, al tratarse de **conversación de
@@ -106,8 +112,9 @@ Responsable, incluidas las transferencias internacionales. Se consideran instruc
 documentadas: (i) este Acuerdo, (ii) las Condiciones de contratación, (iii) la
 configuración que el Responsable establece en su panel (guion del asistente, servicios,
 zonas, canales de aviso, conexión de Cal.com), reflejada en la configuración del
-assistant (`lib/vapi/assistant.ts:40-119`). Si el Encargado considera que una instrucción
-infringe el RGPD o normativa de protección de datos, informará al Responsable.
+assistant (`guion()` y `buildAssistantConfig()` en `lib/vapi/assistant.ts`). Si el
+Encargado considera que una instrucción infringe el RGPD o normativa de protección de
+datos, informará al Responsable.
 
 ### 4.2 Confidencialidad [Art. 28.3.b]
 El Encargado garantiza que las personas autorizadas para tratar los datos se han
@@ -117,9 +124,9 @@ confidencialidad.
 ### 4.3 Seguridad [Art. 28.3.c y Art. 32]
 El Encargado aplicará las **medidas técnicas y organizativas apropiadas** del Art. 32,
 descritas en el Apéndice II (entre otras: aislamiento multi-tenant por `business_id` con
-Row Level Security en la base de datos —`supabase/schema.sql:153-219`—, cifrado en
-tránsito, verificación de secreto en los webhooks —`app/api/webhooks/vapi/route.ts:30-43`—
-y rate limiting).
+Row Level Security en la base de datos —políticas RLS en `supabase/schema.sql`—, cifrado en
+tránsito, verificación de secreto en los webhooks —`app/api/webhooks/vapi/route.ts`— y
+rate limiting).
 
 ### 4.4 Subencargados [Art. 28.2 y 28.4]
 El Responsable otorga al Encargado una **autorización general** para recurrir a otros
@@ -190,9 +197,10 @@ figuran en `docs/legal/politica-retencion.md`.
 
 - Garantizar que existe una **base jurídica** para el tratamiento y que se ha **informado
   a los interesados** (personas que llaman) del tratamiento y de la grabación. Esta
-  obligación ya figura en las Condiciones (`app/(legal)/condiciones/page.tsx:56-62`) y se
-  refuerza con el **aviso de grabación** que el asistente emite al inicio de cada llamada
-  (`lib/vapi/assistant.ts:72` y `:197`).
+  obligación ya figura en las Condiciones (cláusula §6 «Obligaciones del Cliente»,
+  `app/(legal)/condiciones/page.tsx`) y se refuerza con el **aviso de grabación** que el
+  asistente emite al inicio de cada llamada (guion en `guion()` y `firstMessage` de
+  `buildAssistantConfig()`, `lib/vapi/assistant.ts`).
 - Impartir instrucciones lícitas y mantener actualizada la configuración de su servicio.
 - Atender, como responsable, las solicitudes de derechos de los interesados.
 
@@ -234,44 +242,53 @@ prevalece este DPA.
 | **Objeto** | Recepción, grabación, transcripción y cualificación de llamadas entrantes, y aviso de leads, por cuenta del Responsable. |
 | **Duración** | Vigencia de la suscripción + plazos de supresión (Apéndice de retención). |
 | **Naturaleza y finalidad** | Prestación del servicio de recepcionista virtual con IA; sin finalidades propias del Encargado. |
-| **Tipo de datos** | Identificativos y de contacto (nombre, teléfono, email si se agenda), datos de la solicitud (tipo de trabajo, zona, urgencia), **grabación de voz**, **transcripción**, metadatos de llamada, contenido de las notificaciones. |
+| **Tipo de datos** | Identificativos y de contacto (nombre, teléfono, email si se agenda), datos de la solicitud (tipo de trabajo, zona, urgencia), **grabación de voz**, **transcripción**, metadatos de llamada y **metadatos del envío de las notificaciones** (canal, plantilla, estado; sin el cuerpo ni el destinatario). |
 | **Categorías de interesados** | Personas que llaman al negocio del Responsable; terceros mencionados en la llamada. |
 | **Operaciones** | Recepción de llamada, aviso de grabación, grabación, transcripción (STT), procesamiento por LLM, síntesis de voz (TTS), extracción estructurada de datos, almacenamiento, notificación (WhatsApp/email), agendado opcional (Cal.com), y supresión/purga. |
 
 Flujo técnico resumido: la llamada la orquesta el proveedor de voz (Vapi) con su
-subcadena (LLM GPT-4o, STT Deepgram, TTS ElevenLabs — `lib/vapi/assistant.ts:200-211`); al
-colgar, Vapi envía un *end-of-call-report* al webhook
-(`app/api/webhooks/vapi/route.ts:23-68`), que persiste el lead y el evento de llamada en
-Supabase y dispara las notificaciones (`app/api/webhooks/vapi/route.ts:101-154`).
+subcadena (LLM GPT-4o, STT Deepgram, TTS ElevenLabs — configurada en
+`buildAssistantConfig()` de `lib/vapi/assistant.ts`; **subprocesadores declarados por
+nuestra configuración, a confirmar con la lista de subprocesadores de Vapi**); al colgar,
+Vapi envía un *end-of-call-report* al webhook (`app/api/webhooks/vapi/route.ts`), que
+persiste el lead y el evento de llamada en Supabase y dispara las notificaciones.
 
 ---
 
 # Apéndice II — Medidas de seguridad (Art. 32)
 
 - **Aislamiento multi-tenant** por `business_id` con **Row Level Security** en PostgreSQL;
-  un negocio nunca accede a datos de otro (`supabase/schema.sql:153-219`). Las escrituras
-  de sistema usan `service_role` y filtran por `business_id` en código.
+  un negocio nunca accede a datos de otro (políticas RLS en `supabase/schema.sql`). Las
+  escrituras de sistema usan `service_role` y filtran por `business_id` en código.
 - **Cifrado en tránsito** (HTTPS/TLS) en todas las integraciones y APIs de proveedores.
 - **Cifrado en reposo** a nivel de proveedor gestionado (Supabase/Postgres, almacenamiento
   de audio del proveedor de voz). *(A confirmar el alcance con cada proveedor.)*
 - **Autenticación y control de acceso:** auth gestionada por Supabase; panel del cliente
   restringido a los `owners` del negocio; área `/admin` protegida con secreto de sesión
-  (`lib/env.ts:69-73`).
+  (`ADMIN_SESSION_SECRET` en `lib/env.ts`).
 - **Verificación de webhooks:** secreto compartido comprobado en cada webhook de voz
-  (`app/api/webhooks/vapi/route.ts:30-43`); en producción es obligatorio.
-- **Rate limiting** de los endpoints públicos (`app/api/webhooks/vapi/route.ts:24-25`),
-  con backend durable opcional (Upstash Redis).
-- **Idempotencia** para no duplicar tratamientos de una misma llamada
-  (`app/api/webhooks/vapi/route.ts:84-92`).
+  (`app/api/webhooks/vapi/route.ts`); en producción es obligatorio.
+- **Rate limiting** de los endpoints públicos, con backend durable opcional (Upstash Redis).
+- **Idempotencia** para no duplicar tratamientos de una misma llamada.
 - **Minimización:** extracción estructurada solo de los campos necesarios del lead
-  (`lib/vapi/assistant.ts:212-228`).
+  (`buildAssistantConfig()` en `lib/vapi/assistant.ts`); y en `messages.payload` solo se
+  guardan **metadatos del envío** (canal, plantilla, estado), no el cuerpo ni el
+  destinatario (`resumenEnvio` en `lib/messaging/whatsapp.ts` y `email.ts`).
+- **Retención automatizada** (defensa en profundidad y minimización): job de purga
+  `ejecutarRetencion` (`lib/rgpd/retencion-job.ts`) con plazos configurables
+  (`lib/rgpd/retencion.ts`), que borra el audio a 30 días —incluida la solicitud de borrado
+  a Vapi (`borrarGrabacionVapi`, `lib/vapi/grabaciones.ts`)—, purga `raw_payload` a 30 días
+  y suprime el lead a 12 meses. Se ejecuta por **cron diario** (`vercel.json`, `0 3 * * *`)
+  vía el endpoint protegido `app/api/cron/retencion/route.ts` (autorización por
+  `CRON_SECRET`, *fail-closed* en producción).
 - **Registro de comunicaciones** enviadas para trazabilidad (`messages`,
   `supabase/schema.sql:119-130`).
 
-> **A decidir/reforzar por el abogado/DPO (pendientes de implementación):** política de
-> **retención automatizada** (purga de audio a 30 días, no conservar `raw_payload` íntegro),
-> registro de accesos/auditoría con PII ≤ 90 días, y política formal de gestión de
-> incidentes. Ver `docs/legal/politica-retencion.md`.
+> **Pendiente para activar en producción (humano, no de código):** definir `CRON_SECRET`
+> en Vercel para activar el cron de retención y confirmar en la cuenta real de Vapi que su
+> `DELETE` elimina el audio. **A reforzar por el abogado/DPO:** registro de accesos/auditoría
+> con PII ≤ 90 días y política formal de gestión de incidentes. Ver
+> `docs/legal/politica-retencion.md`.
 
 ---
 
@@ -282,18 +299,19 @@ Lista maestra y detallada (finalidad, datos, país, mecanismo de transferencia, 
 
 | Subencargado | Finalidad | País | Transferencia |
 |---|---|---|---|
-| **Vapi** (+ subcadena) | Orquestación de la llamada de voz IA | EE. UU. | SCC / DPF |
-| ↳ OpenAI (GPT-4o) | Modelo de lenguaje del guion | EE. UU. | SCC / DPF |
-| ↳ Deepgram | Transcripción de voz a texto (STT) | EE. UU. | SCC / DPF |
-| ↳ ElevenLabs | Síntesis de voz (TTS) | EE. UU. | SCC / DPF |
-| **Twilio** | WhatsApp y telefonía | EE. UU. / Irlanda | SCC / DPF |
+| **Vapi** (+ subcadena) | Orquestación de la llamada de voz IA | EE. UU. | SCC / DPF *(verificar)* |
+| ↳ OpenAI (GPT-4o) | Modelo de lenguaje del guion | EE. UU. | SCC / DPF *(subprocesador declarado por nuestra config.; confirmar con Vapi)* |
+| ↳ Deepgram | Transcripción de voz a texto (STT) | EE. UU. | SCC / DPF *(subprocesador declarado por nuestra config.; confirmar con Vapi)* |
+| ↳ ElevenLabs | Síntesis de voz (TTS) | EE. UU. | SCC / DPF *(subprocesador declarado por nuestra config.; confirmar con Vapi)* |
+| **Twilio** | WhatsApp y telefonía | EE. UU. / Irlanda | SCC / DPF *(verificar)* |
+| **Meta Platforms Ireland** (WhatsApp Cloud API) — *alternativa a Twilio* | Envío de mensajería WhatsApp (`getWhatsAppClient`/`RealWhatsAppClient` en `lib/messaging/whatsapp.ts`) | Irlanda / EE. UU. | SCC / DPF *(verificar)* |
 | **Supabase** | Base de datos y autenticación | UE (eu-west-1) | Sin transferencia (UE) |
-| **Resend** | Envío de email | EE. UU. | SCC / DPF |
-| **Cal.com** | Agendado de visitas (opcional) | EE. UU. / UE | SCC |
-| **Stripe** | Pagos y facturación | EE. UU. / Irlanda | SCC / DPF |
-| **Vercel** | Hosting y logs | EE. UU. | SCC / DPF |
+| **Resend** | Envío de email | EE. UU. | SCC / DPF *(verificar)* |
+| **Cal.com** | Agendado de visitas (opcional) | EE. UU. / UE | SCC *(verificar)* |
+| **Stripe** | Pagos y facturación | EE. UU. / Irlanda | SCC / DPF *(verificar)* |
+| **Vercel** | Hosting y logs | EE. UU. | SCC / DPF *(verificar)* |
 
-> Nota: **Meta (WhatsApp Cloud API)** es una vía alternativa a Twilio para WhatsApp
-> (`lib/messaging/whatsapp.ts:186-195`); si se usa, debe añadirse a esta lista.
-> **Google Analytics** solo aplica al tratamiento «C» (analítica web, con consentimiento),
-> no a este DPA.
+> Nota: se usa **Twilio** o **Meta (WhatsApp Cloud API)** para WhatsApp según la
+> configuración del entorno (`getWhatsAppClient` en `lib/messaging/whatsapp.ts`); por ambos
+> pasa PII del llamante (teléfono, nombre). **Google Analytics** solo aplica al tratamiento
+> «C» (analítica web, con consentimiento), no a este DPA.

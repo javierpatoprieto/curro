@@ -23,7 +23,7 @@ avisa de los leads. Esto genera **dos tratamientos con roles distintos**:
 |---|---|---|---|
 | 1 | [`dpa-encargado.md`](./dpa-encargado.md) | **Contrato de Encargado del Tratamiento (Art. 28)** para incorporar como Anexo a los Términos (aceptación en el alta). Incluye contenido mínimo del Art. 28.3, subencargados con objeción, transferencias (SCC/DPF) y Apéndices I-III. | Borrador |
 | 2 | [`rat.md`](./rat.md) | **Registro de Actividades de Tratamiento (Art. 30)** con los 3 tratamientos reales (A suscriptores, B servicio IA como encargado, C analítica). | Borrador |
-| 3 | [`politica-retencion.md`](./politica-retencion.md) | **Política de retención y supresión**: plazos por categoría, borrado vs. anonimización y la implementación técnica pendiente. | Borrador |
+| 3 | [`politica-retencion.md`](./politica-retencion.md) | **Política de retención y supresión**: plazos por categoría, borrado vs. anonimización y la implementación técnica (ya existente: job + cron; pendiente solo activar `CRON_SECRET` en Vercel). | Borrador |
 | 4 | [`subencargados.md`](./subencargados.md) | **Lista maestra de subencargados** (proveedor, finalidad, datos, país, transferencia, enlaces), incluida la subcadena de Vapi. | Borrador |
 
 ---
@@ -33,8 +33,8 @@ avisa de los leads. Esto genera **dos tratamientos con roles distintos**:
 - El **DPA (1)** regula el tratamiento **B** del **RAT (2)**; su Apéndice III remite a la
   **lista de subencargados (4)** y sus cláusulas de supresión a la **política de
   retención (3)**.
-- La **retención (3)** aplica a todas las categorías del **RAT (2)** y señala qué falta
-  implementar técnicamente.
+- La **retención (3)** aplica a todas las categorías del **RAT (2)**; su implementación
+  técnica ya existe (job + cron) y solo resta activarla en Vercel.
 
 ---
 
@@ -66,7 +66,10 @@ avisa de los leads. Esto genera **dos tratamientos con roles distintos**:
    suficiente o requiere consentimiento.
 4. **Transferencias internacionales:** verificar la **adhesión al DPF** de cada proveedor o,
    en su defecto, firmar **SCC 2021/914** con el módulo correcto y realizar **TIA**.
-5. **Implementación técnica de la retención:** hoy **no existe** cron/purga; la conservación
-   es indefinida. Priorizar su desarrollo (ver `politica-retencion.md §5`).
+5. **Activación de la retención en producción:** la retención **ya está implementada y
+   testeada** (job `ejecutarRetencion` en `lib/rgpd/retencion-job.ts`, endpoint protegido en
+   `app/api/cron/retencion/route.ts` y cron diario en `vercel.json`). Queda **pendiente lo
+   humano**: definir `CRON_SECRET` en Vercel para activar el cron y confirmar que el `DELETE`
+   de Vapi borra el audio (ver `politica-retencion.md §5`).
 6. **Revisión de los textos públicos** (`/privacidad`, `/condiciones`, `/aviso-legal`,
    `/cookies`) para alinearlos con estos documentos una vez validados.

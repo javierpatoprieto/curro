@@ -23,16 +23,16 @@ el código (`lib/env.ts`, `lib/vapi/assistant.ts`, `lib/messaging/*`, `lib/strip
 
 | Proveedor | Finalidad | Datos tratados | País | Mecanismo de transferencia | Política / DPA |
 |---|---|---|---|---|---|
-| **Vapi** | Orquestación de la llamada de voz IA (recepción, control del flujo) — `lib/vapi/assistant.ts:245-259` | Audio de la llamada, transcripción, metadatos, datos del lead | EE. UU. | SCC / DPF *(verificar)* | https://vapi.ai/privacy |
-| ↳ **OpenAI** (GPT-4o) | Modelo de lenguaje que ejecuta el guion — `lib/vapi/assistant.ts:200-205` | Transcripción/turnos de la conversación (texto) | EE. UU. | SCC / DPF *(verificar)* | https://openai.com/policies/privacy-policy |
-| ↳ **Deepgram** (nova-2) | Transcripción de voz a texto (STT) — `lib/vapi/assistant.ts:211` | Audio de la llamada | EE. UU. | SCC / DPF *(verificar)* | https://deepgram.com/privacy |
-| ↳ **ElevenLabs** (eleven_turbo_v2_5) | Síntesis de voz del asistente (TTS) — `lib/vapi/assistant.ts:206-210` | Texto a locutar (respuestas del asistente) | EE. UU. | SCC / DPF *(verificar)* | https://elevenlabs.io/privacy |
-| **Twilio** | Envío de WhatsApp y telefonía — `lib/messaging/whatsapp.ts:84-153` | Teléfono, nombre y contenido del mensaje del lead/dueño | EE. UU. / Irlanda | SCC / DPF *(verificar)* | https://www.twilio.com/legal/privacy · DPA de Twilio |
-| **Meta** (WhatsApp Cloud API) — *alternativa a Twilio* | Envío de WhatsApp — `lib/messaging/whatsapp.ts:186-195` | Teléfono, nombre y contenido del mensaje | EE. UU. / Irlanda | SCC / DPF *(verificar)* | https://www.whatsapp.com/legal |
-| **Resend** | Envío de email de aviso de lead al dueño — `lib/messaging/email.ts:23-52` | Email del dueño, nombre y resumen del lead | EE. UU. | SCC / DPF *(verificar)* | https://resend.com/legal/privacy-policy · DPA de Resend |
+| **Vapi** | Orquestación de la llamada de voz IA (recepción, control del flujo) — `crearAssistant`/`buildAssistantConfig` en `lib/vapi/assistant.ts` | Audio de la llamada, transcripción, metadatos, datos del lead | EE. UU. | SCC / DPF *(verificar)* | https://vapi.ai/privacy |
+| ↳ **OpenAI** (GPT-4o) | Modelo de lenguaje que ejecuta el guion — `model` en `buildAssistantConfig` (`lib/vapi/assistant.ts`) | Transcripción/turnos de la conversación (texto) | EE. UU. | SCC / DPF · **subprocesador declarado por nuestra configuración; confirmar con la lista de subprocesadores de Vapi** | https://openai.com/policies/privacy-policy |
+| ↳ **Deepgram** (nova-2) | Transcripción de voz a texto (STT) — `transcriber` en `buildAssistantConfig` (`lib/vapi/assistant.ts`) | Audio de la llamada | EE. UU. | SCC / DPF · **subprocesador declarado por nuestra configuración; confirmar con la lista de subprocesadores de Vapi** | https://deepgram.com/privacy |
+| ↳ **ElevenLabs** (eleven_turbo_v2_5) | Síntesis de voz del asistente (TTS) — `voice` en `buildAssistantConfig` (`lib/vapi/assistant.ts`) | Texto a locutar (respuestas del asistente) | EE. UU. | SCC / DPF · **subprocesador declarado por nuestra configuración; confirmar con la lista de subprocesadores de Vapi** | https://elevenlabs.io/privacy |
+| **Twilio** | Envío de WhatsApp y telefonía — `TwilioWhatsAppClient` en `lib/messaging/whatsapp.ts` | Teléfono, nombre y contenido del mensaje del lead/dueño | EE. UU. / Irlanda | SCC / DPF *(verificar)* | https://www.twilio.com/legal/privacy · DPA de Twilio |
+| **Meta Platforms Ireland** (WhatsApp Cloud API) — *alternativa a Twilio* | Envío de WhatsApp — `RealWhatsAppClient` en `lib/messaging/whatsapp.ts` | Teléfono, nombre y contenido del mensaje | Irlanda / EE. UU. | SCC / DPF *(verificar)* | https://www.whatsapp.com/legal |
+| **Resend** | Envío de email de aviso de lead al dueño — `RealEmailClient` en `lib/messaging/email.ts` | Email del dueño, nombre y resumen del lead | EE. UU. | SCC / DPF *(verificar)* | https://resend.com/legal/privacy-policy · DPA de Resend |
 | **Cal.com** (opcional) | Agendado de la visita de valoración — `lib/cal/client.ts` | Nombre, email y teléfono del cliente, fecha/hora | EE. UU. / UE | SCC *(verificar)* | https://cal.com/privacy |
 | **Supabase** | Base de datos (PostgreSQL) y autenticación — `supabase/schema.sql` | Todos los datos del lead, transcripción, `audio_url`, metadatos | **UE (eu-west-1)** | Sin transferencia (UE) | https://supabase.com/privacy · DPA de Supabase |
-| **Vercel** | Hosting de la aplicación y logs — `lib/env.ts:116` | Metadatos de solicitud; posible PII en logs | EE. UU. | SCC / DPF *(verificar)* | https://vercel.com/legal/privacy-policy · DPA de Vercel |
+| **Vercel** | Hosting de la aplicación y logs — `lib/env.ts` | Metadatos de solicitud; posible PII en logs | EE. UU. | SCC / DPF *(verificar)* | https://vercel.com/legal/privacy-policy · DPA de Vercel |
 
 ---
 
@@ -51,7 +51,7 @@ el código (`lib/env.ts`, `lib/vapi/assistant.ts`, `lib/messaging/*`, `lib/strip
 
 | Proveedor | Finalidad | Datos tratados | País | Mecanismo de transferencia | Política / DPA |
 |---|---|---|---|---|---|
-| **Google Analytics 4** | Analítica de audiencia del sitio web (solo con consentimiento) — `lib/env.ts:61-63` | Identificadores online, IP, datos de navegación | EE. UU. | DPF *(verificar)* | https://policies.google.com/privacy · Condiciones de tratamiento de datos de Google Ads/Analytics |
+| **Google Analytics 4** | Analítica de audiencia del sitio web (solo con consentimiento) — `NEXT_PUBLIC_GA_ID` en `lib/env.ts` | Identificadores online, IP, datos de navegación | EE. UU. | DPF *(verificar)* | https://policies.google.com/privacy · Condiciones de tratamiento de datos de Google Ads/Analytics |
 
 ---
 

@@ -141,8 +141,8 @@ export default function PrivacidadPage() {
           página de subencargados
         </Link>
         . En resumen: Vapi (voz, EE. UU.) y su subcadena OpenAI, Deepgram y
-        ElevenLabs; Twilio (mensajería); Supabase (base de datos, alojada en la
-        UE); Resend (email); Cal.com (agendado); Stripe (pagos); Vercel
+        ElevenLabs; Twilio o Meta (mensajería WhatsApp); Supabase (base de datos,
+        alojada en la UE); Resend (email); Cal.com (agendado); Stripe (pagos); Vercel
         (alojamiento web) y Google Analytics (analítica web, solo con tu
         consentimiento; ver la{" "}
         <a href="/cookies" className="underline">
