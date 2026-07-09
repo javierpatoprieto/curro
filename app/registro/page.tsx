@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TERMINOS_VERSION } from "@/lib/legal/version";
 import {
   Card,
   CardContent,
@@ -28,6 +29,7 @@ function RegistroForm() {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
   const [enviado, setEnviado] = useState(false);
+  const [aceptaTerminos, setAceptaTerminos] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -35,6 +37,12 @@ function RegistroForm() {
 
     if (password.length < 8) {
       setError("La contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+    if (!aceptaTerminos) {
+      setError(
+        "Debes aceptar los Términos y Condiciones y el Anexo DPA para continuar.",
+      );
       return;
     }
     if (!supabaseListo) {
@@ -46,10 +54,18 @@ function RegistroForm() {
     const supabase = createClient();
     // Tras confirmar el email, Supabase redirige al callback y de ahí al onboarding.
     const emailRedirectTo = `${window.location.origin}/auth/callback?next=/onboarding`;
+    // Evidencia de aceptación de Términos + Anexo DPA (Art. 28 RGPD) guardada en
+    // user_metadata en el momento del alta, sin migración de base de datos.
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo },
+      options: {
+        emailRedirectTo,
+        data: {
+          terminos_version: TERMINOS_VERSION,
+          terminos_aceptados_at: new Date().toISOString(),
+        },
+      },
     });
 
     setCargando(false);
@@ -101,7 +117,10 @@ function RegistroForm() {
         <CardContent>
           {googleLoginActivo && (
             <>
-              <GoogleButton texto="Registrarse con Google" />
+              <GoogleButton
+                texto="Registrarse con Google"
+                bloqueado={!aceptaTerminos}
+              />
               <div className="my-4 flex items-center gap-3 text-xs text-[var(--muted-foreground)]">
                 <span className="h-px flex-1 bg-[var(--border)]" />o
                 <span className="h-px flex-1 bg-[var(--border)]" />
@@ -151,10 +170,48 @@ function RegistroForm() {
                 </button>
               </div>
             </div>
+            <div className="flex items-start gap-2">
+              <input
+                id="acepta-terminos"
+                type="checkbox"
+                required
+                checked={aceptaTerminos}
+                onChange={(e) => setAceptaTerminos(e.target.checked)}
+                className="mt-0.5 size-4 shrink-0 cursor-pointer accent-[var(--primary)]"
+              />
+              <Label
+                htmlFor="acepta-terminos"
+                className="text-sm font-normal leading-snug text-[var(--muted-foreground)]"
+              >
+                He leído y acepto los{" "}
+                <Link
+                  href="/condiciones"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-[var(--foreground)] underline"
+                >
+                  Términos y Condiciones
+                </Link>{" "}
+                y el{" "}
+                <Link
+                  href="/condiciones"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-[var(--foreground)] underline"
+                >
+                  Anexo de Encargado de Tratamiento (DPA)
+                </Link>
+                .
+              </Label>
+            </div>
             {error && (
               <p className="text-sm text-[var(--destructive)]">{error}</p>
             )}
-            <Button type="submit" className="w-full" disabled={cargando}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={cargando || !aceptaTerminos}
+            >
               {cargando && <Loader2 className="size-4 animate-spin" />}
               Crear cuenta
             </Button>
