@@ -12,8 +12,16 @@ import { Mic, PhoneOff, Loader2, TriangleAlert } from "lucide-react";
  * dependencia npm (el build con node_modules symlinkeado no la toleraría).
  */
 
-const PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY;
-const ASSISTANT_ID = process.env.NEXT_PUBLIC_VAPI_DEMO_ASSISTANT_ID;
+// Valores PUBLISHABLE de cliente (viajan al navegador de cualquier visitante):
+// la clave pública/share de Vapi y el assistant de DEMO (una copia NO ligada a
+// ningún negocio, así que las llamadas de demo no generan leads ni avisos al
+// dueño). Se pueden sobreescribir por env; el fallback deja la demo lista.
+const PUBLIC_KEY =
+  process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY ||
+  "af83d160-0179-4935-bc99-cd915c743062";
+const ASSISTANT_ID =
+  process.env.NEXT_PUBLIC_VAPI_DEMO_ASSISTANT_ID ||
+  "a78c38fc-bd19-4c22-a37d-ed0a72fd732b";
 
 type Estado = "inactivo" | "cargando" | "en-llamada" | "error";
 type Linea = { role: "user" | "assistant"; text: string };
