@@ -18,6 +18,17 @@ describe("guion", () => {
     expect(g).toContain("la llamada se graba");
   });
 
+  it("el aviso legal es reforzado: finalidad, IA, responsable, política y vía de oposición", () => {
+    const g = guion({ negocio: "Reformas García" });
+    expect(g).toContain("se transcribe");
+    expect(g).toContain("inteligencia artificial");
+    // El responsable es el NEGOCIO (autónomo), no Curro.
+    expect(g).toContain("el responsable de esos datos es Reformas García");
+    expect(g).toContain("política de privacidad");
+    // Vía de oposición: devolver la llamada una persona.
+    expect(g).toContain("le devuelva la llamada una persona");
+  });
+
   it("incorpora servicios, zonas, horario, preguntas y conocimiento", () => {
     const g = guion({
       negocio: "X",
@@ -79,6 +90,16 @@ describe("buildAssistantConfig", () => {
     expect(c.maxDurationSeconds).toBe(300);
     expect(c.transcriber.language).toBe("es");
     expect(c.name).toContain("X");
+  });
+
+  it("el firstMessage da el aviso de grabación reforzado con vía de oposición", () => {
+    const c = buildAssistantConfig({ negocio: "Reformas García" });
+    expect(c.firstMessage).toContain("se graba");
+    expect(c.firstMessage).toContain("se transcribe");
+    expect(c.firstMessage).toContain("inteligencia artificial");
+    expect(c.firstMessage).toContain("el responsable es Reformas García");
+    expect(c.firstMessage).toContain("política de privacidad");
+    expect(c.firstMessage).toContain("le devuelva la llamada una persona");
   });
 
   it("respeta el maxDuracionSeg indicado", () => {

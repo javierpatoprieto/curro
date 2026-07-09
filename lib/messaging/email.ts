@@ -47,7 +47,12 @@ class RealEmailClient implements EmailClient {
     if (!res.ok) {
       throw new Error(`Resend ${res.status}: ${json.message ?? "error"}`);
     }
-    return { id: json.id ?? null, request: { ...body, html: "[html]" } };
+    // RGPD (minimización): no persistimos el cuerpo (html/text lleva la PII del
+    // lead), solo metadatos del envío.
+    return {
+      id: json.id ?? null,
+      request: { from: body.from, to: body.to, subject: body.subject },
+    };
   }
 }
 

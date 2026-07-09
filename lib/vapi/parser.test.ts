@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { parseEndOfCallReport, normalizeUrgencia } from "@/lib/vapi/parser";
+import {
+  parseEndOfCallReport,
+  normalizeUrgencia,
+  metadatosCallEvent,
+} from "@/lib/vapi/parser";
 
 // Payload realista de un "end-of-call-report" de Vapi.
 // Nota: el teléfono NO viene en structuredData a propósito, para probar el
@@ -154,6 +158,45 @@ describe("parseEndOfCallReport", () => {
     expect(r.lead.tipo_trabajo).toBe("Pintura de piso");
     expect(r.lead.zona).toBe("Tetuán");
     expect(r.lead.urgencia).toBe(false);
+  });
+});
+
+describe("metadatosCallEvent (minimización RGPD de raw_payload)", () => {
+  it("solo conserva metadatos operativos, NADA de PII cruda", () => {
+    const parsed = parseEndOfCallReport(payloadReal)!;
+    const meta = metadatosCallEvent(parsed);
+
+    // Lo que SÍ guardamos (métricas + idempotencia, no personales).
+    expect(meta).toEqual({
+      vapiCallId: "call_9f8a1b2c3d",
+      duracionSeg: 96,
+      costeEstimado: parsed.costeEstimado,
+      tipo: "end-of-call-report",
+    });
+
+    // Lo que NO debe filtrarse: teléfono, nombre, transcripción, audio, zona.
+    const serializado = JSON.stringify(meta);
+    expect(serializado).not.toContain("+34611111111"); // teléfono
+    expect(serializado).not.toContain("María López"); // nombre
+    expect(serializado).not.toContain("Chamberí"); // zona
+    expect(serializado).not.toContain("storage.vapi.ai"); // URL de audio
+    expect(serializado).not.toContain("asistente virtual"); // transcripción
+    expect(serializado.toLowerCase()).not.toContain("transcript");
+  });
+
+  it("no incluye ninguna clave con datos personales del llamante", () => {
+    const parsed = parseEndOfCallReport(payloadReal)!;
+    const claves = Object.keys(metadatosCallEvent(parsed));
+    for (const prohibida of [
+      "lead",
+      "transcripcion",
+      "audioUrl",
+      "resumen",
+      "cliente_nombre",
+      "cliente_telefono",
+    ]) {
+      expect(claves).not.toContain(prohibida);
+    }
   });
 });
 

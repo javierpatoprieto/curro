@@ -69,7 +69,8 @@ export function guion(config: AssistantConfig): string {
     objetivo,
     "",
     "Reglas:",
-    "- Preséntate SIEMPRE al inicio como asistente virtual e informa de que la llamada se graba (aviso legal obligatorio).",
+    `- Preséntate SIEMPRE al inicio como asistente virtual y da el aviso legal de grabación (obligatorio): di que la llamada se graba y se transcribe, que se procesa con inteligencia artificial para gestionar su solicitud, y que el responsable de esos datos es ${negocio}. Añade que puede consultar la política de privacidad para más información.`,
+    `- Si la persona no desea que la llamada se grabe o se trate con IA, NO insistas: dile con naturalidad que puede pedir que le devuelva la llamada una persona de ${negocio}, toma solo su nombre y teléfono para ese fin y despídete.`,
     "- Averigua y confirma: nombre del cliente, tipo de trabajo, zona o dirección aproximada, y si es urgente.",
     reglaTelefono,
     "- No des precios ni presupuestos: explica que un técnico le llamará para valorarlo.",
@@ -194,7 +195,7 @@ export function buildAssistantConfig(config: AssistantConfig) {
   const { negocio } = config;
   return {
     name: `Curro · ${negocio}`,
-    firstMessage: `${negocio}, le atiende Curro, su asistente virtual. Le aviso de que esta llamada queda grabada. ¿En qué puedo ayudarle?`,
+    firstMessage: `${negocio}, le atiende Curro, su asistente virtual. Le informo de que esta llamada se graba y se transcribe, y se procesa con inteligencia artificial para gestionar su solicitud; el responsable es ${negocio} y puede consultar la política de privacidad. Si prefiere no ser grabado, puede pedir que le devuelva la llamada una persona. ¿En qué puedo ayudarle?`,
     // Control de coste: cortamos la llamada si se alarga demasiado.
     maxDurationSeconds: config.maxDuracionSeg ?? DURACION_POR_DEFECTO,
     model: {
