@@ -1,5 +1,7 @@
 /** Tipos de dominio compartidos. Reflejan el esquema SQL (supabase/schema.sql). */
 
+import type { OnboardingStatus } from "@/lib/onboarding/estado";
+
 export const LEAD_ESTADOS = [
   "nuevo",
   "contactado",
@@ -56,9 +58,18 @@ export interface Business {
   voz: "femenina" | "masculina" | null;
   actividad: string | null;
   max_duracion_seg: number | null;
+  // Aprovisionamiento (Fase 2). `onboarding_status` es un objeto pequeño con el
+  // estado por paso; se tipa en lib/onboarding/estado.ts (OnboardingStatus).
+  phone_mode: PhoneMode | null;
+  forward_target: string | null;
+  vapi_phone_number_id: string | null;
+  onboarding_status: OnboardingStatus;
   created_at: string;
   updated_at: string;
 }
+
+/** Modo de teléfono del negocio: desvío, número dedicado nuevo o sin teléfono. */
+export type PhoneMode = "forward" | "new" | "none";
 
 export interface Owner {
   id: string;

@@ -59,6 +59,12 @@ create table if not exists public.businesses (
   activo                boolean not null default true,
   stripe_customer_id    text,
   stripe_subscription_id text,
+  -- Aprovisionamiento (Fase 2): modo de teléfono, destino del desvío, SID del
+  -- número dedicado de Twilio y estado del onboarding por pasos (JSONB).
+  phone_mode            text,               -- 'forward' | 'new' | 'none'
+  forward_target        text,
+  vapi_phone_number_id  text,
+  onboarding_status     jsonb not null default '{}'::jsonb,
   created_at            timestamptz not null default now(),
   updated_at            timestamptz not null default now()
 );
