@@ -36,6 +36,12 @@ const schema = z.object({
   // dentro de la ventana de 24 h).
   TWILIO_WA_CONTENT_CLIENTE: z.string().optional(),
   TWILIO_WA_CONTENT_DUENO: z.string().optional(),
+  // Comprar un número español (ES) en Twilio exige un Address (AddressSid) y un
+  // Regulatory Bundle (BundleSid) aprobados. Aún no existen → el aprovisionamiento
+  // de números corre en MOCK hasta que estén y MOCK_PROVIDERS=false. Ver
+  // lib/twilio/numeros.ts.
+  TWILIO_ADDRESS_SID: z.string().optional(),
+  TWILIO_BUNDLE_SID: z.string().optional(),
 
   // --- Email (Resend) ---
   RESEND_API_KEY: z.string().optional(),
