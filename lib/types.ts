@@ -62,7 +62,8 @@ export interface Business {
   // estado por paso; se tipa en lib/onboarding/estado.ts (OnboardingStatus).
   phone_mode: PhoneMode | null;
   forward_target: string | null;
-  vapi_phone_number_id: string | null;
+  vapi_phone_number_id: string | null; // SID del número en Twilio (PN…)
+  vapi_phone_id: string | null; // id del phone-number en Vapi (inbound BYO Twilio)
   onboarding_status: OnboardingStatus;
   created_at: string;
   updated_at: string;

@@ -63,7 +63,8 @@ create table if not exists public.businesses (
   -- número dedicado de Twilio y estado del onboarding por pasos (JSONB).
   phone_mode            text,               -- 'forward' | 'new' | 'none'
   forward_target        text,
-  vapi_phone_number_id  text,
+  vapi_phone_number_id  text,               -- SID del número comprado en Twilio (PN…)
+  vapi_phone_id         text,               -- id del phone-number en Vapi (inbound BYO Twilio)
   onboarding_status     jsonb not null default '{}'::jsonb,
   created_at            timestamptz not null default now(),
   updated_at            timestamptz not null default now()

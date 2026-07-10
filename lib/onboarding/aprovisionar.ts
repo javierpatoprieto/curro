@@ -17,6 +17,7 @@ import { crearAssistant, actualizarAssistant } from "@/lib/vapi/assistant";
 import { configDesdeNegocio } from "@/lib/vapi/config-negocio";
 import { getCalIntegracion } from "@/lib/cal/integracion";
 import { buscarNumeroES, comprarNumero } from "@/lib/twilio/numeros";
+import { importarNumeroEnVapi } from "@/lib/vapi/telefono";
 import {
   PASOS,
   estadoInicial,
@@ -164,17 +165,13 @@ export async function aprovisionarNegocio(
           telefono_entrante: biz.telefono_entrante ?? destino,
         });
       } else if (phoneMode === "new" && puede(plan, "numeroDedicado")) {
+        // 1) Asegurar el NÚMERO comprado en Twilio (idempotente).
         // Defect 8: idempotencia best-effort (read-then-act, NO atómico). Nos
         // protege del reintento secuencial habitual; NO de dos aprovisionamientos
         // concurrentes del mismo negocio (caso muy raro: alta única + webhook).
-        // La seguridad total (lock/único en BD) se difiere a propósito.
-        if (biz.vapi_phone_number_id) {
-          // Ya hay número comprado (en esta u otra ejecución): no recompramos.
-          status = marcarPaso(status, "telefono", "hecho", {
-            detalle: biz.telefono_entrante ?? biz.vapi_phone_number_id,
-          });
-          await persistir();
-        } else {
+        let sid = biz.vapi_phone_number_id;
+        let telefono = biz.telefono_entrante;
+        if (!sid) {
           const numero = await buscarNumeroES();
           // Re-leemos la fila JUSTO antes de comprar: si otra ejecución compró
           // entre medias, evitamos el doble cobro (double-buy) del número.
@@ -185,26 +182,39 @@ export async function aprovisionarNegocio(
             .maybeSingle();
           const yaComprado = (fresco as BizRow | null)?.vapi_phone_number_id;
           if (yaComprado) {
-            const tel =
-              (fresco as BizRow | null)?.telefono_entrante ?? yaComprado;
-            status = marcarPaso(status, "telefono", "hecho", { detalle: tel });
-            await persistir({
-              vapi_phone_number_id: yaComprado,
-              telefono_entrante: tel,
-            });
+            sid = yaComprado;
+            telefono = (fresco as BizRow | null)?.telefono_entrante ?? yaComprado;
           } else {
             const comprado = await comprarNumero(numero, {
               voiceUrl: inboundUrl(),
             });
-            status = marcarPaso(status, "telefono", "hecho", {
-              detalle: comprado.phoneNumber,
-            });
-            await persistir({
-              vapi_phone_number_id: comprado.sid,
-              telefono_entrante: comprado.phoneNumber,
-            });
+            sid = comprado.sid;
+            telefono = comprado.phoneNumber;
           }
+          await persistir({
+            vapi_phone_number_id: sid,
+            telefono_entrante: telefono,
+          });
         }
+
+        // 2) Importar el número a Vapi para que atienda las ENTRANTES con el
+        // assistant (BYO Twilio: Vapi configura el webhook de voz del número).
+        // Idempotente: solo si aún no está importado. Si el paso (1) fue bien pero
+        // esto falla, el `catch` lo deja en "error" y el reintento re-importa
+        // (el número ya está comprado, no se recompra).
+        if (!biz.vapi_phone_id && biz.vapi_assistant_id && telefono) {
+          const vapiPhone = await importarNumeroEnVapi({
+            numero: telefono,
+            assistantId: biz.vapi_assistant_id,
+            name: biz.nombre,
+          });
+          await persistir({ vapi_phone_id: vapiPhone.id });
+        }
+
+        status = marcarPaso(status, "telefono", "hecho", {
+          detalle: telefono ?? sid ?? "número dedicado",
+        });
+        await persistir();
       } else {
         // 'none' o 'new' sin numeroDedicado en el plan → no aplica.
         status = marcarPaso(status, "telefono", "omitido");

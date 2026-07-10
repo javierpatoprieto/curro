@@ -37,6 +37,7 @@ export const DEMO_BUSINESS: Business = {
   phone_mode: "forward",
   forward_target: "+34 910 000 000",
   vapi_phone_number_id: null,
+  vapi_phone_id: null,
   onboarding_status: {
     assistant: { estado: "hecho" },
     telefono: { estado: "hecho" },

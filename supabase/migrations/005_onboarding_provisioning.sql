@@ -15,7 +15,8 @@
 alter table public.businesses
   add column if not exists phone_mode text,               -- 'forward' | 'new' | 'none'
   add column if not exists forward_target text,
-  add column if not exists vapi_phone_number_id text,
+  add column if not exists vapi_phone_number_id text,     -- SID del número comprado en Twilio (PN…)
+  add column if not exists vapi_phone_id text,             -- id del phone-number en Vapi (inbound BYO Twilio)
   add column if not exists onboarding_status jsonb not null default '{}'::jsonb;
 
 -- Solo permitimos los tres modos de teléfono que entiende el aprovisionamiento.
