@@ -6,6 +6,7 @@ const enlaces = [
   { label: "Precios", href: "#precios" },
   { label: "Preguntas", href: "#faq" },
   { label: "Privacidad", href: "/privacidad" },
+  { label: "Subencargados", href: "/subencargados" },
   { label: "Aviso legal", href: "/aviso-legal" },
   { label: "Condiciones", href: "/condiciones" },
   { label: "Cookies", href: "/cookies" },

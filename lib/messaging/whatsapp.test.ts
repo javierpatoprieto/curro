@@ -3,6 +3,7 @@ import {
   normalizeTo,
   twilioTo,
   buildTwilioParams,
+  resumenEnvio,
   type WhatsAppMessage,
 } from "@/lib/messaging/whatsapp";
 
@@ -60,5 +61,40 @@ describe("buildTwilioParams", () => {
     const p = buildTwilioParams(msg, from);
     expect(p.get("Body")).toBe("resumen legible");
     expect(p.get("ContentSid")).toBeNull();
+  });
+});
+
+describe("resumenEnvio (minimización PII en messages.payload)", () => {
+  it("solo guarda metadatos: NADA de teléfono ni cuerpo del mensaje", () => {
+    const msg: WhatsAppMessage = {
+      kind: "template",
+      to: "34611222333",
+      template: "curro_aviso_lead",
+      variables: ["María López", "Reforma de baño"],
+      texto: "Hola María, sobre tu reforma de baño…",
+    };
+    const r = resumenEnvio(msg, "twilio");
+    expect(r).toEqual({
+      messaging_product: "whatsapp",
+      type: "template",
+      template: "curro_aviso_lead",
+      provider: "twilio",
+    });
+    const serializado = JSON.stringify(r);
+    expect(serializado).not.toContain("34611222333"); // teléfono
+    expect(serializado).not.toContain("María"); // nombre del lead
+    expect(serializado).not.toContain("baño"); // contenido
+  });
+
+  it("mensaje de texto libre: type 'text', sin template ni body", () => {
+    const msg: WhatsAppMessage = {
+      kind: "text",
+      to: "34600000000",
+      body: "Tienes un lead nuevo de +34611222333",
+    };
+    const r = resumenEnvio(msg, "mock");
+    expect(r.type).toBe("text");
+    expect(r.template).toBeNull();
+    expect(JSON.stringify(r)).not.toContain("34611222333");
   });
 });

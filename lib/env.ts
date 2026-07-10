@@ -18,6 +18,10 @@ const schema = z.object({
   // --- Voz IA (Vapi) ---
   VAPI_API_KEY: z.string().optional(),
   VAPI_WEBHOOK_SECRET: z.string().optional(),
+  // Clave PÚBLICA de Vapi + assistant de demo para la llamada de voz web de
+  // /demo. Son valores de cliente (NEXT_PUBLIC_): van al navegador a propósito.
+  NEXT_PUBLIC_VAPI_PUBLIC_KEY: z.string().optional(),
+  NEXT_PUBLIC_VAPI_DEMO_ASSISTANT_ID: z.string().optional(),
 
   // --- WhatsApp Cloud API (Meta) ---
   WHATSAPP_TOKEN: z.string().optional(),
@@ -79,6 +83,11 @@ const schema = z.object({
   // entre instancias). Sin ellas, se usa un contador en memoria por instancia.
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+
+  // --- Cron de retención (RGPD) ---
+  // Secreto que protege /api/cron/retencion. Vercel Cron lo envía como
+  // `Authorization: Bearer <CRON_SECRET>`. Sin él, el endpoint solo corre en dev.
+  CRON_SECRET: z.string().optional(),
 
   // Si es "false", los adaptadores llaman a los proveedores reales.
   // Por defecto usamos mocks para no depender de cuentas externas.

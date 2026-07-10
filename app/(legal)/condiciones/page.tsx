@@ -78,8 +78,9 @@ export default function CondicionesPage() {
         <a href="/privacidad" className="underline">
           política de privacidad
         </a>
-        . A petición del Cliente puede formalizarse un contrato de encargo del
-        tratamiento.
+        . El contrato de encargo del tratamiento (Anexo DPA, Art. 28 RGPD) forma
+        parte de estas condiciones y se acepta junto con ellas en el momento del
+        alta, sin necesidad de firma adicional.
       </p>
 
       <h2 className="pt-4 text-lg font-semibold">9. Responsabilidad</h2>

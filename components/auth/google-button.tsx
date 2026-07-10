@@ -42,12 +42,38 @@ function GoogleIcon() {
 /**
  * Inicia sesión / registro con Google (OAuth vía Supabase). Tras autenticar,
  * cae en /onboarding, que reenvía a /panel si el negocio ya existe.
+ *
+ * `bloqueado` permite exigir la aceptación de Términos + Anexo DPA antes de
+ * iniciar el flujo OAuth (usado en el registro). Si el usuario intenta continuar
+ * sin haber aceptado, se muestra `mensajeBloqueo` y no se inicia OAuth.
+ *
+ * TODO(registro-google): la evidencia de aceptación (terminos_version /
+ * terminos_aceptados_at) no se guarda por esta vía porque signInWithOAuth no
+ * admite `data` de user_metadata como signUp. Para el alta social hay que
+ * registrar la versión aceptada tras el callback (/auth/callback) o en el
+ * onboarding, p. ej. con supabase.auth.updateUser({ data: { ... } }) si el
+ * metadata todavía no está puesto.
  */
-export function GoogleButton({ texto = "Continuar con Google" }: { texto?: string }) {
+export function GoogleButton({
+  texto = "Continuar con Google",
+  bloqueado = false,
+  mensajeBloqueo,
+}: {
+  texto?: string;
+  bloqueado?: boolean;
+  mensajeBloqueo?: string;
+}) {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
 
   async function onClick() {
+    if (bloqueado) {
+      setError(
+        mensajeBloqueo ??
+          "Debes aceptar los Términos y Condiciones y el Anexo DPA para continuar.",
+      );
+      return;
+    }
     if (!supabaseListo) {
       setError("Supabase aún no está configurado.");
       return;
@@ -76,6 +102,7 @@ export function GoogleButton({ texto = "Continuar con Google" }: { texto?: strin
         className="w-full"
         onClick={onClick}
         disabled={cargando}
+        aria-disabled={bloqueado}
       >
         {cargando ? <Loader2 className="size-4 animate-spin" /> : <GoogleIcon />}
         {texto}
