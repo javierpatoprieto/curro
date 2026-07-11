@@ -51,7 +51,7 @@ el código (`lib/env.ts`, `lib/vapi/assistant.ts`, `lib/messaging/*`, `lib/strip
 
 | Proveedor | Finalidad | Datos tratados | País | Mecanismo de transferencia | Política / DPA |
 |---|---|---|---|---|---|
-| **Google Analytics 4** | Analítica de audiencia del sitio web (solo con consentimiento) — `NEXT_PUBLIC_GA_ID` en `lib/env.ts` | Identificadores online, IP, datos de navegación | EE. UU. | DPF *(verificar)* | https://policies.google.com/privacy · Condiciones de tratamiento de datos de Google Ads/Analytics |
+| **Google Analytics 4** | Analítica de audiencia del sitio web (solo con consentimiento) — `NEXT_PUBLIC_GA_ID` en `lib/env.ts` | Identificadores online, IP, datos de navegación | EE. UU. | DPF *(verificar)* | https://policies.google.com/privacy · Condiciones de tratamiento de datos de Google Analytics |
 
 ---
 

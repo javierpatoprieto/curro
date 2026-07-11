@@ -73,26 +73,26 @@ suscripción). A su terminación se aplica la cláusula 4.9 (supresión o devolu
   Responsable). También, en su caso, terceros mencionados durante la llamada.
 
 ### 3.2 Categorías de datos personales
-Con base en la estructura real de datos (`supabase/schema.sql:91-105`, tabla `leads`, y
+Con base en la estructura real de datos (tabla `leads` en `supabase/schema.sql`, y
 el esquema de extracción estructurada en `buildAssistantConfig()` de
 `lib/vapi/assistant.ts`):
 
-- **Datos identificativos y de contacto:** nombre (`cliente_nombre`), teléfono
-  (`cliente_telefono`), y —cuando se agenda visita— **email** de la persona que llama
+- **Datos identificativos y de contacto:** nombre (`leads.cliente_nombre`), teléfono
+  (`leads.cliente_telefono`), y —cuando se agenda visita— **email** de la persona que llama
   (herramienta `agendarVisita` en `lib/vapi/assistant.ts`).
-- **Datos de la solicitud:** tipo de trabajo (`tipo_trabajo`), zona/dirección aproximada
-  (`zona`), urgencia (`urgencia`).
-- **Grabación de voz** de la llamada (`leads.audio_url`, `supabase/schema.sql:101`) y
-  **transcripción** literal de la conversación (`leads.transcripcion`,
-  `supabase/schema.sql:100`).
+- **Datos de la solicitud:** tipo de trabajo (`leads.tipo_trabajo`), zona/dirección
+  aproximada (`leads.zona`), urgencia (`leads.urgencia`).
+- **Grabación de voz** de la llamada (`leads.audio_url` en `supabase/schema.sql`) y
+  **transcripción** literal de la conversación (`leads.transcripcion` en
+  `supabase/schema.sql`).
 - **Metadatos de la llamada:** identificador de llamada, duración, coste estimado. El
-  campo `call_events.raw_payload` (`supabase/schema.sql:138-147`) **no guarda el JSON crudo
-  del proveedor**: solo lleva metadatos y se **purga a los 30 días** por defensa en
-  profundidad (ver política de retención).
+  campo `call_events.raw_payload` (tabla `call_events` en `supabase/schema.sql`) **no
+  guarda el JSON crudo del proveedor**: solo lleva metadatos y se **purga a los 30 días**
+  por defensa en profundidad (ver política de retención).
 - **Metadatos del envío de las notificaciones** (WhatsApp/email): **canal, plantilla y
   estado del envío, sin el cuerpo del mensaje ni el destinatario**, registrados en
-  `messages.payload` (`supabase/schema.sql:119-130`; ver `resumenEnvio` en
-  `lib/messaging/whatsapp.ts` y `email.ts`).
+  `messages.payload` (tabla `messages` en `supabase/schema.sql`; ver `resumenEnvio` en
+  `lib/messaging/whatsapp.ts` y `resumenEnvioEmail` en `lib/messaging/email.ts`).
 
 > ⚠️ **Categorías especiales (Art. 9) — a decidir por el abogado.** El servicio **no
 > persigue** recabar categorías especiales. Sin embargo, al tratarse de **conversación de
@@ -273,7 +273,8 @@ persiste el lead y el evento de llamada en Supabase y dispara las notificaciones
 - **Minimización:** extracción estructurada solo de los campos necesarios del lead
   (`buildAssistantConfig()` en `lib/vapi/assistant.ts`); y en `messages.payload` solo se
   guardan **metadatos del envío** (canal, plantilla, estado), no el cuerpo ni el
-  destinatario (`resumenEnvio` en `lib/messaging/whatsapp.ts` y `email.ts`).
+  destinatario (`resumenEnvio` en `lib/messaging/whatsapp.ts` y `resumenEnvioEmail` en
+  `lib/messaging/email.ts`).
 - **Retención automatizada** (defensa en profundidad y minimización): job de purga
   `ejecutarRetencion` (`lib/rgpd/retencion-job.ts`) con plazos configurables
   (`lib/rgpd/retencion.ts`), que borra el audio a 30 días —incluida la solicitud de borrado
@@ -281,8 +282,8 @@ persiste el lead y el evento de llamada en Supabase y dispara las notificaciones
   y suprime el lead a 12 meses. Se ejecuta por **cron diario** (`vercel.json`, `0 3 * * *`)
   vía el endpoint protegido `app/api/cron/retencion/route.ts` (autorización por
   `CRON_SECRET`, *fail-closed* en producción).
-- **Registro de comunicaciones** enviadas para trazabilidad (`messages`,
-  `supabase/schema.sql:119-130`).
+- **Registro de comunicaciones** enviadas para trazabilidad (tabla `messages` en
+  `supabase/schema.sql`).
 
 > **Pendiente para activar en producción (humano, no de código):** definir `CRON_SECRET`
 > en Vercel para activar el cron de retención y confirmar en la cuenta real de Vapi que su

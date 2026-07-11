@@ -33,12 +33,12 @@
 
 | # | Categoría de dato | Dónde (real) | Plazo propuesto | Acción al vencer | Criterio / base |
 |---|---|---|---|---|---|
-| 1 | **Grabación de audio** de la llamada | `leads.audio_url` (`supabase/schema.sql:101`) + almacenamiento del proveedor de voz | **30 días** | **Borrar** audio (fichero + URL) | Fin del control de calidad; minimización del dato más sensible (voz). |
-| 2 | **Transcripción** + **datos del lead** (nombre, teléfono, tipo, zona, urgencia) | `leads.transcripcion` y campos de `leads` (`supabase/schema.sql:91-105`) | **12 meses** (o hasta que el cliente los borre) | **Borrar** el lead (o anonimizar — ver §3) | Gestión comercial del lead por el negocio cliente; instrucción del Responsable. |
-| 3 | **`raw_payload`** del proveedor de voz | `call_events.raw_payload` (`supabase/schema.sql:143`) | **No se guarda el JSON crudo**; el campo solo lleva **metadatos** (duración, coste, `vapi_call_id`); se **purga a 30 días** por defensa en profundidad | **Purgar** `raw_payload` (dejar metadatos) | Minimización; evita cualquier copia residual de audio/transcripción. |
-| 4 | **Metadatos del envío de notificaciones** (WhatsApp/email) — canal, plantilla y estado, **sin el cuerpo del mensaje ni el destinatario** | `messages.payload` (`supabase/schema.sql:119-130`) | **12 meses** *(a decidir)* | Borrar/anonimizar | Trazabilidad de avisos; alinear con el lead. |
+| 1 | **Grabación de audio** de la llamada | `leads.audio_url` (tabla `leads` en `supabase/schema.sql`) + almacenamiento del proveedor de voz | **30 días** | **Borrar** audio (fichero + URL) | Fin del control de calidad; minimización del dato más sensible (voz). |
+| 2 | **Transcripción** + **datos del lead** (nombre, teléfono, tipo, zona, urgencia) | `leads.transcripcion` y campos de la tabla `leads` (en `supabase/schema.sql`) | **12 meses** (o hasta que el cliente los borre) | **Borrar** el lead (o anonimizar — ver §3) | Gestión comercial del lead por el negocio cliente; instrucción del Responsable. |
+| 3 | **`raw_payload`** del proveedor de voz | `call_events.raw_payload` (tabla `call_events` en `supabase/schema.sql`) | **No se guarda el JSON crudo**; el campo solo lleva **metadatos** (duración, coste, `vapi_call_id`); se **purga a 30 días** por defensa en profundidad | **Purgar** `raw_payload` (dejar metadatos) | Minimización; evita cualquier copia residual de audio/transcripción. |
+| 4 | **Metadatos del envío de notificaciones** (WhatsApp/email) — canal, plantilla y estado, **sin el cuerpo del mensaje ni el destinatario** | `messages.payload` (tabla `messages` en `supabase/schema.sql`) | **No implementado por antigüedad** — hoy `messages` solo se purga por **cascada** al borrar el negocio o vía **DSAR** (`suprimirLead`); plazo por antigüedad *(a decidir)* | Purga por cascada / DSAR (el job de retención **no** recorre `messages` por antigüedad) | Trazabilidad de avisos; alinear con el lead. |
 | 5 | **Datos de facturación** | Stripe + datos contables | **6 años** | Conservar; luego borrar | **Obligación legal** (Código de Comercio art. 30; normativa fiscal). |
-| 6 | **Datos de cuenta** del suscriptor y usuarios | `businesses`, `owners` (`supabase/schema.sql:51-83`) | Relación **+ 5 años** | Borrar/anonimizar tras la prescripción | Prescripción de acciones civiles/contractuales. |
+| 6 | **Datos de cuenta** del suscriptor y usuarios | tablas `businesses` y `owners` (en `supabase/schema.sql`) | Relación **+ 5 años** | Borrar/anonimizar tras la prescripción | Prescripción de acciones civiles/contractuales. |
 | 7 | **Logs con PII** (aplicación, hosting/Vercel) | Logs de Vercel y de la app | **≤ 90 días** | Rotación/borrado | Seguridad y depuración; minimización. |
 | 8 | **Analítica web** (GA4) | Google Analytics | **14 meses** *(a decidir)* + retirada de consentimiento | Según config GA4 | Consentimiento; caducidad. |
 
@@ -67,10 +67,12 @@
   exportar/devolver y, transcurrida, **borrado** de sus datos de tratamiento B
   (conservando solo lo exigido por ley, p. ej. facturación).
 - El borrado en cascada por `business_id` ya está previsto a nivel de esquema
-  (`on delete cascade` en `leads`, `messages`, `call_events` —
-  `supabase/schema.sql:93`, `:121`, `:140`), lo que facilita la supresión al eliminar el
-  negocio. El **borrado selectivo por antigüedad** (retención) está **implementado** en el
-  job de purga (`lib/rgpd/retencion-job.ts`, `ejecutarRetencion`) — ver §5.
+  (`on delete cascade` en las tablas `leads`, `messages` y `call_events` de
+  `supabase/schema.sql`), lo que facilita la supresión al eliminar el negocio. El
+  **borrado selectivo por antigüedad** (retención) está **implementado** en el job de purga
+  (`lib/rgpd/retencion-job.ts`, `ejecutarRetencion`) para audio, `raw_payload` y `leads`;
+  la supresión granular de un lead (DSAR, incluidos sus `messages`) vive en `suprimirLead`
+  (`lib/rgpd/supresion.ts`) — ver §5.
 
 ---
 
@@ -84,8 +86,17 @@ La retención está **implementada y testeada** en el repositorio:
    - borra `leads.audio_url` y solicita a Vapi el borrado del audio con **> 30 días**
      (`lib/vapi/grabaciones.ts`, `borrarGrabacionVapi`);
    - purga `call_events.raw_payload` con **> 30 días** dejando los metadatos;
-   - borra/anonimiza `leads` (y `messages`) con **> 12 meses** salvo marca de retención;
+   - anonimiza `leads` con **> 12 meses** salvo marca de retención (borra la PII y
+     conserva la fila para métricas agregadas);
    - respeta el borrado ya solicitado por el cliente.
+
+   > **`messages` — no implementado por antigüedad.** El job de retención **no** recorre
+   > `messages` por plazo de antigüedad (el plazo de la fila 4 de §2 está **por decidir**).
+   > Hoy los `messages` solo se eliminan (i) por **cascada** al borrar el negocio
+   > (`on delete cascade` por `business_id`) o (ii) vía **DSAR** al suprimir un lead
+   > (`suprimirLead` en `lib/rgpd/supresion.ts`, que borra los `messages` del lead). El
+   > `payload` guardado ya está minimizado (solo metadatos, sin cuerpo ni destinatario),
+   > por lo que no persiste PII del interesado a la espera de esa purga.
    - Los plazos son **configurables por entorno** (`RETENCION_*_DIAS` en
      `lib/rgpd/retencion.ts`).
 2. El endpoint está **protegido** con `CRON_SECRET` y es *fail-closed* en producción
