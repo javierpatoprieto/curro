@@ -29,6 +29,12 @@ describe("guion", () => {
     expect(g).toContain("le devuelva la llamada una persona");
   });
 
+  it("manda pronunciar los teléfonos dígito a dígito (evita que el TTS los lea mal)", () => {
+    const g = guion({ negocio: "X" });
+    expect(g).toContain("dígito a dígito");
+    expect(g).toContain("6 6 9 3 8 5 6 2 4");
+  });
+
   it("incorpora servicios, zonas, horario, preguntas y conocimiento", () => {
     const g = guion({
       negocio: "X",
