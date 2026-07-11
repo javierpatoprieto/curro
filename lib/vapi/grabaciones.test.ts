@@ -5,7 +5,10 @@ vi.mock("@/lib/env", () => ({
   env: { mockProviders: true, VAPI_API_KEY: undefined as string | undefined },
 }));
 
-import { borrarGrabacionVapi } from "@/lib/vapi/grabaciones";
+import {
+  borrarGrabacionVapi,
+  urlFirmadaGrabacion,
+} from "@/lib/vapi/grabaciones";
 import { env } from "@/lib/env";
 
 const mutableEnv = env as { mockProviders: boolean; VAPI_API_KEY?: string };
@@ -70,5 +73,63 @@ describe("borrarGrabacionVapi (modo real)", () => {
   it("lanza ante otros errores HTTP", async () => {
     fetchSpy.mockResolvedValueOnce(new Response("boom", { status: 500 }));
     await expect(borrarGrabacionVapi("call_x")).rejects.toThrow(/Vapi 500/);
+  });
+});
+
+describe("urlFirmadaGrabacion (mock por defecto)", () => {
+  it("en modo mock devuelve una URL simulada sin tocar la red", async () => {
+    const url = await urlFirmadaGrabacion("call_123");
+    expect(url).toContain("call_123");
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("sin callId devuelve null sin red", async () => {
+    expect(await urlFirmadaGrabacion(null)).toBeNull();
+    expect(await urlFirmadaGrabacion("   ")).toBeNull();
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe("urlFirmadaGrabacion (modo real)", () => {
+  beforeEach(() => {
+    mutableEnv.mockProviders = false;
+    mutableEnv.VAPI_API_KEY = "vapi_test_key";
+  });
+
+  it("captura el 302 y devuelve la URL firmada del header Location", async () => {
+    const firmada = "https://storage.vapi.ai/recordings/abc.wav?sig=xyz";
+    // `redirect: "manual"` => fetch NO sigue el 302; leemos su Location.
+    fetchSpy.mockResolvedValueOnce(
+      new Response(null, {
+        status: 302,
+        headers: { Location: firmada },
+      }),
+    );
+
+    const url = await urlFirmadaGrabacion("call_abc");
+    expect(url).toBe(firmada);
+
+    const [reqUrl, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    expect(reqUrl).toBe("https://api.vapi.ai/call/call_abc/mono-recording");
+    expect(init.method).toBe("GET");
+    expect(init.redirect).toBe("manual");
+    expect((init.headers as Record<string, string>).Authorization).toBe(
+      "Bearer vapi_test_key",
+    );
+  });
+
+  it("ante un no-2xx/3xx (p. ej. 404) devuelve null sin lanzar", async () => {
+    fetchSpy.mockResolvedValueOnce(new Response("nope", { status: 404 }));
+    expect(await urlFirmadaGrabacion("call_desaparecida")).toBeNull();
+  });
+
+  it("ante un 3xx sin Location devuelve null", async () => {
+    fetchSpy.mockResolvedValueOnce(new Response(null, { status: 302 }));
+    expect(await urlFirmadaGrabacion("call_sin_location")).toBeNull();
+  });
+
+  it("ante un fallo de red devuelve null sin lanzar", async () => {
+    fetchSpy.mockRejectedValueOnce(new Error("ECONNRESET"));
+    expect(await urlFirmadaGrabacion("call_red")).toBeNull();
   });
 });
