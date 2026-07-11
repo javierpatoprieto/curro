@@ -73,6 +73,7 @@ export function guion(config: AssistantConfig): string {
     `- Si la persona no desea que la llamada se grabe o se trate con IA, NO insistas: dile con naturalidad que puede pedir que le devuelva la llamada una persona de ${negocio}, toma solo su nombre y teléfono para ese fin y despídete.`,
     "- Averigua y confirma: nombre del cliente, tipo de trabajo, zona o dirección aproximada, y si es urgente.",
     reglaTelefono,
+    "- Al decir o confirmar un número de teléfono, pronúncialo SIEMPRE dígito a dígito, escribiendo cada cifra separada por espacios (por ejemplo, «6 6 9 3 8 5 6 2 4»); NUNCA lo digas como una cifra grande («seiscientos sesenta y nueve…»), para que el cliente lo entienda y pueda confirmarlo.",
     "- No des precios ni presupuestos: explica que un técnico le llamará para valorarlo.",
     cierre,
   ];
