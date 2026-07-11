@@ -22,28 +22,31 @@ const SUBENCARGADOS: Subencargado[] = [
   {
     nombre: "Vapi",
     finalidad:
-      "Voz IA: recepción de la llamada, grabación y orquestación (subcadena: OpenAI, Deepgram, ElevenLabs)",
+      "Voz IA: recepción de la llamada, grabación y orquestación (subcadena según nuestra configuración: OpenAI, Deepgram, ElevenLabs; a confirmar con la lista de subprocesadores de Vapi)",
     pais: "EE. UU.",
     transferencia: "SCC / DPF",
     enlace: "https://vapi.ai/privacy",
   },
   {
     nombre: "OpenAI",
-    finalidad: "Modelo de lenguaje que cualifica la solicitud (vía Vapi)",
+    finalidad:
+      "Modelo de lenguaje que cualifica la solicitud (subprocesador de Vapi según nuestra configuración; a confirmar con Vapi)",
     pais: "EE. UU.",
     transferencia: "SCC / DPF",
     enlace: "https://openai.com/policies/privacy-policy",
   },
   {
     nombre: "Deepgram",
-    finalidad: "Transcripción de voz a texto (vía Vapi)",
+    finalidad:
+      "Transcripción de voz a texto (subprocesador de Vapi según nuestra configuración; a confirmar con Vapi)",
     pais: "EE. UU.",
     transferencia: "SCC / DPF",
     enlace: "https://deepgram.com/privacy",
   },
   {
     nombre: "ElevenLabs",
-    finalidad: "Síntesis de voz del asistente (vía Vapi)",
+    finalidad:
+      "Síntesis de voz del asistente (subprocesador de Vapi según nuestra configuración; a confirmar con Vapi)",
     pais: "EE. UU.",
     transferencia: "SCC / DPF",
     enlace: "https://elevenlabs.io/privacy",
@@ -100,9 +103,10 @@ const SUBENCARGADOS: Subencargado[] = [
   },
   {
     nombre: "Google Analytics",
-    finalidad: "Analítica web (solo con consentimiento del visitante)",
+    finalidad:
+      "Analítica web. La analítica solo se carga con el consentimiento del visitante (base del tratamiento); el consentimiento no es la garantía de la transferencia internacional.",
     pais: "EE. UU.",
-    transferencia: "DPF (consentimiento)",
+    transferencia: "DPF / adecuación (a verificar)",
     enlace: "https://policies.google.com/privacy",
   },
 ];
