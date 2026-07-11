@@ -85,7 +85,7 @@ export default async function LeadDetallePage({
         <Card>
           <CardContent className="py-4">
             <a
-              href={lead.audio_url}
+              href={`/api/grabacion/${lead.id}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm font-medium text-[var(--primary)] hover:underline"

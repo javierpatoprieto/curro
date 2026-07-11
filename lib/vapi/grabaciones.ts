@@ -58,3 +58,63 @@ export async function borrarGrabacionVapi(
   }
   return { modo: "real", borrada: true, status: res.status };
 }
+
+/**
+ * Devuelve una URL firmada de corta duración para la grabación (audio mono) de
+ * una llamada de Vapi, o `null` si no se puede obtener.
+ *
+ * Por qué: Vapi deja de servir las URLs públicas de grabación (`lead.audio_url`)
+ * el 15 jul. El acceso pasa a hacerse por su endpoint autenticado
+ * `GET /call/{id}/mono-recording`, que responde un **302** con la URL firmada en
+ * la cabecera `Location`. Usamos `redirect: "manual"` para capturar ese 302 sin
+ * que fetch lo siga (así leemos el `Location`) y devolvemos esa URL firmada, que
+ * el navegador puede descargar directamente. La API key es server-side y nunca
+ * llega al cliente (esta función solo corre en el servidor).
+ *
+ * Gated igual que `borrarGrabacionVapi`: en modo mock (por defecto) o sin API
+ * key NO toca la red y devuelve una URL simulada. Ante cualquier respuesta que
+ * no sea un 3xx con `Location` (o un no-2xx/3xx), registra y devuelve `null`.
+ *
+ * TODO(humano): probarlo EN VIVO con un `call_id` real antes del 15 jul —
+ * confirmar que Vapi responde 302 con la URL firmada en `Location`, tal y como
+ * anuncia su email de deprecación.
+ */
+export async function urlFirmadaGrabacion(
+  callId: string | null | undefined,
+): Promise<string | null> {
+  const id = callId?.trim();
+  if (!id) return null;
+
+  if (!vapiActivo()) {
+    console.info(`[vapi:mock] urlFirmadaGrabacion(${id}) (no-op)`);
+    return `https://mock.vapi.local/recording/${encodeURIComponent(id)}.wav`;
+  }
+
+  try {
+    const res = await fetch(
+      `${VAPI_API}/call/${encodeURIComponent(id)}/mono-recording`,
+      {
+        method: "GET",
+        headers: { Authorization: `Bearer ${env.VAPI_API_KEY}` },
+        // Capturamos el 302 nosotros para leer su `Location` (la URL firmada).
+        redirect: "manual",
+      },
+    );
+
+    // Camino esperado: 3xx con la URL firmada en `Location`.
+    const location = res.headers.get("location");
+    if (res.status >= 300 && res.status < 400 && location) {
+      return location;
+    }
+
+    // Algunos entornos podrían devolver la URL en el cuerpo (200 con JSON).
+    // No lo asumimos como contrato: registramos y devolvemos null si no hubo 302.
+    console.error(
+      `[vapi] urlFirmadaGrabacion(${id}): respuesta inesperada ${res.status} (sin Location)`,
+    );
+    return null;
+  } catch (e) {
+    console.error(`[vapi] urlFirmadaGrabacion(${id}): fallo de red`, e);
+    return null;
+  }
+}
