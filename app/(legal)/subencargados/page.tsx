@@ -105,6 +105,22 @@ const SUBENCARGADOS: Subencargado[] = [
     transferencia: "DPF (consentimiento)",
     enlace: "https://policies.google.com/privacy",
   },
+  {
+    nombre: "Google (Google Ads)",
+    finalidad:
+      "Medición de conversiones y publicidad (solo con consentimiento del visitante)",
+    pais: "EE. UU.",
+    transferencia: "DPF (consentimiento)",
+    enlace: "https://policies.google.com/privacy",
+  },
+  {
+    nombre: "Meta Platforms (Pixel)",
+    finalidad:
+      "Publicidad y medición de conversiones vía Meta Pixel (solo con consentimiento del visitante)",
+    pais: "EE. UU. / Irlanda",
+    transferencia: "SCC / DPF (consentimiento)",
+    enlace: "https://www.facebook.com/privacy/policy",
+  },
 ];
 
 export default function SubencargadosPage() {
