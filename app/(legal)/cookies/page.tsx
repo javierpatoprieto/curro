@@ -34,12 +34,29 @@ export default function CookiesPage() {
         previstas en la normativa. <strong>Estas cookies solo se instalan si das
         tu consentimiento</strong>; hasta entonces, Google Analytics no se carga.
       </p>
+      <p>
+        <strong>3. Publicidad y medición de conversión (Meta Pixel y Google
+        Ads).</strong> Nos permiten medir la eficacia de nuestras campañas de
+        publicidad (por ejemplo, saber que un registro o una alta de suscripción
+        proviene de un anuncio) y optimizarlas. El <strong>Meta Pixel</strong> (de
+        Meta Platforms) usa cookies como <code>_fbp</code> y{" "}
+        <strong>Google Ads</strong> (de Google) cookies como <code>_gcl_au</code>,
+        con una duración de hasta 90 días–2 años. Ambos proveedores pueden tratar
+        datos fuera del EEE con las garantías previstas en la normativa (ver la{" "}
+        <a href="/subencargados" className="underline">
+          página de subencargados
+        </a>
+        ). <strong>Estas cookies de marketing solo se cargan si das tu
+        consentimiento</strong>; si lo rechazas, ni el Pixel ni Google Ads se
+        inicializan.
+      </p>
 
       <h2 className="pt-4 text-lg font-semibold">Consentimiento</h2>
       <p>
         Al entrar por primera vez te mostramos un aviso para aceptar o rechazar
-        las cookies analíticas. Puedes cambiar tu decisión en cualquier momento
-        aquí: <CookieSettingsButton />.
+        las cookies analíticas y de publicidad. Hasta que aceptes, ninguna de
+        ellas (Google Analytics, Meta Pixel ni Google Ads) se carga. Puedes
+        cambiar tu decisión en cualquier momento aquí: <CookieSettingsButton />.
       </p>
 
       <h2 className="pt-4 text-lg font-semibold">Cómo gestionarlas</h2>
