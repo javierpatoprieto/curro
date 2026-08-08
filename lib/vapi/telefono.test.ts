@@ -6,20 +6,22 @@ import {
 } from "@/lib/vapi/telefono";
 
 describe("buildImportBody", () => {
-  it("arma el cuerpo BYO-Twilio con provider, número y assistant", () => {
+  it("arma el cuerpo BYO-Twilio con provider, número y server de enrutado", () => {
     const body = buildImportBody({
       numero: "+34910000000",
-      assistantId: "asst_1",
       name: "Reformas García",
     });
     expect(body.provider).toBe("twilio");
     expect(body.number).toBe("+34910000000");
-    expect(body.assistantId).toBe("asst_1");
+    // NO fija assistantId: el enrutado por horario decide por llamada.
+    expect("assistantId" in body).toBe(false);
+    // El número apunta su server a nuestro endpoint de enrutado de entrantes.
+    expect(body.server.url).toMatch(/\/api\/vapi\/inbound$/);
     expect(body.name).toBe("Reformas García");
   });
 
   it("omite el nombre si no se pasa", () => {
-    const body = buildImportBody({ numero: "+34910000000", assistantId: "a" });
+    const body = buildImportBody({ numero: "+34910000000" });
     expect("name" in body).toBe(false);
   });
 });
@@ -29,10 +31,7 @@ describe("importarNumeroEnVapi (mock por defecto)", () => {
 
   it("devuelve un id simulado sin tocar la red cuando no está activo", async () => {
     const fetchSpy = vi.spyOn(globalThis, "fetch");
-    const r = await importarNumeroEnVapi({
-      numero: "+34910000000",
-      assistantId: "asst_1",
-    });
+    const r = await importarNumeroEnVapi({ numero: "+34910000000" });
     expect(r.id).toMatch(/^vapi_pn_mock_/);
     expect(fetchSpy).not.toHaveBeenCalled();
   });

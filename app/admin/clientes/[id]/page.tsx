@@ -9,6 +9,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { calConectado } from "@/lib/cal/integracion";
 import { puede } from "@/lib/plans";
 import { CalConectar } from "@/components/panel/cal-conectar";
+import { HorarioAtencionField } from "@/components/panel/horario-atencion-field";
 import { OnboardingChecklist } from "@/components/admin/onboarding-checklist";
 import { guardarCliente, borrarCliente, guardarContactoDueno } from "./actions";
 import { guardarCalAdmin, desconectarCalAdmin } from "./cal-actions";
@@ -233,6 +234,21 @@ export default async function ClienteAdminPage({
                   className={inputCls}
                 />
               </Campo>
+
+              <div className="space-y-3 rounded-md border border-[var(--border)] p-3">
+                <div>
+                  <p className="text-sm font-medium">Horario de atención</p>
+                  <p className="text-xs text-[var(--muted-foreground)]">
+                    En el horario del dueño, la entrante se transfiere a su móvil;
+                    fuera de él la atiende Curro. Sin horario, Curro atiende 24/7.
+                  </p>
+                </div>
+                <HorarioAtencionField
+                  defaultHorario={b.horario_atencion}
+                  defaultTelefonoAgente={b.telefono_agente}
+                />
+              </div>
+
               <Campo label="Enlace de Cal.com">
                 <input
                   name="cal_link"

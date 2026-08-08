@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { puede } from "@/lib/plans";
+import { HorarioAtencionField } from "@/components/panel/horario-atencion-field";
 import type { Plan } from "@/lib/types";
 
 export const inputCls =
@@ -325,6 +326,17 @@ export function WizardAlta({
           Es el número al que enrutan las llamadas: Curro identifica el
           negocio por este número cuando entra una llamada.
         </p>
+
+        <div className="space-y-3 border-t border-[var(--border)] pt-4">
+          <div>
+            <p className="text-sm font-medium">Horario de atención (opcional)</p>
+            <p className="text-sm text-[var(--muted-foreground)]">
+              En el horario del dueño transferimos la entrante a su móvil; fuera
+              de él la atiende Curro. Sin horario, Curro atiende siempre.
+            </p>
+          </div>
+          <HorarioAtencionField />
+        </div>
       </div>
 
       {/* Paso 6: Contacto */}

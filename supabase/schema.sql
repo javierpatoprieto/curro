@@ -66,6 +66,12 @@ create table if not exists public.businesses (
   vapi_phone_number_id  text,               -- SID del número comprado en Twilio (PN…)
   vapi_phone_id         text,               -- id del phone-number en Vapi (inbound BYO Twilio)
   onboarding_status     jsonb not null default '{}'::jsonb,
+  -- Horario de atención (telefonía): franjas en que atiende el DUEÑO y su móvil.
+  -- Dentro del horario, la entrante se transfiere a `telefono_agente`; fuera,
+  -- la atiende Curro. NULL/sin franjas = Curro atiende 24/7. Ver migración 006 y
+  -- lib/horario.ts para la forma del JSON.
+  horario_atencion      jsonb,              -- { tz, dias: { lun:[["07:00","18:00"]], ... } }
+  telefono_agente       text,               -- móvil del dueño (E.164) al que transferir
   created_at            timestamptz not null default now(),
   updated_at            timestamptz not null default now()
 );

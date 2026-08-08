@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { actualizarAssistant } from "@/lib/vapi/assistant";
 import { configDesdeNegocio } from "@/lib/vapi/config-negocio";
+import { parseHorarioAtencion, normalizarE164 } from "@/lib/horario";
 import {
   calConectado as leerCalConectado,
   guardarCalIntegracion,
@@ -27,6 +28,9 @@ const schema = z.object({
   tono: z.string().optional(),
   preguntas_clave: z.string().optional(),
   conocimiento: z.string().optional(),
+  // Horario de atención (JSON) + móvil del dueño. Se validan con lib/horario.ts.
+  horario_atencion: z.string().optional(),
+  telefono_agente: z.string().max(32).optional(),
 });
 
 /**
@@ -45,6 +49,8 @@ export async function guardarAjustes(formData: FormData) {
     tono: g("tono"),
     preguntas_clave: g("preguntas_clave"),
     conocimiento: g("conocimiento"),
+    horario_atencion: g("horario_atencion"),
+    telefono_agente: g("telefono_agente"),
   });
   if (!parsed.success) return { ok: false, error: "validacion" as const };
   const d = parsed.data;
@@ -67,6 +73,8 @@ export async function guardarAjustes(formData: FormData) {
       tono: d.tono ?? null,
       preguntas_clave: d.preguntas_clave ?? null,
       conocimiento: d.conocimiento ?? null,
+      horario_atencion: parseHorarioAtencion(d.horario_atencion),
+      telefono_agente: normalizarE164(d.telefono_agente),
     })
     .eq("id", context.business.id);
   if (error) return { ok: false, error: "db" as const };

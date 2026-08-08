@@ -9,6 +9,7 @@ import { guardarCalIntegracion } from "@/lib/cal/integracion";
 import { capacidadesEfectivas } from "@/lib/plans";
 import { estadoInicial } from "@/lib/onboarding/estado";
 import { aprovisionarNegocio } from "@/lib/onboarding/aprovisionar";
+import { parseHorarioAtencion, normalizarE164 } from "@/lib/horario";
 
 const schema = z.object({
   nombre: z.string().min(2),
@@ -33,6 +34,9 @@ const schema = z.object({
   phone_mode: z.enum(["forward", "new", "none"]).optional(),
   forward_target: z.string().max(32).optional(),
   telefono_entrante: z.string().max(32).optional(),
+  // Horario de atención (JSON) + móvil del dueño (se validan con lib/horario.ts).
+  horario_atencion: z.string().optional(),
+  telefono_agente: z.string().max(32).optional(),
 });
 
 /**
@@ -67,6 +71,8 @@ export async function crearClienteAdmin(formData: FormData) {
     phone_mode: g("phone_mode"),
     forward_target: g("forward_target"),
     telefono_entrante: g("telefono_entrante"),
+    horario_atencion: g("horario_atencion"),
+    telefono_agente: g("telefono_agente"),
   });
   if (!parsed.success) redirect("/admin/clientes/nuevo?error=validacion");
   const d = parsed.data;
@@ -102,6 +108,8 @@ export async function crearClienteAdmin(formData: FormData) {
       phone_mode: phoneMode,
       forward_target: d.forward_target ?? null,
       telefono_entrante: d.telefono_entrante ?? null,
+      horario_atencion: parseHorarioAtencion(d.horario_atencion),
+      telefono_agente: normalizarE164(d.telefono_agente),
       onboarding_status: estadoInicial(d.plan, phoneMode),
     })
     .select("id")

@@ -38,6 +38,18 @@ export const DEMO_BUSINESS: Business = {
   forward_target: "+34 910 000 000",
   vapi_phone_number_id: null,
   vapi_phone_id: null,
+  // Horario del dueño: L–V 7:00–18:00; fuera de eso (y finde) atiende Curro.
+  telefono_agente: "+34600111222",
+  horario_atencion: {
+    tz: "Europe/Madrid",
+    dias: {
+      lun: [["07:00", "18:00"]],
+      mar: [["07:00", "18:00"]],
+      mie: [["07:00", "18:00"]],
+      jue: [["07:00", "18:00"]],
+      vie: [["07:00", "18:00"]],
+    },
+  },
   onboarding_status: {
     assistant: { estado: "hecho" },
     telefono: { estado: "hecho" },
