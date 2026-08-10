@@ -197,15 +197,17 @@ export async function aprovisionarNegocio(
           });
         }
 
-        // 2) Importar el número a Vapi para que atienda las ENTRANTES con el
-        // assistant (BYO Twilio: Vapi configura el webhook de voz del número).
-        // Idempotente: solo si aún no está importado. Si el paso (1) fue bien pero
-        // esto falla, el `catch` lo deja en "error" y el reintento re-importa
-        // (el número ya está comprado, no se recompra).
+        // 2) Importar el número a Vapi para que atienda las ENTRANTES (BYO Twilio:
+        // Vapi configura el webhook de voz del número). El número apunta su
+        // `server` a /api/vapi/inbound: por cada entrante decidimos el enrutado
+        // por horario (transferir al dueño o atender con Curro). Exigimos que el
+        // assistant YA exista (biz.vapi_assistant_id) para que el enrutado tenga
+        // un fallback al que atender fuera de horario. Idempotente: solo si aún no
+        // está importado. Si el paso (1) fue bien pero esto falla, el `catch` lo
+        // deja en "error" y el reintento re-importa (el número ya está comprado).
         if (!biz.vapi_phone_id && biz.vapi_assistant_id && telefono) {
           const vapiPhone = await importarNumeroEnVapi({
             numero: telefono,
-            assistantId: biz.vapi_assistant_id,
             name: biz.nombre,
           });
           await persistir({ vapi_phone_id: vapiPhone.id });

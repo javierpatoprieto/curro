@@ -6,6 +6,7 @@ import { z } from "zod";
 import { exigirAdmin } from "@/lib/admin/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { actualizarAssistant, eliminarAssistant } from "@/lib/vapi/assistant";
+import { parseHorarioAtencion, normalizarE164 } from "@/lib/horario";
 import { suprimirLead } from "@/lib/rgpd/supresion";
 import { getStripe, stripeConfigurado } from "@/lib/stripe/client";
 import {
@@ -31,6 +32,9 @@ const schema = z.object({
   preguntas_clave: z.string().max(1000).optional(),
   conocimiento: z.string().max(4000).optional(),
   telefono_entrante: z.string().max(32).optional(),
+  // Horario de atención (JSON) + móvil del dueño (se validan con lib/horario.ts).
+  horario_atencion: z.string().optional(),
+  telefono_agente: z.string().max(32).optional(),
 });
 
 /** Edita/personaliza un cliente y re-sincroniza su assistant de Vapi. */
@@ -53,6 +57,8 @@ export async function guardarCliente(id: string, formData: FormData) {
     preguntas_clave: g("preguntas_clave"),
     conocimiento: g("conocimiento"),
     telefono_entrante: g("telefono_entrante"),
+    horario_atencion: g("horario_atencion"),
+    telefono_agente: g("telefono_agente"),
   });
   if (!parsed.success) redirect(`/admin/clientes/${id}?error=validacion`);
   const d = parsed.data;
@@ -75,6 +81,8 @@ export async function guardarCliente(id: string, formData: FormData) {
       preguntas_clave: d.preguntas_clave ?? null,
       conocimiento: d.conocimiento ?? null,
       telefono_entrante: d.telefono_entrante ?? null,
+      horario_atencion: parseHorarioAtencion(d.horario_atencion),
+      telefono_agente: normalizarE164(d.telefono_agente),
     })
     .eq("id", id)
     .select("vapi_assistant_id")

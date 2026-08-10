@@ -6,6 +6,7 @@ import { guardarAjustes } from "@/app/panel/ajustes/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { HorarioAtencionField } from "@/components/panel/horario-atencion-field";
 import type { Business } from "@/lib/types";
 
 const areaCls =
@@ -105,6 +106,20 @@ export function AjustesForm({ business }: { business: Business }) {
             placeholder="Info que Curro puede usar para responder dudas (garantías, financiación, tiempos…)"
           />
         </div>
+      </div>
+
+      <div className="space-y-4 border-t border-[var(--border)] pt-6">
+        <div>
+          <p className="text-sm font-medium">Horario de atención</p>
+          <p className="text-sm text-[var(--muted-foreground)]">
+            Cuándo coges tú el teléfono. En tu horario te pasamos la llamada al
+            móvil; fuera de él, contesta Curro.
+          </p>
+        </div>
+        <HorarioAtencionField
+          defaultHorario={business.horario_atencion}
+          defaultTelefonoAgente={business.telefono_agente}
+        />
       </div>
 
       <div className="flex items-center gap-3">

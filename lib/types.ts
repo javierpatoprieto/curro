@@ -1,6 +1,7 @@
 /** Tipos de dominio compartidos. Reflejan el esquema SQL (supabase/schema.sql). */
 
 import type { OnboardingStatus } from "@/lib/onboarding/estado";
+import type { HorarioAtencion } from "@/lib/horario";
 
 export const LEAD_ESTADOS = [
   "nuevo",
@@ -65,6 +66,10 @@ export interface Business {
   vapi_phone_number_id: string | null; // SID del número en Twilio (PN…)
   vapi_phone_id: string | null; // id del phone-number en Vapi (inbound BYO Twilio)
   onboarding_status: OnboardingStatus;
+  // Horario de atención (telefonía). Dentro del horario del dueño, la entrante se
+  // transfiere a `telefono_agente`; fuera, la atiende Curro. null = Curro 24/7.
+  horario_atencion: HorarioAtencion | null;
+  telefono_agente: string | null; // móvil del dueño (E.164) al que transferir
   created_at: string;
   updated_at: string;
 }
