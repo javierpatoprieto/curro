@@ -178,6 +178,9 @@ export default async function OnboardingPage({
         <p className="text-center text-xs text-[var(--muted-foreground)]">
           Te llevaremos al pago para activar la suscripción tras la prueba.
         </p>
+        <p className="text-center text-xs text-[var(--muted-foreground)]">
+          ¿Tienes un código de descuento? Podrás introducirlo en el paso de pago.
+        </p>
       </form>
     </main>
   );
