@@ -17,6 +17,52 @@ export interface CheckoutParams {
   email?: string | null;
 }
 
+export interface BuildCheckoutParams extends CheckoutParams {
+  /** Price (Stripe) del plan elegido. */
+  priceId: string;
+  /** URL base de la app, para success_url / cancel_url. */
+  baseUrl: string;
+}
+
+/**
+ * Construye el objeto que enviamos a `stripe.checkout.sessions.create`.
+ *
+ * Función PURA (sin env ni red) para poder testearla en aislamiento.
+ *
+ * `allow_promotion_codes: true` hace que Stripe muestre el campo "Código
+ * promocional" en su propia página de pago: los cupones y códigos se crean en
+ * el dashboard de Stripe y es Stripe quien los valida y aplica (nosotros no
+ * validamos nada). OJO: es INCOMPATIBLE con pasar `discounts` en la misma
+ * sesión, así que aquí nunca se pasa `discounts`.
+ */
+export function buildCheckoutParams({
+  plan,
+  businessId,
+  email,
+  priceId,
+  baseUrl,
+}: BuildCheckoutParams): Stripe.Checkout.SessionCreateParams {
+  return {
+    mode: "subscription",
+    line_items: [{ price: priceId, quantity: 1 }],
+    success_url: `${baseUrl}/onboarding/exito?plan=${plan}`,
+    cancel_url: `${baseUrl}/onboarding?cancelado=1`,
+    customer_email: email ?? undefined,
+    // Códigos de descuento: los introduce el cliente en la página de Stripe.
+    allow_promotion_codes: true,
+    // Datos fiscales para que la factura sirva para desgravar (autónomos):
+    // dirección obligatoria + NIF/CIF opcional. Stripe los guarda en el
+    // cliente y los imprime en la factura.
+    billing_address_collection: "required",
+    tax_id_collection: { enabled: true },
+    subscription_data: {
+      trial_period_days: 7,
+      metadata: { business_id: businessId, plan },
+    },
+    metadata: { business_id: businessId, plan },
+  };
+}
+
 /**
  * Crea una sesión de Stripe Checkout (suscripción con 7 días de prueba) y
  * devuelve la URL a la que redirigir. En modo mock/sin clave, salta Stripe y
@@ -31,23 +77,15 @@ export async function crearCheckout({
 
   if (!env.mockProviders && stripeConfigurado() && def.priceId) {
     const stripe = getStripe();
-    const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      line_items: [{ price: def.priceId, quantity: 1 }],
-      success_url: `${appUrl()}/onboarding/exito?plan=${plan}`,
-      cancel_url: `${appUrl()}/onboarding?cancelado=1`,
-      customer_email: email ?? undefined,
-      // Datos fiscales para que la factura sirva para desgravar (autónomos):
-      // dirección obligatoria + NIF/CIF opcional. Stripe los guarda en el
-      // cliente y los imprime en la factura.
-      billing_address_collection: "required",
-      tax_id_collection: { enabled: true },
-      subscription_data: {
-        trial_period_days: 7,
-        metadata: { business_id: businessId, plan },
-      },
-      metadata: { business_id: businessId, plan },
-    });
+    const session = await stripe.checkout.sessions.create(
+      buildCheckoutParams({
+        plan,
+        businessId,
+        email,
+        priceId: def.priceId,
+        baseUrl: appUrl(),
+      }),
+    );
     return session.url ?? `${appUrl()}/onboarding/exito?plan=${plan}`;
   }
 
