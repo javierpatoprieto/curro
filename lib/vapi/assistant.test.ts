@@ -85,8 +85,21 @@ describe("guion", () => {
   it("CON Cal: mantiene el agendado y el teléfono como opcional", () => {
     const g = guion({ negocio: "X", calConectado: true });
     expect(g).toContain("agendar una visita");
-    expect(g).toContain("si no, no insistas");
+    expect(g).toContain("si no te lo da, no insistas");
     expect(g).not.toContain("Pídele SIEMPRE su número");
+  });
+
+  it("no repite el teléfono al recibirlo y lo confirma UNA vez al final", () => {
+    for (const cal of [false, true]) {
+      const g = guion({ negocio: "X", calConectado: cal });
+      // Al recibirlo: nada de repetirlo en ese momento.
+      expect(g).toContain("en ese momento");
+      // Al final: confirmación única, dígito a dígito, antes de despedirse.
+      expect(g).toContain("ANTES de despedirte");
+      expect(g).toContain("UNA sola vez dígito a dígito");
+      // Ya no se pide confirmar repitiéndolo nada más recibirlo.
+      expect(g).not.toContain("confírmalo repitiéndoselo");
+    }
   });
 });
 
