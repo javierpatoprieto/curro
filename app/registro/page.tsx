@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { Loader2, MailCheck, Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { trackRegistro } from "@/lib/analytics/track";
 import {
   GoogleButton,
   googleLoginActivo,
@@ -78,6 +79,10 @@ function RegistroForm() {
       );
       return;
     }
+    // Conversión: registro completado. No-op sin consentimiento/ids (ver
+    // lib/analytics/track.ts). Se dispara antes de mostrar la confirmación de
+    // email, que es el "redirect" efectivo de este flujo de doble opt-in.
+    trackRegistro();
     setEnviado(true);
   }
 

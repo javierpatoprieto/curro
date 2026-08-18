@@ -88,6 +88,18 @@ export default function PrivacidadPage() {
         precontractuales). La grabación se realiza informando previamente al
         interlocutor al inicio de la llamada.
       </p>
+      <p>
+        <strong>Publicidad y medición de conversiones.</strong> En nuestra web
+        pública usamos herramientas de terceros (Meta Pixel y Google Ads) para
+        medir la eficacia de nuestras campañas publicitarias y optimizarlas. La
+        base jurídica es tu <strong>consentimiento</strong>: estas herramientas
+        solo se cargan si lo aceptas en el aviso de cookies, y puedes retirarlo en
+        cualquier momento. El detalle está en la{" "}
+        <a href="/cookies" className="underline">
+          política de cookies
+        </a>
+        .
+      </p>
 
       <h2 className="pt-4 text-lg font-semibold">
         Grabación, transcripción y procesado con IA
@@ -143,12 +155,13 @@ export default function PrivacidadPage() {
         . En resumen: Vapi (voz, EE. UU.) y su subcadena OpenAI, Deepgram y
         ElevenLabs; Twilio o Meta (mensajería WhatsApp); Supabase (base de datos,
         alojada en la UE); Resend (email); Cal.com (agendado); Stripe (pagos); Vercel
-        (alojamiento web) y Google Analytics (analítica web, solo con tu
+        (alojamiento web); Google Analytics (analítica web) y Google Ads y Meta
+        Pixel (publicidad y medición de conversiones) —estos tres solo con tu
         consentimiento; ver la{" "}
         <a href="/cookies" className="underline">
           política de cookies
         </a>
-        ). Algunos tratan datos fuera del EEE con las garantías indicadas.
+        . Algunos tratan datos fuera del EEE con las garantías indicadas.
       </p>
 
       <h2 className="pt-4 text-lg font-semibold">

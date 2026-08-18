@@ -3,6 +3,7 @@ import { CheckCircle2, PhoneCall, MessageCircle, LayoutDashboard } from "lucide-
 import { PLANES_PAGO, type PlanPago } from "@/lib/stripe/plans";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { TrackPurchase } from "@/app/onboarding/exito/track-purchase";
 
 const pasos = [
   { icon: PhoneCall, texto: "Configuramos tu número para que Curro atienda las llamadas." },
@@ -20,6 +21,8 @@ export default async function ExitoPage({
 
   return (
     <main className="mx-auto max-w-xl px-6 py-20 text-center">
+      {/* Conversión Purchase (cliente). En demo no hubo cobro real → no se mide. */}
+      {!demo && <TrackPurchase plan={plan} />}
       <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-emerald-100">
         <CheckCircle2 className="size-8 text-emerald-600" />
       </div>

@@ -4,9 +4,9 @@ import { getSessionUser, getCurrentContext } from "@/lib/auth";
 import { isDemoMode } from "@/lib/demo";
 import { PLANES_PAGO } from "@/lib/stripe/plans";
 import { crearNegocio } from "@/app/onboarding/actions";
+import { OnboardingSubmit } from "@/app/onboarding/submit-boton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 
 export default async function OnboardingPage({
   searchParams,
@@ -172,9 +172,7 @@ export default async function OnboardingPage({
           </div>
         </fieldset>
 
-        <Button type="submit" size="lg" className="w-full">
-          Empezar prueba gratis
-        </Button>
+        <OnboardingSubmit />
         <p className="text-center text-xs text-[var(--muted-foreground)]">
           Te llevaremos al pago para activar la suscripción tras la prueba.
         </p>

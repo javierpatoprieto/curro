@@ -68,6 +68,15 @@ const schema = z.object({
   // consentimiento solo carga GA4 si esta variable está definida.
   NEXT_PUBLIC_GA_ID: z.string().optional(),
 
+  // Meta Pixel ID (publicidad/medición de conversión). Público; el banner de
+  // consentimiento solo inicializa el Pixel si esta variable está definida y el
+  // visitante acepta (opt-in). Sin id, no se carga nada.
+  NEXT_PUBLIC_META_PIXEL_ID: z.string().optional(),
+
+  // Google Ads Conversion ID, formato "AW-XXXXXXXXX". Público; el banner solo
+  // configura Google Ads (gtag) tras el consentimiento. Sin id, no se carga nada.
+  NEXT_PUBLIC_GOOGLE_ADS_ID: z.string().optional(),
+
   // Token de verificación de Google Search Console (método "Etiqueta HTML").
   // Opcional: si se define, el layout renderiza el meta google-site-verification.
   GOOGLE_SITE_VERIFICATION: z.string().optional(),
