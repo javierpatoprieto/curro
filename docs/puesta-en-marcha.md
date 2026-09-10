@@ -4,6 +4,10 @@ Guía para un fundador en solitario que quiere lanzar **Curro** de verdad (no en
 modo mock). Todo lo que sigue está verificado contra el código de este repo; si
 algo no está implementado, se indica explícitamente.
 
+> **Comprobación rápida:** con la app desplegada, **/admin/estado** (superadmin)
+> muestra qué capacidades están en real, cuáles en mock y qué variables faltan.
+> Es la forma más rápida de saber si esta guía está completada.
+
 > **Cómo funciona el modo mock**: por defecto la app usa mocks
 > (`MOCK_PROVIDERS` distinto de `"false"`, ver `lib/env.ts`). Para llamar a los
 > proveedores reales tienes que poner **`MOCK_PROVIDERS=false`** *y además*
@@ -83,9 +87,12 @@ faltan, la app **rompe al arrancar** (`lib/env.ts`, bloque `if (env.isProd)`).
 3. **Asociación llamada ↔ negocio:** el webhook localiza el negocio por
    `vapi_assistant_id` (que la app guarda al crear el assistant) y, en su
    defecto, por el número entrante (`telefono_entrante`).
-4. **Número de teléfono:** el código **no** compra ni asigna el número de Vapi
-   por API. Tendrás que gestionar el número entrante en Vapi y guardar el
-   `telefono_entrante` del negocio (fallback de asociación).
+4. **Número de teléfono:** el aprovisionamiento sí está en el código, pero por
+   el lado de Twilio: se compra el número allí y se **importa en Vapi**
+   (`lib/vapi/telefono.ts`), sin fijarle assistant, para que cada entrante
+   dispare un `assistant-request` contra `/api/vapi/inbound` y enrutar por
+   horario. Ver la sección 3 y `docs/telefonia.md`. El `telefono_entrante` del
+   negocio se sigue usando como fallback de asociación.
 
 **Variables:**
 
@@ -98,40 +105,81 @@ faltan, la app **rompe al arrancar** (`lib/env.ts`, bloque `if (env.isProd)`).
 
 ---
 
-## 3. WhatsApp Cloud API (Meta) — envío de leads por WhatsApp
+## 3. Twilio — número +34 y WhatsApp (la vía elegida)
 
-**Cuenta:** app de Meta for Developers con el producto **WhatsApp** y un número
-de WhatsApp Business.
+**Cuenta:** cuenta en twilio.com. Un mismo proveedor cubre las dos cosas: el
+número al que llaman los clientes y el WhatsApp con el que avisamos al dueño.
 
-**Pasos específicos de esta app** (ver `lib/messaging/whatsapp.ts` y
-`lib/messaging/templates.ts`):
-1. Consigue un **token** (permanente/de sistema) y el **Phone Number ID**.
-2. La app llama a `https://graph.facebook.com/v21.0/{PHONE_NUMBER_ID}/messages`.
-3. **Plantillas aprobadas (obligatorio):** el código envía plantillas con estos
-   nombres exactos, en idioma **`es`** (`language.code: "es"`):
-   - `curro_confirmacion_cliente` (constante `PLANTILLA_CLIENTE`): confirmación
-     al cliente final. Variables en orden: `[nombre, negocio, calLink]`.
-   - `curro_aviso_lead` (constante `PLANTILLA_DUENO`): aviso al dueño. Variables
-     en orden: `[negocio, nombre, teléfono, trabajo, zona, urgencia]`.
-   - Debes crear y **aprobar en Meta** dos plantillas con esos nombres y ese
-     número/tipo de variables de cuerpo, o los envíos fallarán.
+### 3.1 Número español (+34) — el requisito regulatorio
+
+Comprar un número ES **no es solo pagar**: hay que acreditar identidad y
+domicilio ante el regulador. En Twilio son dos objetos:
+
+1. **Address** (`AddressSid`): la dirección. Para números geográficos **debe
+   estar en la región del prefijo** (un 942 exige dirección en Cantabria). No
+   vale un apartado de correos.
+2. **Regulatory Bundle** (`BundleSid`): los documentos, que Twilio manda a
+   revisar. Según las guidelines de Twilio para ES/voz:
+   - Como **Business**: nombre y NIF/CIF + dirección, acreditados con el
+     **registro de la empresa**. Para un autónomo, el **certificado de situación
+     censal (modelo 036)** cumple las tres cosas: va a su nombre, lleva el NIF y
+     muestra el domicilio de la actividad.
+   - Como **Individual**: DNI/NIE o pasaporte + prueba de domicilio (recibo de
+     suministro, notificación fiscal, contrato de alquiler o escritura).
+
+Hasta que el bundle esté **aprobado**, `lib/twilio/numeros.ts` corre en mock: el
+gate exige `MOCK_PROVIDERS=false` **y** las cuatro variables.
+
+**Cómo enruta la llamada** (ver `docs/telefonia.md`): el número se compra en
+Twilio y se **importa en Vapi** (Bring Your Own). No hay webhook TwiML propio.
 
 **Variables:**
 
 | Variable | Qué es | Dónde se consume |
 | --- | --- | --- |
-| `WHATSAPP_TOKEN` | Token de acceso de la Graph API | `lib/messaging/whatsapp.ts` |
-| `WHATSAPP_PHONE_NUMBER_ID` | Phone Number ID del número | `lib/messaging/whatsapp.ts` |
-| `WHATSAPP_VERIFY_TOKEN` | *(ver discrepancias)* | **NO se consume en el código** |
+| `TWILIO_ACCOUNT_SID` | SID de la cuenta | `lib/twilio/numeros.ts`, `lib/vapi/telefono.ts`, `lib/messaging/whatsapp.ts` |
+| `TWILIO_AUTH_TOKEN` | Token de la cuenta | igual que el anterior |
+| `TWILIO_ADDRESS_SID` | Address aprobada (AD…) | `lib/twilio/numeros.ts` (comprar) |
+| `TWILIO_BUNDLE_SID` | Bundle regulatorio aprobado (BU…) | `lib/twilio/numeros.ts` (comprar) |
+
+### 3.2 WhatsApp (aviso del lead)
+
+`getWhatsAppClient` elige proveedor en este orden: **Twilio** si están sus
+variables, si no **Meta**, si no mock. Detalle completo en `docs/whatsapp.md`.
+
+1. **Para probar hoy:** el **sandbox** de Twilio (Messaging → Try it out). El
+   móvil que reciba el aviso manda `join <palabra>` y se abre la ventana de 24 h.
+   `TWILIO_WHATSAPP_FROM` = número del sandbox, formato `whatsapp:+14155238886`.
+2. **Para producción:** dar de alta el número en Senders (Twilio guía el alta con
+   Meta por detrás) y crear las **Content Templates**; copiar sus `ContentSid`
+   (HX…) a `TWILIO_WA_CONTENT_CLIENTE` y `TWILIO_WA_CONTENT_DUENO`. Sin ellos se
+   manda **texto libre**, que solo llega en sandbox o dentro de la ventana de 24 h.
+
+| Variable | Qué es | Dónde se consume |
+| --- | --- | --- |
+| `TWILIO_WHATSAPP_FROM` | Emisor, `whatsapp:+34…` | `lib/messaging/whatsapp.ts` |
+| `TWILIO_WA_CONTENT_CLIENTE` | ContentSid de la plantilla al cliente (opcional) | `lib/messaging/whatsapp.ts` |
+| `TWILIO_WA_CONTENT_DUENO` | ContentSid de la plantilla al dueño (opcional) | `lib/messaging/whatsapp.ts` |
+
+### 3.3 Alternativa: Meta directo (WhatsApp Cloud API)
+
+Sin intermediario, pero te gestionas tú Business Manager, verificación y
+plantillas (`curro_confirmacion_cliente` y `curro_aviso_lead`, idioma `es`, con
+el mismo orden de variables que en `lib/messaging/templates.ts`). La app llama a
+`https://graph.facebook.com/v21.0/{PHONE_NUMBER_ID}/messages`.
+
+| Variable | Qué es | Dónde se consume |
+| --- | --- | --- |
+| `WHATSAPP_TOKEN` | Token de la Graph API | `lib/messaging/whatsapp.ts` |
+| `WHATSAPP_PHONE_NUMBER_ID` | Phone Number ID | `lib/messaging/whatsapp.ts` |
+| `WHATSAPP_VERIFY_TOKEN` | Token del handshake del webhook | `app/api/webhooks/whatsapp/route.ts` (GET) |
+
+> El webhook de Meta (`/api/webhooks/whatsapp`) ya responde al handshake (GET) y
+> acusa recibo de los eventos (POST), pero **todavía no valida la firma
+> `X-Hub-Signature-256`** y no hace nada con los mensajes entrantes. Curro sigue
+> siendo, en la práctica, solo emisor de WhatsApp.
 
 **Dónde ponerlas:** Vercel.
-
-> **Importante:** la recepción de estados/mensajes entrantes de WhatsApp **no
-> está implementada**. No existe ruta de webhook de Meta (solo hay
-> `app/api/webhooks/stripe` y `app/api/webhooks/vapi`). Por tanto no hay
-> handshake de verificación ni validación de firma `X-Hub-Signature-256`
-> todavía (queda pendiente, ver `docs/seguridad.md`). Curro solo **envía**
-> WhatsApp, no recibe.
 
 ---
 
@@ -193,11 +241,13 @@ onboarding o en Ajustes de cada negocio.
 
 **Pasos específicos de esta app** (ver `lib/stripe/plans.ts`,
 `lib/stripe/client.ts`, `app/api/webhooks/stripe/route.ts`):
-1. **Crea 3 Prices recurrentes** que casen con los planes de la landing. Los
-   importes de referencia en el código (`lib/stripe/plans.ts`) son:
-   - `starter` ("Básico") — 99 €/mes → `STRIPE_PRICE_STARTER`
-   - `pro` ("Pro") — 149 €/mes → `STRIPE_PRICE_PRO`
+1. **Crea 3 Prices recurrentes** que casen con los planes de la landing. La
+   fuente de verdad de los importes es `lib/stripe/precios.ts`:
+   - `starter` ("Básico") — 49 €/mes → `STRIPE_PRICE_STARTER`
+   - `pro` ("Pro") — 99 €/mes → `STRIPE_PRICE_PRO`
    - `premium` ("Premium") — 199 €/mes → `STRIPE_PRICE_PREMIUM`
+   - El código **no comprueba el importe** del Price: si en Stripe está a otro
+     precio, se cobra ese. Verifica los tres antes del primer alta.
    - Copia el **price ID** de cada uno a su variable. El webhook mapea
      `priceId → plan` (`mapaPreciosAPlan`); si un price no está mapeado, el
      código cae por defecto al plan `pro` (`resolverCuenta`).
@@ -275,11 +325,10 @@ despliegue, ver `README.md`).
 ## Discrepancias detectadas (código vs `.env.example`)
 
 **Variables en `.env.example` (y en `lib/env.ts`) SIN consumidor en el código:**
-- **`WHATSAPP_VERIFY_TOKEN`** — declarada en `.env.example` y en el schema de
-  `lib/env.ts`, pero **no se usa en ninguna parte** de `app/` ni `lib/`. Está
-  reservada para cuando se implemente el webhook entrante de Meta (handshake +
-  firma `X-Hub-Signature-256`), que hoy **no existe**. No hace falta
-  configurarla para lanzar.
+- Ninguna pendiente. `WHATSAPP_VERIFY_TOKEN` ya se usa en el handshake del
+  webhook de Meta (`app/api/webhooks/whatsapp/route.ts`); solo hace falta si
+  eliges Meta en vez de Twilio. Lo que sigue sin implementarse es la validación
+  de la firma `X-Hub-Signature-256` en el POST.
 
 **Variables consumidas en el código que NO están en `.env.example`:**
 - Ninguna. Todas las variables leídas por el código (`process.env.*` / `env.*`)
@@ -297,20 +346,24 @@ despliegue, ver `README.md`).
 
 ## Orden recomendado de puesta en marcha
 
-1. **Supabase**: crear proyecto → `schema.sql` → `002` → `003`. Copiar las 3
-   keys a Vercel. Configurar Redirect URLs de Auth.
+1. **Supabase**: crear proyecto → `schema.sql` → migraciones en orden. Copiar
+   las 3 keys a Vercel. Configurar Redirect URLs de Auth.
 2. **Vercel**: importar proyecto, poner las 3 de Supabase, `APP_URL` /
-   `NEXT_PUBLIC_APP_URL` (dominio real), `ADMIN_PASSWORD`, y `MOCK_PROVIDERS=false`.
-3. **Stripe**: crear 3 Prices → copiar los 3 price IDs y `STRIPE_SECRET_KEY` →
-   crear webhook a `/api/webhooks/stripe` → copiar `STRIPE_WEBHOOK_SECRET`.
-4. **Vapi**: `VAPI_API_KEY` + elegir `VAPI_WEBHOOK_SECRET`. Gestionar el número
-   entrante y guardar `telefono_entrante`.
-5. **Meta/WhatsApp**: `WHATSAPP_TOKEN` + `WHATSAPP_PHONE_NUMBER_ID`; crear y
-   **aprobar** las plantillas `curro_confirmacion_cliente` y `curro_aviso_lead`
-   (idioma `es`).
-6. **Resend**: verificar dominio → `RESEND_API_KEY` + `EMAIL_FROM`.
-7. **Cal.com** (opcional): crear enlace de reserva y pegarlo en Ajustes de cada
-   negocio (`cal_link`).
-8. **GA4** (opcional): `NEXT_PUBLIC_GA_ID`.
-9. Redeploy en Vercel para aplicar variables. Verificar que `/admin` entra y que
-   un checkout de prueba activa el negocio y crea el assistant.
+   `NEXT_PUBLIC_APP_URL` (dominio real), `ADMIN_PASSWORD` y `ADMIN_SESSION_SECRET`.
+   Deja `MOCK_PROVIDERS` en mock hasta tener las claves de abajo.
+3. **Stripe**: crear los 3 Prices (49 / 99 / 199) → copiar los price IDs y
+   `STRIPE_SECRET_KEY` → webhook a `/api/webhooks/stripe` → `STRIPE_WEBHOOK_SECRET`.
+4. **Vapi**: `VAPI_API_KEY` + elegir `VAPI_WEBHOOK_SECRET`.
+5. **Twilio**: Address + Regulatory Bundle ES → esperar aprobación → comprar el
+   número → `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_ADDRESS_SID`,
+   `TWILIO_BUNDLE_SID`. Es el paso con espera: empiézalo el primero.
+6. **WhatsApp**: sandbox de Twilio para probar; para producción, Sender +
+   plantillas aprobadas → `TWILIO_WHATSAPP_FROM` y los dos `TWILIO_WA_CONTENT_*`.
+7. **Resend**: verificar dominio → `RESEND_API_KEY` + `EMAIL_FROM`.
+8. **RGPD**: `CRON_SECRET` para que el cron diario de retención se ejecute.
+9. **Cal.com** (opcional): enlace de reserva en Ajustes de cada negocio (`cal_link`).
+10. **GA4** (opcional): `NEXT_PUBLIC_GA_ID`.
+11. **`MOCK_PROVIDERS=false`** y redeploy. Comprueba **/admin/estado**: dice qué
+    sigue en mock o incompleto y qué falta para atender una llamada real.
+12. Llamada de prueba de punta a punta (llamar al +34 → hablar con Curro → ver el
+    lead en el panel → recibir el WhatsApp) antes de dar de alta al primer cliente.
