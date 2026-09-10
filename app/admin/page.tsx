@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ShieldCheck, Plus } from "lucide-react";
+import { ShieldCheck, Plus, Activity } from "lucide-react";
 import { adminAutenticado } from "@/lib/admin/auth";
 import { salirAdmin } from "@/app/admin/actions";
 import { getAdminDashboard } from "@/lib/admin/data";
@@ -55,12 +55,20 @@ export default async function AdminPage() {
               Métricas del SaaS y estado de todos los negocios (tenants).
             </p>
           </div>
-          <Link
-            href="/admin/clientes/nuevo"
-            className="inline-flex items-center gap-1.5 rounded-md bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-[var(--primary-foreground)] hover:opacity-90"
-          >
-            <Plus className="size-4" /> Nuevo cliente
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/admin/estado"
+              className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border)] px-4 py-2 text-sm font-semibold hover:bg-[var(--muted)]"
+            >
+              <Activity className="size-4" /> Estado del sistema
+            </Link>
+            <Link
+              href="/admin/clientes/nuevo"
+              className="inline-flex items-center gap-1.5 rounded-md bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-[var(--primary-foreground)] hover:opacity-90"
+            >
+              <Plus className="size-4" /> Nuevo cliente
+            </Link>
+          </div>
         </div>
 
         <Kpis data={data} />
