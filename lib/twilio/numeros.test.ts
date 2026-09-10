@@ -5,6 +5,8 @@ import {
   comprarNumero,
   asignarWebhookVoz,
   twilioNumerosActivo,
+  twilioCuentaActiva,
+  liberarNumero,
 } from "@/lib/twilio/numeros";
 
 describe("buildComprarParams", () => {
@@ -52,5 +54,22 @@ describe("asignarWebhookVoz (mock)", () => {
     await expect(
       asignarWebhookVoz("PN123", "https://app/api/inbound"),
     ).resolves.toBeUndefined();
+  });
+});
+
+describe("twilioCuentaActiva (gate de cuenta, sin bundle)", () => {
+  it("es false en test: sin cuenta real no se toca la API", () => {
+    expect(twilioCuentaActiva()).toBe(false);
+  });
+});
+
+describe("liberarNumero (baja de cliente)", () => {
+  it("es no-op en mock: no hace red y no lanza", async () => {
+    await expect(liberarNumero("PN123")).resolves.toBeUndefined();
+  });
+
+  it("ignora SIDs simulados y vacíos", async () => {
+    await expect(liberarNumero("mock_pn_123")).resolves.toBeUndefined();
+    await expect(liberarNumero("")).resolves.toBeUndefined();
   });
 });

@@ -166,3 +166,36 @@ export async function asignarWebhookVoz(
     );
   }
 }
+
+/**
+ * ¿Tenemos cuenta de Twilio real? Gate más laxo que `twilioNumerosActivo`:
+ * liberar un número ya comprado NO necesita el bundle regulatorio (solo hace
+ * falta para comprarlo), así que basta con la cuenta.
+ */
+export function twilioCuentaActiva(): boolean {
+  return (
+    !env.mockProviders &&
+    Boolean(env.TWILIO_ACCOUNT_SID) &&
+    Boolean(env.TWILIO_AUTH_TOKEN)
+  );
+}
+
+/**
+ * Libera (borra) un número comprado, para dejar de pagarlo al dar de baja a un
+ * cliente. No-op en mock o con SIDs simulados; ignora el 404 (ya no existe) para
+ * ser idempotente. DELETE /Accounts/{SID}/IncomingPhoneNumbers/{Sid}.json
+ */
+export async function liberarNumero(sid: string): Promise<void> {
+  if (!twilioCuentaActiva() || !sid || sid.startsWith("mock_pn_")) return;
+
+  const res = await fetch(
+    `${TWILIO_API}/Accounts/${env.TWILIO_ACCOUNT_SID}/IncomingPhoneNumbers/${sid}.json`,
+    { method: "DELETE", headers: { Authorization: authHeader() } },
+  );
+  if (!res.ok && res.status !== 404) {
+    const json = (await res.json().catch(() => ({}))) as { message?: string };
+    throw new Error(
+      `Twilio liberar número ${res.status}: ${json.message ?? "error desconocido"}`,
+    );
+  }
+}

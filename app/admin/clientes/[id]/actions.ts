@@ -8,6 +8,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { actualizarAssistant, eliminarAssistant } from "@/lib/vapi/assistant";
 import { parseHorarioAtencion, normalizarE164 } from "@/lib/horario";
 import { suprimirLead } from "@/lib/rgpd/supresion";
+import { eliminarNumeroVapi } from "@/lib/vapi/telefono";
+import { liberarNumero } from "@/lib/twilio/numeros";
 import { getStripe, stripeConfigurado } from "@/lib/stripe/client";
 import {
   parseContactoDueno,
@@ -154,7 +156,9 @@ export async function borrarCliente(id: string, formData: FormData) {
 
   const { data: biz } = await admin
     .from("businesses")
-    .select("nombre, vapi_assistant_id, stripe_subscription_id")
+    .select(
+      "nombre, vapi_assistant_id, stripe_subscription_id, vapi_phone_id, vapi_phone_number_id",
+    )
     .eq("id", id)
     .maybeSingle();
   if (!biz) redirect("/admin");
@@ -174,6 +178,22 @@ export async function borrarCliente(id: string, formData: FormData) {
     if (biz.vapi_assistant_id) await eliminarAssistant(biz.vapi_assistant_id);
   } catch (e) {
     console.error("[admin] no se pudo borrar el assistant:", e);
+  }
+
+  // Telefonía: soltar el número antes de borrar la fila, o se queda facturando
+  // en Twilio y enrutando en Vapi sin negocio detrás. Primero Vapi (deja de
+  // atender) y luego Twilio (deja de costar). Los fallos no bloquean la baja:
+  // se registran para poder limpiarlos a mano.
+  try {
+    if (biz.vapi_phone_id) await eliminarNumeroVapi(biz.vapi_phone_id);
+  } catch (e) {
+    console.error("[admin] no se pudo borrar el número en Vapi:", e);
+  }
+
+  try {
+    if (biz.vapi_phone_number_id) await liberarNumero(biz.vapi_phone_number_id);
+  } catch (e) {
+    console.error("[admin] no se pudo liberar el número en Twilio:", e);
   }
 
   // Las FKs de las tablas hijas (owners, leads, messages, call_events,

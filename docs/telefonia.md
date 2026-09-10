@@ -47,6 +47,8 @@ Cliente llama al número dedicado (+34…)
   marca el paso hecho; NO provisiona un número Curro al que el cliente desvíe. Para
   que el desvío funcione de verdad hay que darle al cliente un número Curro
   (importado en Vapi) y guiar el desvío `**61*NUM#`. Queda por construir.
-- **Borrado de cliente**: `borrarCliente` aún NO libera el número de Twilio ni
-  borra el phone-number de Vapi (`eliminarNumeroVapi`). Añadirlo antes de operar
-  con números reales para no dejar coste huérfano.
+- **Borrado de cliente**: hecho. `borrarCliente` (`app/admin/clientes/[id]/actions.ts`)
+  borra el phone-number de Vapi (`eliminarNumeroVapi`) y libera el número de Twilio
+  (`liberarNumero`, DELETE del IncomingPhoneNumber) antes de borrar la fila, para no
+  dejar coste ni rutas huérfanas. Ambos fallos se registran sin bloquear la baja: si
+  algo falla, hay que limpiarlo a mano en la consola del proveedor.
